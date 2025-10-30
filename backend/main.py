@@ -33,13 +33,22 @@ app = FastAPI(
 )
 
 # Configurar CORS para permitir requisições do frontend
+# Adicionar URL do frontend em produção
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3001')
+
+allowed_origins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:5173",  # Vite padrão
+]
+
+# Adicionar URL de produção se configurada
+if FRONTEND_URL and FRONTEND_URL not in allowed_origins:
+    allowed_origins.append(FRONTEND_URL)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:5173",  # Vite padrão
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
