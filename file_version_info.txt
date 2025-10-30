@@ -1,0 +1,46 @@
+# UTF-8
+#
+# Informações de versão do arquivo executável
+# Sistema de Homologação de Atestados Médicos
+# Autor: Kauan Kelvin
+#
+
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    # filevers e prodvers devem ser sempre uma tupla de quatro inteiros
+    # (1, 0, 0, 0) = versão 1.0.0.0
+    filevers=(2, 0, 0, 0),
+    prodvers=(2, 0, 0, 0),
+    # Contém uma máscara de bits que especifica os atributos válidos do arquivo
+    mask=0x3f,
+    # Contém uma máscara de bits que especifica os atributos do arquivo
+    flags=0x0,
+    # Tipo de sistema operacional
+    OS=0x40004,
+    # Tipo geral de arquivo
+    fileType=0x1,
+    # Função do arquivo
+    subtype=0x0,
+    # Data de criação do arquivo (deixar em 0)
+    date=(0, 0)
+  ),
+  kids=[
+    StringFileInfo(
+      [
+      StringTable(
+        u'040904B0',
+        [StringStruct(u'CompanyName', u'Kauan Kelvin'),
+        StringStruct(u'FileDescription', u'Sistema de Homologação de Atestados Médicos - Aplicação para gerenciamento e homologação de atestados médicos com interface gráfica moderna'),
+        StringStruct(u'FileVersion', u'2.0.0.0'),
+        StringStruct(u'InternalName', u'SistemaHomologacao'),
+        StringStruct(u'LegalCopyright', u'Copyright © 2025 Kauan Kelvin. Todos os direitos reservados.'),
+        StringStruct(u'OriginalFilename', u'SistemaHomologacao.exe'),
+        StringStruct(u'ProductName', u'Sistema de Homologação de Atestados Médicos'),
+        StringStruct(u'ProductVersion', u'2.0.0.0'),
+        StringStruct(u'Comments', u'Sistema profissional para homologação de atestados médicos com autocompletar, validações e geração de documentos.'),
+        StringStruct(u'LegalTrademarks', u'')]
+        )
+      ]), 
+    VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
+  ]
+)

@@ -1,0 +1,26 @@
+Sistema de Homologação de Atestados Médicos
+Versão: 2.0.0
+Data de Compilação: 28/10/2025
+Desenvolvedor: Kauan Kelvin
+
+Informações Técnicas:
+- Python 3.8+
+- PyQt5 5.15.10
+- python-docx 1.1.0
+- SQLite3
+
+Recursos:
+✓ Interface gráfica moderna
+✓ Banco de dados local
+✓ Geração de documentos Word
+✓ Autocompletar inteligente
+✓ Validação de CPF/RG
+✓ Sistema de logging
+✓ Consulta online de registros profissionais
+
+Localização dos Dados:
+- Banco: %LOCALAPPDATA%\SistemaHomologacao\data\homologacao.db
+- Documentos: %LOCALAPPDATA%\SistemaHomologacao\data\generated_documents\
+- Logs: %LOCALAPPDATA%\SistemaHomologacao\data\logs\
+
+GitHub: https://github.com/kauankelvin7/sistema_clinica_homologacao

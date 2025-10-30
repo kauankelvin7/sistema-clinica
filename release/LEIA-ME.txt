@@ -1,0 +1,39 @@
+# Sistema de Homologação de Atestados Médicos
+## Instruções de Instalação
+
+### Instalação
+1. Copie o arquivo SistemaHomologacao.exe para uma pasta de sua preferência
+   Sugestão: C:\Program Files\SistemaHomologacao\
+
+2. Crie um atalho na área de trabalho (opcional):
+   - Clique com botão direito no SistemaHomologacao.exe
+   - Selecione "Criar atalho"
+   - Mova o atalho para a área de trabalho
+
+### Primeira Execução
+- Na primeira vez que executar, o sistema criará automaticamente:
+  - Banco de dados em: %LOCALAPPDATA%\SistemaHomologacao\data\
+  - Pasta de documentos: %LOCALAPPDATA%\SistemaHomologacao\data\generated_documents\
+  - Pasta de logs: %LOCALAPPDATA%\SistemaHomologacao\data\logs\
+
+### Uso
+- Execute o arquivo SistemaHomologacao.exe
+- Preencha os dados solicitados
+- Clique em "Gerar Declaração"
+
+### Localização dos Arquivos
+- Banco de dados: C:\Users\[SEU_USUARIO]\AppData\Local\SistemaHomologacao\data\homologacao.db
+- Documentos gerados: C:\Users\[SEU_USUARIO]\AppData\Local\SistemaHomologacao\data\generated_documents\
+- Logs: C:\Users\[SEU_USUARIO]\AppData\Local\SistemaHomologacao\data\logs\
+
+### Desinstalação
+1. Delete o executável SistemaHomologacao.exe
+2. Delete a pasta: C:\Users\[SEU_USUARIO]\AppData\Local\SistemaHomologacao\
+
+### Suporte
+Para reportar problemas ou sugestões:
+- GitHub: https://github.com/kauankelvin7/sistema_clinica_homologacao
+
+---
+Desenvolvido por: Kauan Kelvin
+Versão: 2.0.0

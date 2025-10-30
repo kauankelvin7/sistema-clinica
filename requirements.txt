@@ -1,2 +1,43 @@
-PyQt5
-python-docx
+# ===== Sistema de Homologação de Atestados Médicos =====
+# Autor: Kauan Kelvin
+# Versão: 2.0.0
+# Data: 28/10/2025
+
+# Interface Gráfica
+PyQt5==5.15.10
+PyQt5-Qt5==5.15.2
+PyQt5-sip==12.13.0
+
+# Manipulação de Documentos Word
+python-docx==1.1.0
+lxml==4.9.3
+
+# Utilitários
+Pillow==10.1.0
+
+# Ferramentas de Desenvolvimento (Opcional)
+# Descomente as linhas abaixo para desenvolvimento
+
+# Empacotamento
+# pyinstaller==6.1.0
+
+# Testes
+# pytest==7.4.3
+# pytest-qt==4.2.0
+
+# Análise de Código
+# pylint==3.0.2
+# black==23.11.0
+
+# ===== NOTAS DE INSTALAÇÃO =====
+# 
+# Para instalar as dependências:
+#   pip install -r requirements.txt
+#
+# Para criar executável:
+#   pip install pyinstaller
+#   pyinstaller main.spec
+#
+# Para desenvolvimento:
+#   pip install -r requirements.txt
+#   pip install pytest pytest-qt pylint black

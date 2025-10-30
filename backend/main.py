@@ -1,0 +1,267 @@
+"""
+Backend FastAPI - Sistema de Homologação
+API REST para integração com frontend React
+Autor: Kauan Kelvin
+Versão: 2.0.0
+"""
+
+from fastapi import FastAPI, HTTPException, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from pydantic import BaseModel
+from typing import Optional, List
+import sys
+import os
+from datetime import datetime
+import logging
+
+# Adicionar diretório raiz ao path para importar módulos
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from core.database import get_db_connection, sanitizar_entrada
+from core.document_generator import generate_document
+
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Criar aplicação FastAPI
+app = FastAPI(
+    title="Sistema de Homologação API",
+    description="API REST para geração de atestados médicos",
+    version="2.0.0"
+)
+
+# Configurar CORS para permitir requisições do frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:5173",  # Vite padrão
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Modelos Pydantic para validação de dados
+class PacienteData(BaseModel):
+    nome: str
+    tipo_documento: str
+    numero_documento: str
+    cargo: str
+    empresa: str
+
+class AtestadoData(BaseModel):
+    data_atestado: str
+    dias_afastamento: int
+    cid: str
+    cid_nao_informado: bool = False
+
+class MedicoData(BaseModel):
+    nome: str
+    tipo_registro: str
+    numero_registro: str
+    uf_registro: str
+
+class DocumentoRequest(BaseModel):
+    paciente: PacienteData
+    atestado: AtestadoData
+    medico: MedicoData
+
+class PacienteResponse(BaseModel):
+    id: int
+    nome: str
+    tipo_documento: str
+    numero_documento: str
+    cargo: str
+    empresa: str
+
+class MedicoResponse(BaseModel):
+    id: int
+    nome: str
+    tipo_registro: str
+    numero_registro: str
+    uf_registro: str
+
+# ===== ENDPOINTS =====
+
+@app.get("/")
+async def root():
+    """Endpoint raiz - Status da API"""
+    return {
+        "status": "online",
+        "message": "Sistema de Homologação API v2.0",
+        "author": "Kauan Kelvin",
+        "docs": "/docs"
+    }
+
+@app.post("/api/generate-document")
+async def generate_document_endpoint(data: DocumentoRequest):
+    """
+    Gera documento de atestado médico
+    """
+    try:
+        logger.info("Recebendo requisição para gerar documento")
+        
+        # Preparar dados no formato esperado pelo gerador
+        documento_data = {
+            # Paciente
+            "nome_paciente": data.paciente.nome,
+            "tipo_documento_paciente": data.paciente.tipo_documento,
+            "numero_documento_paciente": data.paciente.numero_documento,
+            "cargo_paciente": data.paciente.cargo,
+            "empresa_paciente": data.paciente.empresa,
+            
+            # Atestado
+            "data_atestado": data.atestado.data_atestado,
+            "dias_afastamento": str(data.atestado.dias_afastamento),
+            "cid": data.atestado.cid if not data.atestado.cid_nao_informado else "Não Informado",
+            
+            # Médico
+            "nome_medico": data.medico.nome,
+            "tipo_registro": data.medico.tipo_registro,
+            "numero_registro": data.medico.numero_registro,
+            "uf_registro": data.medico.uf_registro,
+        }
+        
+        # Gerar documento
+        caminho_documento = generate_document(documento_data)
+        
+        if not caminho_documento or not os.path.exists(caminho_documento):
+            raise HTTPException(status_code=500, detail="Erro ao gerar documento")
+        
+        logger.info(f"Documento gerado: {caminho_documento}")
+        
+        # Retornar arquivo para download
+        return FileResponse(
+            path=caminho_documento,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            filename=os.path.basename(caminho_documento)
+        )
+        
+    except Exception as e:
+        logger.error(f"Erro ao gerar documento: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao gerar documento: {str(e)}")
+
+@app.get("/api/patients", response_model=List[PacienteResponse])
+async def get_patients(search: Optional[str] = None):
+    """
+    Busca pacientes no banco de dados
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        if search:
+            query = """
+                SELECT id, nome, tipo_documento, numero_documento, cargo, empresa
+                FROM pacientes 
+                WHERE nome LIKE ? OR numero_documento LIKE ?
+                ORDER BY nome
+                LIMIT 50
+            """
+            cursor.execute(query, (f"%{search}%", f"%{search}%"))
+        else:
+            query = """
+                SELECT id, nome, tipo_documento, numero_documento, cargo, empresa
+                FROM pacientes 
+                ORDER BY nome DESC
+                LIMIT 50
+            """
+            cursor.execute(query)
+        
+        pacientes = []
+        for row in cursor.fetchall():
+            pacientes.append(PacienteResponse(
+                id=row[0],
+                nome=row[1],
+                tipo_documento=row[2],
+                numero_documento=row[3],
+                cargo=row[4],
+                empresa=row[5]
+            ))
+        
+        conn.close()
+        return pacientes
+        
+    except Exception as e:
+        logger.error(f"Erro ao buscar pacientes: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao buscar pacientes: {str(e)}")
+
+@app.get("/api/doctors", response_model=List[MedicoResponse])
+async def get_doctors(search: Optional[str] = None):
+    """
+    Busca médicos no banco de dados
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        if search:
+            query = """
+                SELECT id, nome, tipo_registro, numero_registro, uf_registro
+                FROM medicos 
+                WHERE nome LIKE ? OR numero_registro LIKE ?
+                ORDER BY nome
+                LIMIT 50
+            """
+            cursor.execute(query, (f"%{search}%", f"%{search}%"))
+        else:
+            query = """
+                SELECT id, nome, tipo_registro, numero_registro, uf_registro
+                FROM medicos 
+                ORDER BY nome DESC
+                LIMIT 50
+            """
+            cursor.execute(query)
+        
+        medicos = []
+        for row in cursor.fetchall():
+            medicos.append(MedicoResponse(
+                id=row[0],
+                nome=row[1],
+                tipo_registro=row[2],
+                numero_registro=row[3],
+                uf_registro=row[4]
+            ))
+        
+        conn.close()
+        return medicos
+        
+    except Exception as e:
+        logger.error(f"Erro ao buscar médicos: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao buscar médicos: {str(e)}")
+
+@app.get("/api/health")
+async def health_check():
+    """
+    Verifica saúde da API e banco de dados
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM pacientes")
+        pacientes_count = cursor.fetchone()[0]
+        cursor.execute("SELECT COUNT(*) FROM medicos")
+        medicos_count = cursor.fetchone()[0]
+        conn.close()
+        
+        return {
+            "status": "healthy",
+            "database": "connected",
+            "pacientes": pacientes_count,
+            "medicos": medicos_count,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
