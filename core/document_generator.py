@@ -21,6 +21,64 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional, Any
 
+
+def _format_date_brazil(date_input) -> str:
+    """
+    Formata uma entrada de data para o padrão brasileiro DD/MM/YYYY.
+
+    Aceita objetos datetime/date ou strings em formatos comuns (ISO, com/hora, já em DD/MM/YYYY).
+    Em caso de falha, retorna a entrada original convertida para string.
+    """
+    if not date_input and date_input != 0:
+        return ""
+
+    # Se já for datetime ou date
+    try:
+        if hasattr(date_input, 'strftime'):
+            return date_input.strftime("%d/%m/%Y")
+    except Exception:
+        pass
+
+    # Se for string, tentar parse em vários formatos comuns
+    if isinstance(date_input, str):
+        s = date_input.strip()
+        # Se já estiver no formato brasileiro, retorna direto
+        if re.match(r"^\d{2}/\d{2}/\d{4}$", s):
+            return s
+
+        # Tentar ISO e variações
+        parse_formats = [
+            "%Y-%m-%d",
+            "%Y-%m-%dT%H:%M:%S",
+            "%Y-%m-%d %H:%M:%S",
+            "%Y/%m/%d",
+            "%d-%m-%Y",
+            "%d.%m.%Y",
+        ]
+
+        for fmt in parse_formats:
+            try:
+                dt = datetime.strptime(s, fmt)
+                return dt.strftime("%d/%m/%Y")
+            except Exception:
+                continue
+
+        # Tentar fromisoformat (mais permissivo em Python 3.7+)
+        try:
+            dt = datetime.fromisoformat(s)
+            return dt.strftime("%d/%m/%Y")
+        except Exception:
+            pass
+
+        # Se tudo falhar, retornar a string original (preserva conteúdo para debugging)
+        return s
+
+    # Último recurso: converter para string
+    try:
+        return str(date_input)
+    except Exception:
+        return ""
+
 # Importar configurações centralizadas
 try:
     from .config import (
@@ -261,7 +319,8 @@ def generate_document(data: Dict[str, Any]) -> Optional[str]:
         replacements = {
             "{nome_paciente}": str(data.get("nome_paciente", "")).strip(),
             "{documento_paciente_formatado}": f"{data.get('tipo_doc_paciente', '').upper()} nº: {data.get('numero_doc_paciente', '')}",
-            "{data_atestado}": str(data.get("data_atestado", "")).strip(),
+            # Formatar data do atestado para padrão brasileiro (DD/MM/YYYY)
+            "{data_atestado}": _format_date_brazil(data.get("data_atestado", "")),
             "{qtd_dias_atestado}": str(data.get("qtd_dias_atestado", "")),
             "{código_cid}": str(data.get("codigo_cid", "")).strip(),
             "{cargo_paciente}": str(data.get("cargo_paciente", "")).strip(),
