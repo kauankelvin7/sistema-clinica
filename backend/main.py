@@ -116,79 +116,78 @@ async def generate_document_endpoint(data: DocumentoRequest):
         
         # SALVAR PACIENTE NO BANCO DE DADOS
         try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            
-            # Verificar se paciente já existe
-            cursor.execute(
-                "SELECT id FROM pacientes WHERE numero_documento = ?",
-                (sanitizar_entrada(data.paciente.numero_documento),)
-            )
-            paciente_existente = cursor.fetchone()
-            
-            if not paciente_existente:
-                # Inserir novo paciente
-                cursor.execute("""
-                    INSERT INTO pacientes (nome, tipo_documento, numero_documento, cargo, empresa)
-                    VALUES (?, ?, ?, ?, ?)
-                """, (
-                    sanitizar_entrada(data.paciente.nome),
-                    sanitizar_entrada(data.paciente.tipo_documento),
-                    sanitizar_entrada(data.paciente.numero_documento),
-                    sanitizar_entrada(data.paciente.cargo),
-                    sanitizar_entrada(data.paciente.empresa)
-                ))
-                logger.info(f"Paciente salvo: {data.paciente.nome}")
-            else:
-                # Atualizar dados do paciente
-                cursor.execute("""
-                    UPDATE pacientes 
-                    SET nome = ?, tipo_documento = ?, cargo = ?, empresa = ?
-                    WHERE numero_documento = ?
-                """, (
-                    sanitizar_entrada(data.paciente.nome),
-                    sanitizar_entrada(data.paciente.tipo_documento),
-                    sanitizar_entrada(data.paciente.cargo),
-                    sanitizar_entrada(data.paciente.empresa),
-                    sanitizar_entrada(data.paciente.numero_documento)
-                ))
-                logger.info(f"Paciente atualizado: {data.paciente.nome}")
-            
-            # SALVAR MÉDICO NO BANCO DE DADOS
-            cursor.execute(
-                "SELECT id FROM medicos WHERE numero_registro = ? AND tipo_registro = ?",
-                (sanitizar_entrada(data.medico.numero_registro), sanitizar_entrada(data.medico.tipo_registro))
-            )
-            medico_existente = cursor.fetchone()
-            
-            if not medico_existente:
-                # Inserir novo médico
-                cursor.execute("""
-                    INSERT INTO medicos (nome, tipo_registro, numero_registro, uf_registro)
-                    VALUES (?, ?, ?, ?)
-                """, (
-                    sanitizar_entrada(data.medico.nome),
-                    sanitizar_entrada(data.medico.tipo_registro),
-                    sanitizar_entrada(data.medico.numero_registro),
-                    sanitizar_entrada(data.medico.uf_registro)
-                ))
-                logger.info(f"Médico salvo: {data.medico.nome}")
-            else:
-                # Atualizar dados do médico
-                cursor.execute("""
-                    UPDATE medicos 
-                    SET nome = ?, uf_registro = ?
-                    WHERE numero_registro = ? AND tipo_registro = ?
-                """, (
-                    sanitizar_entrada(data.medico.nome),
-                    sanitizar_entrada(data.medico.uf_registro),
-                    sanitizar_entrada(data.medico.numero_registro),
-                    sanitizar_entrada(data.medico.tipo_registro)
-                ))
-                logger.info(f"Médico atualizado: {data.medico.nome}")
-            
-            conn.commit()
-            conn.close()
+            with get_db_connection() as conn:
+                cursor = conn.cursor()
+                
+                # Verificar se paciente já existe
+                cursor.execute(
+                    "SELECT id FROM pacientes WHERE numero_doc = ?",
+                    (sanitizar_entrada(data.paciente.numero_documento),)
+                )
+                paciente_existente = cursor.fetchone()
+                
+                if not paciente_existente:
+                    # Inserir novo paciente
+                    cursor.execute("""
+                        INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, cargo, empresa)
+                        VALUES (?, ?, ?, ?, ?)
+                    """, (
+                        sanitizar_entrada(data.paciente.nome),
+                        sanitizar_entrada(data.paciente.tipo_documento),
+                        sanitizar_entrada(data.paciente.numero_documento),
+                        sanitizar_entrada(data.paciente.cargo),
+                        sanitizar_entrada(data.paciente.empresa)
+                    ))
+                    logger.info(f"Paciente salvo: {data.paciente.nome}")
+                else:
+                    # Atualizar dados do paciente
+                    cursor.execute("""
+                        UPDATE pacientes 
+                        SET nome_completo = ?, tipo_doc = ?, cargo = ?, empresa = ?
+                        WHERE numero_doc = ?
+                    """, (
+                        sanitizar_entrada(data.paciente.nome),
+                        sanitizar_entrada(data.paciente.tipo_documento),
+                        sanitizar_entrada(data.paciente.cargo),
+                        sanitizar_entrada(data.paciente.empresa),
+                        sanitizar_entrada(data.paciente.numero_documento)
+                    ))
+                    logger.info(f"Paciente atualizado: {data.paciente.nome}")
+                
+                # SALVAR MÉDICO NO BANCO DE DADOS
+                cursor.execute(
+                    "SELECT id FROM medicos WHERE crm = ? AND tipo_crm = ?",
+                    (sanitizar_entrada(data.medico.numero_registro), sanitizar_entrada(data.medico.tipo_registro))
+                )
+                medico_existente = cursor.fetchone()
+                
+                if not medico_existente:
+                    # Inserir novo médico
+                    cursor.execute("""
+                        INSERT INTO medicos (nome_completo, tipo_crm, crm, uf_crm)
+                        VALUES (?, ?, ?, ?)
+                    """, (
+                        sanitizar_entrada(data.medico.nome),
+                        sanitizar_entrada(data.medico.tipo_registro),
+                        sanitizar_entrada(data.medico.numero_registro),
+                        sanitizar_entrada(data.medico.uf_registro)
+                    ))
+                    logger.info(f"Médico salvo: {data.medico.nome}")
+                else:
+                    # Atualizar dados do médico
+                    cursor.execute("""
+                        UPDATE medicos 
+                        SET nome_completo = ?, uf_crm = ?
+                        WHERE crm = ? AND tipo_crm = ?
+                    """, (
+                        sanitizar_entrada(data.medico.nome),
+                        sanitizar_entrada(data.medico.uf_registro),
+                        sanitizar_entrada(data.medico.numero_registro),
+                        sanitizar_entrada(data.medico.tipo_registro)
+                    ))
+                    logger.info(f"Médico atualizado: {data.medico.nome}")
+                
+                conn.commit()
             
         except Exception as e:
             logger.warning(f"Erro ao salvar no banco (continuando): {str(e)}")

@@ -168,6 +168,7 @@ def substituir_placeholders(document: Document, replacements: Dict[str, str]) ->
 def abrir_arquivo_automaticamente(caminho_arquivo: Path) -> bool:
     """
     Abre o arquivo gerado automaticamente com o aplicativo padrão do sistema.
+    SOMENTE em ambiente de desenvolvimento local (não em produção/servidor).
     
     Args:
         caminho_arquivo: Caminho do arquivo a ser aberto
@@ -175,6 +176,13 @@ def abrir_arquivo_automaticamente(caminho_arquivo: Path) -> bool:
     Returns:
         bool: True se aberto com sucesso, False caso contrário
     """
+    # Detectar se está rodando em servidor (Render, Vercel, etc)
+    is_production = os.getenv('RENDER') or os.getenv('VERCEL') or os.getenv('RAILWAY')
+    
+    if is_production:
+        logger.debug("Ambiente de produção detectado - não abrindo arquivo automaticamente")
+        return False
+    
     try:
         if os.name == 'nt':  # Windows
             os.startfile(str(caminho_arquivo))
