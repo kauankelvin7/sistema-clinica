@@ -52,7 +52,12 @@ export default function DoctorSearch({ onSelect }: DoctorSearchProps) {
         <Search className="w-4 h-4 text-gray-400" />
         <input
           type="text"
-          className="input-field flex-1 border-2 border-primary-300 bg-gradient-to-br from-primary-50 to-secondary-50 focus:border-primary-500 focus:ring-4 focus:ring-primary-400/20 shadow-lg placeholder:text-primary-400 transition-all duration-200"
+          className={
+            `input-field flex-1 border-2 border-primary-300 bg-gradient-to-br from-primary-50 to-secondary-50 focus:border-primary-500 focus:ring-4 focus:ring-primary-400/20 shadow-lg transition-all duration-200 ` +
+            (typeof window !== 'undefined' && document.documentElement.classList.contains('dark')
+              ? 'placeholder:text-slate-400'
+              : 'placeholder:text-primary-400')
+          }
           placeholder="Buscar médico cadastrado..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
