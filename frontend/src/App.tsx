@@ -127,7 +127,7 @@ function App() {
 
   return (
     <div className="min-h-screen py-6 px-4 sm:py-8 sm:px-6 md:py-12 md:px-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-950 transition-colors duration-500">
-      <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
+  <div className="max-w-2xl mx-auto space-y-6 md:space-y-8">
         {/* Header */}
         <Header />
 

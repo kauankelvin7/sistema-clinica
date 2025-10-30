@@ -1,6 +1,17 @@
 import type { PatientFormProps, Paciente } from '../types'
 import PatientSearch from './PatientSearch'
 
+
+// Função para aplicar máscara de CPF
+function maskCPF(value: string) {
+  return value
+    .replace(/\D/g, '')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+    .slice(0, 14)
+}
+
 export default function PatientForm({ formData, updateFormData }: PatientFormProps) {
   const handleLoadPatient = (patient: Paciente) => {
     updateFormData('nomePaciente', patient.nome_completo)
@@ -8,6 +19,27 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
     updateFormData('numeroDocumento', patient.numero_doc)
     updateFormData('cargo', patient.cargo || '')
     updateFormData('empresa', patient.empresa || '')
+  }
+
+  // Atualiza o campo de documento com máscara se for CPF
+  const handleDocumentoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value
+    if (formData.tipoDocumento === 'CPF') {
+      value = maskCPF(value)
+    }
+    updateFormData('numeroDocumento', value)
+  }
+
+  // Ao trocar o tipo de documento, limpa ou remove máscara se necessário
+  const handleTipoDocumentoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const tipo = e.target.value
+    if (tipo === 'CPF') {
+      updateFormData('tipoDocumento', tipo)
+      updateFormData('numeroDocumento', maskCPF(formData.numeroDocumento))
+    } else {
+      updateFormData('tipoDocumento', tipo)
+      updateFormData('numeroDocumento', formData.numeroDocumento.replace(/\D/g, ''))
+    }
   }
 
   return (
@@ -38,7 +70,7 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
           <select
             className="input-field w-24"
             value={formData.tipoDocumento}
-            onChange={(e) => updateFormData('tipoDocumento', e.target.value)}
+            onChange={handleTipoDocumentoChange}
           >
             <option value="CPF">CPF</option>
             <option value="RG">RG</option>
@@ -46,9 +78,11 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
           <input
             type="text"
             className="input-field flex-1"
-            placeholder="000.000.000-00"
+            placeholder={formData.tipoDocumento === 'CPF' ? '000.000.000-00' : 'Digite o RG'}
             value={formData.numeroDocumento}
-            onChange={(e) => updateFormData('numeroDocumento', e.target.value)}
+            onChange={handleDocumentoChange}
+            maxLength={formData.tipoDocumento === 'CPF' ? 14 : 20}
+            inputMode={formData.tipoDocumento === 'CPF' ? 'numeric' : 'text'}
           />
         </div>
       </div>

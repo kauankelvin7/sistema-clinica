@@ -18,27 +18,20 @@
 @layer components {
 
   .input-field {
-    @apply w-full px-5 py-3 bg-gradient-to-br from-primary-50 to-secondary-50 border-2 border-primary-200 
-           rounded-2xl text-gray-900 text-base placeholder:text-primary-400
-           focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-400/20
-           transition-all duration-200 hover:border-primary-400
-           shadow-lg hover:shadow-primary-200/60;
-    box-shadow: 0 2px 12px 0 rgba(124,58,237,0.08), 0 1.5px 6px 0 rgba(6,182,212,0.08);
+    @apply w-full px-4 py-2 bg-white border border-primary-100 rounded-xl text-gray-900 text-base placeholder:text-gray-500 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all duration-150 hover:border-primary-300 shadow-sm;
     background-blend-mode: lighten;
   }
 
 
   .dark .input-field {
-    @apply bg-darkbg-900 border-primary-700 text-primary-100 placeholder:text-primary-300;
-    box-shadow: 0 2px 12px 0 rgba(167,139,250,0.10), 0 1.5px 6px 0 rgba(34,211,238,0.10);
+    @apply bg-darkbg-900 border-primary-700 text-slate-200 placeholder:text-slate-400;
+    box-shadow: 0 2px 12px 0 rgba(67,56,202,0.10), 0 1.5px 6px 0 rgba(34,211,238,0.08);
     background-blend-mode: lighten;
   }
 
 
   .input-field:focus {
-    @apply border-primary-500 shadow-lg shadow-primary-400/20;
-    outline: 2px solid theme('colors.secondary.400');
-    outline-offset: 2px;
+    @apply border-primary-500 shadow-md;
   }
 
   .btn-primary {
