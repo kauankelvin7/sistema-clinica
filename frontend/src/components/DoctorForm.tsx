@@ -21,10 +21,10 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
   }
 
   return (
-    <div className="space-y-3.5">
+    <div className="space-y-2.5">
       {/* Nome Completo */}
       <div>
-        <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+        <label className="block text-xs font-semibold text-gray-700 mb-1">
           Nome Completo
         </label>
         <input
@@ -38,13 +38,13 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
 
       {/* Registro Profissional */}
       <div>
-        <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+        <label className="block text-xs font-semibold text-gray-700 mb-1">
           Registro Profissional
         </label>
         <div className="flex gap-2">
           {/* Tipo */}
           <select
-            className="input-field w-24"
+            className="input-field w-20"
             value={formData.tipoRegistro}
             onChange={(e) => updateFormData('tipoRegistro', e.target.value)}
           >
@@ -64,7 +64,7 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
 
           {/* UF */}
           <select
-            className="input-field w-20"
+            className="input-field w-16"
             value={formData.ufRegistro}
             onChange={(e) => updateFormData('ufRegistro', e.target.value)}
           >
@@ -77,13 +77,12 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
           <button
             type="button"
             onClick={handleConsultar}
-            className="px-4 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-sm
-                     rounded-xl shadow-md hover:shadow-lg hover:scale-105
-                     transition-all duration-200 active:scale-95
-                     flex items-center gap-1.5 whitespace-nowrap"
+            className="px-3 py-2 bg-orange-500 text-white font-semibold text-xs
+                     rounded-lg hover:bg-orange-600 active:bg-orange-700
+                     flex items-center gap-1 whitespace-nowrap"
           >
             Consultar
-            <ExternalLink className="w-3.5 h-3.5" />
+            <ExternalLink className="w-3 h-3" />
           </button>
         </div>
       </div>

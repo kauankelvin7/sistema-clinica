@@ -98,24 +98,24 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen py-6 px-3">
-      <div className="max-w-4xl mx-auto space-y-5">
+    <div className="min-h-screen py-4 px-3">
+      <div className="max-w-4xl mx-auto space-y-3">
         {/* Header */}
         <Header />
 
         {/* Mensagem de Status */}
         {message && (
-          <div className={`rounded-xl p-3 flex items-center gap-2.5 animate-in fade-in slide-in-from-top-2 duration-300 ${
+          <div className={`rounded-lg p-2.5 flex items-center gap-2 ${
             message.type === 'success' 
-              ? 'bg-green-50 border-2 border-green-200' 
-              : 'bg-red-50 border-2 border-red-200'
+              ? 'bg-green-50 border border-green-200' 
+              : 'bg-red-50 border border-red-200'
           }`}>
             {message.type === 'success' ? (
-              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+              <CheckCircle className="w-4 h-4 text-green-600" />
             ) : (
-              <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+              <XCircle className="w-4 h-4 text-red-600" />
             )}
-            <p className={`font-semibold text-sm ${
+            <p className={`font-medium text-xs ${
               message.type === 'success' ? 'text-green-800' : 'text-red-800'
             }`}>
               {message.text}
@@ -124,38 +124,38 @@ function App() {
         )}
 
         {/* Container Principal */}
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 p-1.5">
-          <div className="space-y-4 p-4">
+        <div className="bg-white/95 rounded-xl border border-white/30">
+          <div className="space-y-3 p-3">
             
             {/* Seção: Dados do Paciente */}
             <div className="card">
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-9 h-9 bg-gradient-to-br from-primary-500 to-violet-500 rounded-lg flex items-center justify-center">
-                  <User className="w-5 h-5 text-white" />
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
+                  <User className="w-4 h-4 text-white" />
                 </div>
-                <h2 className="text-primary-500 text-lg font-bold">Dados do Paciente</h2>
+                <h2 className="text-primary-600 text-base font-bold">Dados do Paciente</h2>
               </div>
               <PatientForm formData={formData} updateFormData={updateFormData} />
             </div>
 
             {/* Seção: Dados do Atestado */}
             <div className="card">
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-9 h-9 bg-gradient-to-br from-primary-500 to-violet-500 rounded-lg flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-white" />
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-white" />
                 </div>
-                <h2 className="text-primary-500 text-lg font-bold">Dados do Atestado</h2>
+                <h2 className="text-primary-600 text-base font-bold">Dados do Atestado</h2>
               </div>
               <CertificateForm formData={formData} updateFormData={updateFormData} />
             </div>
 
             {/* Seção: Dados do Médico */}
             <div className="card">
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-9 h-9 bg-gradient-to-br from-primary-500 to-violet-500 rounded-lg flex items-center justify-center">
-                  <Stethoscope className="w-5 h-5 text-white" />
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
+                  <Stethoscope className="w-4 h-4 text-white" />
                 </div>
-                <h2 className="text-primary-500 text-lg font-bold">Dados do Médico</h2>
+                <h2 className="text-primary-600 text-base font-bold">Dados do Médico</h2>
               </div>
               <DoctorForm formData={formData} updateFormData={updateFormData} />
             </div>

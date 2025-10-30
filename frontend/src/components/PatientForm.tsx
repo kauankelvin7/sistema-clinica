@@ -2,10 +2,10 @@ import type { PatientFormProps } from '../types'
 
 export default function PatientForm({ formData, updateFormData }: PatientFormProps) {
   return (
-    <div className="space-y-3.5">
+    <div className="space-y-2.5">
       {/* Nome Completo */}
       <div>
-        <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+        <label className="block text-xs font-semibold text-gray-700 mb-1">
           Nome Completo
         </label>
         <input
@@ -19,12 +19,12 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
 
       {/* Documento (CPF/RG) */}
       <div>
-        <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+        <label className="block text-xs font-semibold text-gray-700 mb-1">
           Documento
         </label>
         <div className="flex gap-2">
           <select
-            className="input-field w-24"
+            className="input-field w-20"
             value={formData.tipoDocumento}
             onChange={(e) => updateFormData('tipoDocumento', e.target.value)}
           >
@@ -44,7 +44,7 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
       {/* Cargo e Empresa em linha */}
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+          <label className="block text-xs font-semibold text-gray-700 mb-1">
             Cargo
           </label>
           <input
@@ -57,7 +57,7 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+          <label className="block text-xs font-semibold text-gray-700 mb-1">
             Empresa
           </label>
           <input

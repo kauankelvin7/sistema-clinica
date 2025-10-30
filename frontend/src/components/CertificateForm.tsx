@@ -2,11 +2,11 @@ import type { CertificateFormProps } from '../types'
 
 export default function CertificateForm({ formData, updateFormData }: CertificateFormProps) {
   return (
-    <div className="space-y-3.5">
+    <div className="space-y-2.5">
       {/* Data e Dias de Afastamento em linha */}
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+          <label className="block text-xs font-semibold text-gray-700 mb-1">
             Data
           </label>
           <input
@@ -18,7 +18,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+          <label className="block text-xs font-semibold text-gray-700 mb-1">
             Dias de Afastamento
           </label>
           <input
@@ -34,10 +34,10 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
 
       {/* CID */}
       <div>
-        <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+        <label className="block text-xs font-semibold text-gray-700 mb-1">
           CID
         </label>
-        <div className="flex gap-3 items-center">
+        <div className="flex gap-2 items-center">
           <input
             type="text"
             className="input-field flex-1"
@@ -49,12 +49,11 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
           <label className="flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
             <input
               type="checkbox"
-              className="w-4 h-4 rounded border-2 border-gray-300 text-primary-500 
-                       focus:ring-2 focus:ring-primary-300"
+              className="w-4 h-4 rounded border border-gray-300 text-primary-500"
               checked={formData.cidNaoInformado}
               onChange={(e) => updateFormData('cidNaoInformado', e.target.checked)}
             />
-            <span className="text-xs font-semibold text-gray-700">Não Informado</span>
+            <span className="text-xs font-medium text-gray-700">Não Informado</span>
           </label>
         </div>
       </div>

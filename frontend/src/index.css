@@ -4,45 +4,37 @@
 
 @layer base {
   body {
-    @apply bg-gradient-to-br from-primary-500 via-violet-500 to-pink-400 min-h-screen font-sans antialiased;
+    @apply bg-gradient-to-br from-primary-500 via-violet-500 to-pink-400 min-h-screen font-sans;
   }
 }
 
 @layer components {
   .input-field {
-    @apply w-full px-3.5 py-2.5 bg-white/90 border-2 border-gray-200 
-           rounded-xl text-gray-900 text-sm font-medium placeholder:text-gray-400
-           focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-200
-           hover:border-primary-300
-           transition-all duration-200;
+    @apply w-full px-3 py-2 bg-white border border-gray-300 
+           rounded-lg text-gray-900 text-sm placeholder:text-gray-400
+           focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500;
   }
 
   .btn-primary {
-    @apply px-6 py-2.5 bg-gradient-to-r from-primary-500 to-violet-500 text-white font-bold text-sm
-           rounded-xl shadow-md hover:shadow-lg hover:scale-105
-           transition-all duration-200 active:scale-95;
+    @apply px-5 py-2 bg-primary-500 text-white font-semibold text-sm
+           rounded-lg hover:bg-primary-600 active:bg-primary-700;
   }
 
   .btn-success {
-    @apply px-6 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-sm
-           rounded-xl shadow-md hover:shadow-lg hover:scale-105
-           transition-all duration-200 active:scale-95;
+    @apply px-5 py-2 bg-green-600 text-white font-semibold text-sm
+           rounded-lg hover:bg-green-700 active:bg-green-800;
   }
 
   .btn-danger {
-    @apply px-6 py-2.5 bg-gradient-to-r from-pink-400 to-rose-500 text-white font-bold text-sm
-           rounded-xl shadow-md hover:shadow-lg hover:scale-105
-           transition-all duration-200 active:scale-95;
+    @apply px-5 py-2 bg-rose-500 text-white font-semibold text-sm
+           rounded-lg hover:bg-rose-600 active:bg-rose-700;
   }
 
   .card {
-    @apply bg-white/95 backdrop-blur-sm border border-white/30 rounded-2xl p-5 
-           shadow-lg hover:shadow-xl
-           transition-all duration-200;
+    @apply bg-white/95 border border-gray-200 rounded-xl p-4;
   }
 
   .section-title {
-    @apply text-primary-500 text-xl font-bold tracking-tight pb-3 mb-4
-           border-b-2 border-primary-200;
+    @apply text-primary-600 text-lg font-bold pb-2 mb-3 border-b border-gray-200;
   }
 }
