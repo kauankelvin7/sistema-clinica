@@ -4,13 +4,12 @@ Sistema de Homologação de Atestados Médicos
 Autor: Kauan Kelvin
 Data: 30/10/2025
 
-Este módulo converte documentos DOCX para PDF usando docx2pdf (Windows/COM)
-ou reportlab como fallback multiplataforma.
+Este módulo converte documentos DOCX para PDF mantendo a formatação original.
+Prioriza docx2pdf (Windows COM) para preservação perfeita da formatação.
 """
 
 import os
 import logging
-from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -23,14 +22,17 @@ class PDFGenerationError(Exception):
 
 def convert_docx_to_pdf_com(docx_path: str) -> str:
     """
-    Converte DOCX para PDF usando Word COM automation (Windows apenas).
-    Preserva TODA formatação original.
+    Converte DOCX para PDF usando Word COM automation (Windows).
+    Preserva TODA formatação original do documento.
     
     Args:
         docx_path: Caminho do arquivo DOCX
         
     Returns:
         str: Caminho do arquivo PDF gerado
+        
+    Raises:
+        Exception: Se a conversão falhar
     """
     try:
         from docx2pdf import convert
@@ -38,191 +40,167 @@ def convert_docx_to_pdf_com(docx_path: str) -> str:
         # Caminho do PDF (mesmo nome, extensão .pdf)
         pdf_path = str(Path(docx_path).with_suffix('.pdf'))
         
-        # Converter usando Word COM
+        # Converter usando Word COM (preserva 100% da formatação)
+        logger.info(f"Convertendo DOCX para PDF via Word COM: {docx_path}")
         convert(docx_path, pdf_path)
         
-        logger.info(f"PDF gerado via Word COM: {pdf_path}")
+        if not os.path.exists(pdf_path):
+            raise PDFGenerationError("PDF não foi gerado corretamente")
+        
+        logger.info(f"✅ PDF gerado com sucesso via Word COM: {pdf_path}")
         return pdf_path
         
+    except ImportError:
+        logger.warning("Biblioteca docx2pdf não instalada")
+        raise PDFGenerationError("docx2pdf não está instalado. Execute: pip install docx2pdf")
     except Exception as e:
-        logger.warning(f"Erro ao usar docx2pdf: {e}")
-        raise
+        logger.error(f"Erro ao converter com docx2pdf: {e}")
+        raise PDFGenerationError(f"Erro na conversão COM: {e}")
 
 
-def convert_docx_to_pdf_reportlab(docx_path: str) -> str:
+def convert_docx_to_pdf_libreoffice(docx_path: str) -> str:
     """
-    Converte DOCX para PDF usando reportlab (multiplataforma).
-    Extrai texto e formatação básica do DOCX.
+    Converte DOCX para PDF usando LibreOffice (multiplataforma).
+    Boa preservação de formatação, funciona em Linux/Mac/Windows.
     
     Args:
         docx_path: Caminho do arquivo DOCX
         
     Returns:
         str: Caminho do arquivo PDF gerado
+        
+    Raises:
+        Exception: Se a conversão falhar
     """
     try:
-        from docx import Document
-        from reportlab.lib.pagesizes import A4
-        from reportlab.lib.units import cm
-        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-        from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT
-        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether
-        from reportlab.lib import colors
+        import subprocess
         
-        # Abrir DOCX
-        doc = Document(docx_path)
-        
-        # Caminho do PDF
+        # Caminho do PDF (mesmo diretório do DOCX)
         pdf_path = str(Path(docx_path).with_suffix('.pdf'))
+        output_dir = str(Path(docx_path).parent)
         
-        # Criar PDF
-        pdf_doc = SimpleDocTemplate(
-            pdf_path,
-            pagesize=A4,
-            rightMargin=2.5*cm,
-            leftMargin=2.5*cm,
-            topMargin=2.5*cm,
-            bottomMargin=2.5*cm
-        )
+        # Tentar encontrar LibreOffice
+        libreoffice_paths = [
+            'libreoffice',  # Linux/Mac
+            'soffice',      # Alternativa
+            r'C:\Program Files\LibreOffice\program\soffice.exe',  # Windows padrão
+            r'C:\Program Files (x86)\LibreOffice\program\soffice.exe',
+        ]
         
-        # Estilos
-        styles = getSampleStyleSheet()
-        
-        # Criar estilos customizados baseados no Word
-        style_title = ParagraphStyle(
-            'WordTitle',
-            parent=styles['Heading1'],
-            fontSize=14,
-            fontName='Helvetica-Bold',
-            alignment=TA_CENTER,
-            spaceAfter=20,
-            spaceBefore=10
-        )
-        
-        style_normal = ParagraphStyle(
-            'WordNormal',
-            parent=styles['Normal'],
-            fontSize=12,
-            fontName='Helvetica',
-            alignment=TA_JUSTIFY,
-            spaceAfter=12,
-            leading=16
-        )
-        
-        style_center = ParagraphStyle(
-            'WordCenter',
-            parent=styles['Normal'],
-            fontSize=12,
-            fontName='Helvetica',
-            alignment=TA_CENTER,
-            spaceAfter=12
-        )
-        
-        # Story (elementos do PDF)
-        story = []
-        
-        # Processar parágrafos do DOCX
-        for para in doc.paragraphs:
-            if not para.text.strip():
-                story.append(Spacer(1, 0.3*cm))
+        libreoffice_cmd = None
+        for cmd in libreoffice_paths:
+            try:
+                result = subprocess.run([cmd, '--version'], 
+                                       capture_output=True, 
+                                       timeout=5)
+                if result.returncode == 0:
+                    libreoffice_cmd = cmd
+                    logger.info(f"LibreOffice encontrado: {cmd}")
+                    break
+            except (FileNotFoundError, subprocess.TimeoutExpired):
                 continue
-            
-            # Detectar alinhamento
-            alignment = para.alignment
-            if alignment == 1:  # CENTER
-                style = style_center
-            elif alignment == 3:  # JUSTIFY
-                style = style_normal
-            else:
-                style = style_normal
-            
-            # Detectar se é título (negrito ou tamanho maior)
-            is_bold = any(run.bold for run in para.runs)
-            if is_bold and len(para.text) < 50:
-                style = style_title
-            
-            # Adicionar parágrafo
-            story.append(Paragraph(para.text, style))
         
-        # Processar tabelas do DOCX
-        for table in doc.tables:
-            table_data = []
-            for row in table.rows:
-                row_data = []
-                for cell in row.cells:
-                    cell_text = '\n'.join([p.text for p in cell.paragraphs])
-                    row_data.append(Paragraph(cell_text, style_center))
-                table_data.append(row_data)
-            
-            # Criar tabela no PDF
-            if table_data:
-                pdf_table = Table(table_data, colWidths=[15*cm])
-                pdf_table.setStyle(TableStyle([
-                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-                    ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-                    ('FONTSIZE', (0, 0), (-1, -1), 10),
-                    ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
-                    ('TOPPADDING', (0, 0), (-1, -1), 12),
-                    ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
-                ]))
-                story.append(pdf_table)
-                story.append(Spacer(1, 0.5*cm))
+        if not libreoffice_cmd:
+            raise PDFGenerationError("LibreOffice não encontrado no sistema")
         
-        # Construir PDF
-        pdf_doc.build(story)
+        # Converter para PDF
+        logger.info(f"Convertendo DOCX para PDF via LibreOffice: {docx_path}")
         
-        logger.info(f"PDF gerado via reportlab: {pdf_path}")
+        cmd = [
+            libreoffice_cmd,
+            '--headless',
+            '--convert-to', 'pdf',
+            '--outdir', output_dir,
+            docx_path
+        ]
+        
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        
+        if result.returncode != 0:
+            raise PDFGenerationError(f"LibreOffice retornou erro: {result.stderr}")
+        
+        if not os.path.exists(pdf_path):
+            raise PDFGenerationError("PDF não foi gerado pelo LibreOffice")
+        
+        logger.info(f"✅ PDF gerado com sucesso via LibreOffice: {pdf_path}")
         return pdf_path
         
+    except subprocess.TimeoutExpired:
+        raise PDFGenerationError("Timeout na conversão com LibreOffice")
     except Exception as e:
-        logger.error(f"Erro ao converter com reportlab: {e}")
-        raise
+        logger.error(f"Erro ao converter com LibreOffice: {e}")
+        raise PDFGenerationError(f"Erro na conversão LibreOffice: {e}")
 
 
 def generate_pdf_direct(data: dict, output_dir: Optional[str] = None) -> str:
     """
-    Gera PDF a partir de DOCX (mantém formatação original).
+    Gera PDF a partir dos dados do documento.
     
-    Fluxo:
-    1. Gera DOCX usando document_generator
-    2. Converte DOCX → PDF (preservando formatação)
+    Fluxo otimizado:
+    1. Gera DOCX usando document_generator (mantém formatação do template)
+    2. Converte DOCX → PDF preservando formatação
+    
+    Métodos de conversão (em ordem de prioridade):
+    1. docx2pdf (Windows COM) - Preservação perfeita
+    2. LibreOffice (multiplataforma) - Boa preservação
     
     Args:
         data: Dicionário com os dados do documento
-        output_dir: Diretório de saída
+        output_dir: Diretório de saída (opcional)
         
     Returns:
         str: Caminho do arquivo PDF gerado
+        
+    Raises:
+        PDFGenerationError: Se houver erro na geração
     """
     try:
         from core.document_generator import generate_document
         
-        # 1. Gerar DOCX primeiro
+        # 1. Gerar DOCX primeiro (usa template formatado)
+        logger.info("Gerando documento DOCX...")
         docx_path = generate_document(data)
+        
         if not docx_path or not os.path.exists(docx_path):
             raise PDFGenerationError("Falha ao gerar documento Word")
         
-        logger.info(f"DOCX gerado: {docx_path}")
+        logger.info(f"✅ DOCX gerado: {docx_path}")
         
-        # 2. Converter para PDF
-        # Tentar docx2pdf primeiro (Windows - preserva 100% formatação)
+        # 2. Converter DOCX para PDF
+        pdf_path = None
+        conversion_errors = []
+        
+        # Tentar método 1: docx2pdf (Windows COM - melhor qualidade)
         try:
+            logger.info("Tentando conversão via docx2pdf (Word COM)...")
             pdf_path = convert_docx_to_pdf_com(docx_path)
+            logger.info("✅ Conversão bem-sucedida via docx2pdf")
             return pdf_path
         except Exception as e:
-            logger.warning(f"docx2pdf falhou (tentando reportlab): {e}")
+            error_msg = f"docx2pdf falhou: {e}"
+            logger.warning(error_msg)
+            conversion_errors.append(error_msg)
         
-        # Fallback: reportlab (multiplataforma)
+        # Tentar método 2: LibreOffice (multiplataforma)
         try:
-            pdf_path = convert_docx_to_pdf_reportlab(docx_path)
+            logger.info("Tentando conversão via LibreOffice...")
+            pdf_path = convert_docx_to_pdf_libreoffice(docx_path)
+            logger.info("✅ Conversão bem-sucedida via LibreOffice")
             return pdf_path
         except Exception as e:
-            logger.error(f"Todas conversões falharam: {e}")
-            raise PDFGenerationError(f"Não foi possível converter para PDF: {e}")
+            error_msg = f"LibreOffice falhou: {e}"
+            logger.warning(error_msg)
+            conversion_errors.append(error_msg)
+        
+        # Se nenhum método funcionou
+        error_details = "; ".join(conversion_errors)
+        raise PDFGenerationError(
+            f"Não foi possível converter para PDF. Tentativas: {error_details}"
+        )
         
     except PDFGenerationError:
         raise
     except Exception as e:
         logger.error(f"Erro ao gerar PDF: {e}", exc_info=True)
-        raise PDFGenerationError(f"Erro ao gerar PDF: {e}")
+        raise PDFGenerationError(f"Erro inesperado ao gerar PDF: {e}")
+
