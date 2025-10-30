@@ -4,19 +4,16 @@ import RankingModal from './RankingModal'
 
 export default function Header() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    // ...existing code...
-  })
-  const [showRanking, setShowRanking] = useState(false)
     try {
-      const saved = localStorage.getItem('theme')
-      if (saved === 'dark') return 'dark'
-    } catch { }
-    // default: follow prefers-color-scheme
+      const saved = localStorage.getItem('theme');
+      if (saved === 'dark') return 'dark';
+    } catch {}
     if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark'
+      return 'dark';
     }
-    return 'light'
-  })
+    return 'light';
+  });
+  const [showRanking, setShowRanking] = useState(false);
 
   useEffect(() => {
     try {
