@@ -18,7 +18,8 @@ import logging
 # Adicionar diretório raiz ao path para importar módulos
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.database import get_db_connection, sanitizar_entrada
+from core.db_manager import get_db_connection, create_tables
+from core.database import sanitizar_entrada
 from core.document_generator import generate_document
 
 # Configurar logging
@@ -53,6 +54,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Criar tabelas no startup
+@app.on_event("startup")
+async def startup_event():
+    """Inicializa o banco de dados ao iniciar a aplicação"""
+    try:
+        create_tables()
+        logger.info("✅ Banco de dados inicializado com sucesso")
+    except Exception as e:
+        logger.error(f"❌ Erro ao inicializar banco: {e}")
 
 # Modelos Pydantic para validação de dados
 class PacienteData(BaseModel):
@@ -116,76 +127,149 @@ async def generate_document_endpoint(data: DocumentoRequest):
         
         # SALVAR PACIENTE NO BANCO DE DADOS
         try:
+            is_postgres = os.getenv('RENDER') or os.getenv('RAILWAY_ENVIRONMENT')
+            
             with get_db_connection() as conn:
-                cursor = conn.cursor()
-                
-                # Verificar se paciente já existe
-                cursor.execute(
-                    "SELECT id FROM pacientes WHERE numero_doc = ?",
-                    (sanitizar_entrada(data.paciente.numero_documento),)
-                )
-                paciente_existente = cursor.fetchone()
-                
-                if not paciente_existente:
-                    # Inserir novo paciente
-                    cursor.execute("""
-                        INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, cargo, empresa)
-                        VALUES (?, ?, ?, ?, ?)
-                    """, (
-                        sanitizar_entrada(data.paciente.nome),
-                        sanitizar_entrada(data.paciente.tipo_documento),
-                        sanitizar_entrada(data.paciente.numero_documento),
-                        sanitizar_entrada(data.paciente.cargo),
-                        sanitizar_entrada(data.paciente.empresa)
-                    ))
-                    logger.info(f"Paciente salvo: {data.paciente.nome}")
+                if is_postgres:
+                    # PostgreSQL
+                    from sqlalchemy import text
+                    
+                    # Verificar paciente
+                    result = conn.execute(text("""
+                        SELECT id FROM pacientes WHERE numero_doc = :numero_doc
+                    """), {"numero_doc": sanitizar_entrada(data.paciente.numero_documento)})
+                    paciente_existente = result.fetchone()
+                    
+                    if not paciente_existente:
+                        conn.execute(text("""
+                            INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, cargo, empresa)
+                            VALUES (:nome, :tipo_doc, :numero_doc, :cargo, :empresa)
+                        """), {
+                            "nome": sanitizar_entrada(data.paciente.nome),
+                            "tipo_doc": sanitizar_entrada(data.paciente.tipo_documento),
+                            "numero_doc": sanitizar_entrada(data.paciente.numero_documento),
+                            "cargo": sanitizar_entrada(data.paciente.cargo),
+                            "empresa": sanitizar_entrada(data.paciente.empresa)
+                        })
+                        logger.info(f"Paciente salvo: {data.paciente.nome}")
+                    else:
+                        conn.execute(text("""
+                            UPDATE pacientes 
+                            SET nome_completo = :nome, tipo_doc = :tipo_doc, cargo = :cargo, empresa = :empresa
+                            WHERE numero_doc = :numero_doc
+                        """), {
+                            "nome": sanitizar_entrada(data.paciente.nome),
+                            "tipo_doc": sanitizar_entrada(data.paciente.tipo_documento),
+                            "cargo": sanitizar_entrada(data.paciente.cargo),
+                            "empresa": sanitizar_entrada(data.paciente.empresa),
+                            "numero_doc": sanitizar_entrada(data.paciente.numero_documento)
+                        })
+                        logger.info(f"Paciente atualizado: {data.paciente.nome}")
+                    
+                    # Verificar médico
+                    result = conn.execute(text("""
+                        SELECT id FROM medicos WHERE crm = :crm AND tipo_crm = :tipo_crm
+                    """), {
+                        "crm": sanitizar_entrada(data.medico.numero_registro),
+                        "tipo_crm": sanitizar_entrada(data.medico.tipo_registro)
+                    })
+                    medico_existente = result.fetchone()
+                    
+                    if not medico_existente:
+                        conn.execute(text("""
+                            INSERT INTO medicos (nome_completo, tipo_crm, crm, uf_crm)
+                            VALUES (:nome, :tipo_crm, :crm, :uf_crm)
+                        """), {
+                            "nome": sanitizar_entrada(data.medico.nome),
+                            "tipo_crm": sanitizar_entrada(data.medico.tipo_registro),
+                            "crm": sanitizar_entrada(data.medico.numero_registro),
+                            "uf_crm": sanitizar_entrada(data.medico.uf_registro)
+                        })
+                        logger.info(f"Médico salvo: {data.medico.nome}")
+                    else:
+                        conn.execute(text("""
+                            UPDATE medicos 
+                            SET nome_completo = :nome, uf_crm = :uf_crm
+                            WHERE crm = :crm AND tipo_crm = :tipo_crm
+                        """), {
+                            "nome": sanitizar_entrada(data.medico.nome),
+                            "uf_crm": sanitizar_entrada(data.medico.uf_registro),
+                            "crm": sanitizar_entrada(data.medico.numero_registro),
+                            "tipo_crm": sanitizar_entrada(data.medico.tipo_registro)
+                        })
+                        logger.info(f"Médico atualizado: {data.medico.nome}")
+                    
+                    conn.commit()
+                    
                 else:
-                    # Atualizar dados do paciente
-                    cursor.execute("""
-                        UPDATE pacientes 
-                        SET nome_completo = ?, tipo_doc = ?, cargo = ?, empresa = ?
-                        WHERE numero_doc = ?
-                    """, (
-                        sanitizar_entrada(data.paciente.nome),
-                        sanitizar_entrada(data.paciente.tipo_documento),
-                        sanitizar_entrada(data.paciente.cargo),
-                        sanitizar_entrada(data.paciente.empresa),
-                        sanitizar_entrada(data.paciente.numero_documento)
-                    ))
-                    logger.info(f"Paciente atualizado: {data.paciente.nome}")
-                
-                # SALVAR MÉDICO NO BANCO DE DADOS
-                cursor.execute(
-                    "SELECT id FROM medicos WHERE crm = ? AND tipo_crm = ?",
-                    (sanitizar_entrada(data.medico.numero_registro), sanitizar_entrada(data.medico.tipo_registro))
-                )
-                medico_existente = cursor.fetchone()
-                
-                if not medico_existente:
-                    # Inserir novo médico
-                    cursor.execute("""
-                        INSERT INTO medicos (nome_completo, tipo_crm, crm, uf_crm)
-                        VALUES (?, ?, ?, ?)
-                    """, (
-                        sanitizar_entrada(data.medico.nome),
-                        sanitizar_entrada(data.medico.tipo_registro),
-                        sanitizar_entrada(data.medico.numero_registro),
-                        sanitizar_entrada(data.medico.uf_registro)
-                    ))
-                    logger.info(f"Médico salvo: {data.medico.nome}")
-                else:
-                    # Atualizar dados do médico
-                    cursor.execute("""
-                        UPDATE medicos 
-                        SET nome_completo = ?, uf_crm = ?
-                        WHERE crm = ? AND tipo_crm = ?
-                    """, (
-                        sanitizar_entrada(data.medico.nome),
-                        sanitizar_entrada(data.medico.uf_registro),
-                        sanitizar_entrada(data.medico.numero_registro),
-                        sanitizar_entrada(data.medico.tipo_registro)
-                    ))
-                    logger.info(f"Médico atualizado: {data.medico.nome}")
+                    # SQLite
+                    cursor = conn.cursor()
+                    
+                    # Verificar paciente
+                    cursor.execute(
+                        "SELECT id FROM pacientes WHERE numero_doc = ?",
+                        (sanitizar_entrada(data.paciente.numero_documento),)
+                    )
+                    paciente_existente = cursor.fetchone()
+                    
+                    if not paciente_existente:
+                        cursor.execute("""
+                            INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, cargo, empresa)
+                            VALUES (?, ?, ?, ?, ?)
+                        """, (
+                            sanitizar_entrada(data.paciente.nome),
+                            sanitizar_entrada(data.paciente.tipo_documento),
+                            sanitizar_entrada(data.paciente.numero_documento),
+                            sanitizar_entrada(data.paciente.cargo),
+                            sanitizar_entrada(data.paciente.empresa)
+                        ))
+                        logger.info(f"Paciente salvo: {data.paciente.nome}")
+                    else:
+                        cursor.execute("""
+                            UPDATE pacientes 
+                            SET nome_completo = ?, tipo_doc = ?, cargo = ?, empresa = ?
+                            WHERE numero_doc = ?
+                        """, (
+                            sanitizar_entrada(data.paciente.nome),
+                            sanitizar_entrada(data.paciente.tipo_documento),
+                            sanitizar_entrada(data.paciente.cargo),
+                            sanitizar_entrada(data.paciente.empresa),
+                            sanitizar_entrada(data.paciente.numero_documento)
+                        ))
+                        logger.info(f"Paciente atualizado: {data.paciente.nome}")
+                    
+                    # Verificar médico
+                    cursor.execute(
+                        "SELECT id FROM medicos WHERE crm = ? AND tipo_crm = ?",
+                        (sanitizar_entrada(data.medico.numero_registro), sanitizar_entrada(data.medico.tipo_registro))
+                    )
+                    medico_existente = cursor.fetchone()
+                    
+                    if not medico_existente:
+                        cursor.execute("""
+                            INSERT INTO medicos (nome_completo, tipo_crm, crm, uf_crm)
+                            VALUES (?, ?, ?, ?)
+                        """, (
+                            sanitizar_entrada(data.medico.nome),
+                            sanitizar_entrada(data.medico.tipo_registro),
+                            sanitizar_entrada(data.medico.numero_registro),
+                            sanitizar_entrada(data.medico.uf_registro)
+                        ))
+                        logger.info(f"Médico salvo: {data.medico.nome}")
+                    else:
+                        cursor.execute("""
+                            UPDATE medicos 
+                            SET nome_completo = ?, uf_crm = ?
+                            WHERE crm = ? AND tipo_crm = ?
+                        """, (
+                            sanitizar_entrada(data.medico.nome),
+                            sanitizar_entrada(data.medico.uf_registro),
+                            sanitizar_entrada(data.medico.numero_registro),
+                            sanitizar_entrada(data.medico.tipo_registro)
+                        ))
+                        logger.info(f"Médico atualizado: {data.medico.nome}")
+                    
+                    conn.commit()
                 
                 conn.commit()
             
@@ -238,37 +322,72 @@ async def get_patients(search: Optional[str] = None):
     Busca pacientes no banco de dados
     """
     try:
+        # Detectar se está usando PostgreSQL
+        is_postgres = os.getenv('RENDER') or os.getenv('RAILWAY_ENVIRONMENT')
+        
         with get_db_connection() as conn:
-            cursor = conn.cursor()
-            
-            if search:
-                query = """
-                    SELECT id, nome_completo, tipo_doc, numero_doc, cargo, empresa
-                    FROM pacientes 
-                    WHERE nome_completo LIKE ? OR numero_doc LIKE ?
-                    ORDER BY nome_completo
-                    LIMIT 50
-                """
-                cursor.execute(query, (f"%{search}%", f"%{search}%"))
+            if is_postgres:
+                # PostgreSQL - usar named parameters
+                from sqlalchemy import text
+                if search:
+                    query = text("""
+                        SELECT id, nome_completo, tipo_doc, numero_doc, cargo, empresa
+                        FROM pacientes 
+                        WHERE nome_completo ILIKE :search OR numero_doc LIKE :search
+                        ORDER BY nome_completo
+                        LIMIT 50
+                    """)
+                    result = conn.execute(query, {"search": f"%{search}%"})
+                else:
+                    query = text("""
+                        SELECT id, nome_completo, tipo_doc, numero_doc, cargo, empresa
+                        FROM pacientes 
+                        ORDER BY data_criacao DESC
+                        LIMIT 50
+                    """)
+                    result = conn.execute(query)
+                
+                pacientes = []
+                for row in result:
+                    pacientes.append({
+                        "id": row[0],
+                        "nome_completo": row[1],
+                        "tipo_doc": row[2],
+                        "numero_doc": row[3],
+                        "cargo": row[4] or "",
+                        "empresa": row[5] or ""
+                    })
             else:
-                query = """
-                    SELECT id, nome_completo, tipo_doc, numero_doc, cargo, empresa
-                    FROM pacientes 
-                    ORDER BY data_criacao DESC
-                    LIMIT 50
-                """
-                cursor.execute(query)
-            
-            pacientes = []
-            for row in cursor.fetchall():
-                pacientes.append({
-                    "id": row[0],
-                    "nome_completo": row[1],
-                    "tipo_doc": row[2],
-                    "numero_doc": row[3],
-                    "cargo": row[4] or "",
-                    "empresa": row[5] or ""
-                })
+                # SQLite - usar ? placeholders
+                cursor = conn.cursor()
+                if search:
+                    query = """
+                        SELECT id, nome_completo, tipo_doc, numero_doc, cargo, empresa
+                        FROM pacientes 
+                        WHERE nome_completo LIKE ? OR numero_doc LIKE ?
+                        ORDER BY nome_completo
+                        LIMIT 50
+                    """
+                    cursor.execute(query, (f"%{search}%", f"%{search}%"))
+                else:
+                    query = """
+                        SELECT id, nome_completo, tipo_doc, numero_doc, cargo, empresa
+                        FROM pacientes 
+                        ORDER BY data_criacao DESC
+                        LIMIT 50
+                    """
+                    cursor.execute(query)
+                
+                pacientes = []
+                for row in cursor.fetchall():
+                    pacientes.append({
+                        "id": row[0],
+                        "nome_completo": row[1],
+                        "tipo_doc": row[2],
+                        "numero_doc": row[3],
+                        "cargo": row[4] or "",
+                        "empresa": row[5] or ""
+                    })
         
         return pacientes
         
@@ -282,38 +401,71 @@ async def get_doctors(search: Optional[str] = None):
     Busca médicos no banco de dados
     """
     try:
-        with get_db_connection() as conn:
-            cursor = conn.cursor()
-            
-            if search:
-                query = """
-                    SELECT id, nome_completo, tipo_crm, crm, uf_crm
-                    FROM medicos 
-                    WHERE nome_completo LIKE ? OR crm LIKE ?
-                    ORDER BY nome_completo
-                    LIMIT 50
-                """
-                cursor.execute(query, (f"%{search}%", f"%{search}%"))
-            else:
-                query = """
-                    SELECT id, nome_completo, tipo_crm, crm, uf_crm
-                    FROM medicos 
-                    ORDER BY data_criacao DESC
-                    LIMIT 50
-                """
-                cursor.execute(query)
-            
-            medicos = []
-            for row in cursor.fetchall():
-                medicos.append({
-                    "id": row[0],
-                    "nome_completo": row[1],
-                    "tipo_crm": row[2],
-                    "crm": row[3],
-                    "uf_crm": row[4]
-                })
+        # Detectar se está usando PostgreSQL
+        is_postgres = os.getenv('RENDER') or os.getenv('RAILWAY_ENVIRONMENT')
         
-        return medicos
+        with get_db_connection() as conn:
+            if is_postgres:
+                # PostgreSQL - usar named parameters
+                from sqlalchemy import text
+                if search:
+                    query = text("""
+                        SELECT id, nome_completo, tipo_crm, crm, uf_crm
+                        FROM medicos 
+                        WHERE nome_completo ILIKE :search OR crm LIKE :search
+                        ORDER BY nome_completo
+                        LIMIT 50
+                    """)
+                    result = conn.execute(query, {"search": f"%{search}%"})
+                else:
+                    query = text("""
+                        SELECT id, nome_completo, tipo_crm, crm, uf_crm
+                        FROM medicos 
+                        ORDER BY data_criacao DESC
+                        LIMIT 50
+                    """)
+                    result = conn.execute(query)
+                
+                medicos = []
+                for row in result:
+                    medicos.append({
+                        "id": row[0],
+                        "nome_completo": row[1],
+                        "tipo_crm": row[2],
+                        "crm": row[3],
+                        "uf_crm": row[4]
+                    })
+            else:
+                # SQLite - usar ? placeholders
+                cursor = conn.cursor()
+                if search:
+                    query = """
+                        SELECT id, nome_completo, tipo_crm, crm, uf_crm
+                        FROM medicos 
+                        WHERE nome_completo LIKE ? OR crm LIKE ?
+                        ORDER BY nome_completo
+                        LIMIT 50
+                    """
+                    cursor.execute(query, (f"%{search}%", f"%{search}%"))
+                else:
+                    query = """
+                        SELECT id, nome_completo, tipo_crm, crm, uf_crm
+                        FROM medicos 
+                        ORDER BY data_criacao DESC
+                        LIMIT 50
+                    """
+                    cursor.execute(query)
+                
+                medicos = []
+                for row in cursor.fetchall():
+                    medicos.append({
+                        "id": row[0],
+                        "nome_completo": row[1],
+                        "tipo_crm": row[2],
+                        "crm": row[3],
+                        "uf_crm": row[4]
+                    })
+        
         return medicos
         
     except Exception as e:
