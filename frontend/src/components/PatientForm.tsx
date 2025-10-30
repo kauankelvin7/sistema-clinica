@@ -11,19 +11,19 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
   }
 
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-4">
       {/* Busca de Paciente */}
       <PatientSearch onSelect={handleLoadPatient} />
 
       {/* Nome Completo */}
       <div>
-        <label className="block text-xs font-semibold text-gray-700 mb-1">
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
           Nome Completo
         </label>
         <input
           type="text"
           className="input-field"
-          placeholder="Digite o nome completo"
+          placeholder="Digite o nome completo do paciente"
           value={formData.nomePaciente}
           onChange={(e) => updateFormData('nomePaciente', e.target.value)}
         />
@@ -31,12 +31,12 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
 
       {/* Documento (CPF/RG) */}
       <div>
-        <label className="block text-xs font-semibold text-gray-700 mb-1">
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
           Documento
         </label>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <select
-            className="input-field w-20"
+            className="input-field w-24"
             value={formData.tipoDocumento}
             onChange={(e) => updateFormData('tipoDocumento', e.target.value)}
           >
@@ -54,22 +54,22 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
       </div>
 
       {/* Cargo e Empresa em linha */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
         <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
             Cargo
           </label>
           <input
             type="text"
             className="input-field"
-            placeholder="Ex: Analista"
+            placeholder="Ex: Analista de Sistemas"
             value={formData.cargo}
             onChange={(e) => updateFormData('cargo', e.target.value)}
           />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
             Empresa
           </label>
           <input

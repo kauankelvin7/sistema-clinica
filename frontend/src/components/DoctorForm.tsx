@@ -29,19 +29,19 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
   }
 
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-4">
       {/* Busca de Médico */}
       <DoctorSearch onSelect={handleLoadDoctor} />
 
       {/* Nome Completo */}
       <div>
-        <label className="block text-xs font-semibold text-gray-700 mb-1">
-          Nome Completo
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Nome Completo do Médico
         </label>
         <input
           type="text"
           className="input-field"
-          placeholder="Digite o nome completo"
+          placeholder="Digite o nome completo do profissional"
           value={formData.nomeMedico}
           onChange={(e) => updateFormData('nomeMedico', e.target.value)}
         />
@@ -49,13 +49,13 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
 
       {/* Registro Profissional */}
       <div>
-        <label className="block text-xs font-semibold text-gray-700 mb-1">
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
           Registro Profissional
         </label>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-3">
           {/* Tipo */}
           <select
-            className="input-field w-20"
+            className="input-field sm:w-28"
             value={formData.tipoRegistro}
             onChange={(e) => updateFormData('tipoRegistro', e.target.value)}
           >
@@ -68,14 +68,14 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
           <input
             type="text"
             className="input-field flex-1"
-            placeholder="Número"
+            placeholder="Número do registro"
             value={formData.numeroRegistro}
             onChange={(e) => updateFormData('numeroRegistro', e.target.value)}
           />
 
           {/* UF */}
           <select
-            className="input-field w-16"
+            className="input-field sm:w-20"
             value={formData.ufRegistro}
             onChange={(e) => updateFormData('ufRegistro', e.target.value)}
           >
@@ -88,12 +88,10 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
           <button
             type="button"
             onClick={handleConsultar}
-            className="px-3 py-2 bg-orange-500 text-white font-semibold text-xs
-                     rounded-lg hover:bg-orange-600 active:bg-orange-700
-                     flex items-center gap-1 whitespace-nowrap"
+            className="px-4 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold text-sm rounded-xl shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/30 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 whitespace-nowrap"
           >
-            Consultar
-            <ExternalLink className="w-3 h-3" />
+            <span>Consultar</span>
+            <ExternalLink className="w-4 h-4" />
           </button>
         </div>
       </div>

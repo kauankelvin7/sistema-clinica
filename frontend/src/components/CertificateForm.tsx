@@ -2,12 +2,12 @@ import type { CertificateFormProps } from '../types'
 
 export default function CertificateForm({ formData, updateFormData }: CertificateFormProps) {
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-4">
       {/* Data e Dias de Afastamento em linha */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
         <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">
-            Data
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Data do Atestado
           </label>
           <input
             type="date"
@@ -18,13 +18,13 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
             Dias de Afastamento
           </label>
           <input
             type="number"
             className="input-field"
-            placeholder="Ex: 3"
+            placeholder="Ex: 3 dias"
             min="1"
             value={formData.diasAfastamento}
             onChange={(e) => updateFormData('diasAfastamento', e.target.value)}
@@ -34,26 +34,26 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
 
       {/* CID */}
       <div>
-        <label className="block text-xs font-semibold text-gray-700 mb-1">
-          CID
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Código CID (Classificação Internacional de Doenças)
         </label>
-        <div className="flex gap-2 items-center">
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
           <input
             type="text"
-            className="input-field flex-1"
+            className="input-field flex-1 w-full"
             placeholder="Ex: A00, F32.9, J06.9"
             disabled={formData.cidNaoInformado}
             value={formData.cidNaoInformado ? '' : formData.cid}
             onChange={(e) => updateFormData('cid', e.target.value)}
           />
-          <label className="flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
+          <label className="flex items-center gap-2 cursor-pointer whitespace-nowrap px-2">
             <input
               type="checkbox"
-              className="w-4 h-4 rounded border border-gray-300 text-primary-500"
+              className="w-4 h-4 rounded border-2 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500/20"
               checked={formData.cidNaoInformado}
               onChange={(e) => updateFormData('cidNaoInformado', e.target.checked)}
             />
-            <span className="text-xs font-medium text-gray-700">Não Informado</span>
+            <span className="text-sm font-medium text-gray-700">Não Informado</span>
           </label>
         </div>
       </div>
