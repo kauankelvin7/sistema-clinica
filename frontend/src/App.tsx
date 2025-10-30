@@ -151,47 +151,47 @@ function App() {
 
         {/* Container Principal */}
         <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-200 dark:border-slate-700 shadow-xl dark:shadow-none transition-colors duration-500">
-          <div className="space-y-6 md:space-y-8 p-6 sm:p-8 md:p-10">
-            
-            {/* Seção: Dados do Paciente */}
-            <div className="card dark:bg-slate-800 dark:border-slate-700 dark:shadow-none">
-              <div className="flex items-center gap-4 mb-5">
-                <div className="w-12 h-12 bg-blue-600 dark:bg-blue-800 rounded-2xl flex items-center justify-center shadow-md dark:shadow-blue-900/30">
-                  <User className="w-6 h-6 text-white" />
+          <div className="p-4 sm:p-6 md:p-8">
+            <div className="grid gap-6 md:gap-8 lg:grid-cols-3">
+              {/* Seção: Dados do Paciente */}
+              <div className="card dark:bg-slate-800 dark:border-slate-700 dark:shadow-none">
+                <div className="flex items-center gap-4 mb-5">
+                  <div className="w-12 h-12 bg-blue-600 dark:bg-blue-800 rounded-2xl flex items-center justify-center shadow-md dark:shadow-blue-900/30">
+                    <User className="w-6 h-6 text-white" />
+                  </div>
+                  <h2 className="text-gray-800 dark:text-slate-100 text-lg md:text-xl font-bold">Dados do Paciente</h2>
                 </div>
-                <h2 className="text-gray-800 dark:text-slate-100 text-lg md:text-xl font-bold">Dados do Paciente</h2>
+                <PatientForm formData={formData} updateFormData={updateFormData} />
               </div>
-              <PatientForm formData={formData} updateFormData={updateFormData} />
-            </div>
-
-            {/* Seção: Dados do Atestado */}
-            <div className="card dark:bg-slate-800 dark:border-slate-700 dark:shadow-none">
-              <div className="flex items-center gap-4 mb-5">
-                <div className="w-12 h-12 bg-blue-600 dark:bg-blue-800 rounded-2xl flex items-center justify-center shadow-md dark:shadow-blue-900/30">
-                  <FileText className="w-6 h-6 text-white" />
+              {/* Seção: Dados do Atestado */}
+              <div className="card dark:bg-slate-800 dark:border-slate-700 dark:shadow-none">
+                <div className="flex items-center gap-4 mb-5">
+                  <div className="w-12 h-12 bg-blue-600 dark:bg-blue-800 rounded-2xl flex items-center justify-center shadow-md dark:shadow-blue-900/30">
+                    <FileText className="w-6 h-6 text-white" />
+                  </div>
+                  <h2 className="text-gray-800 dark:text-slate-100 text-lg md:text-xl font-bold">Dados do Atestado</h2>
                 </div>
-                <h2 className="text-gray-800 dark:text-slate-100 text-lg md:text-xl font-bold">Dados do Atestado</h2>
+                <CertificateForm formData={formData} updateFormData={updateFormData} />
               </div>
-              <CertificateForm formData={formData} updateFormData={updateFormData} />
-            </div>
-
-            {/* Seção: Dados do Médico */}
-            <div className="card dark:bg-slate-800 dark:border-slate-700 dark:shadow-none">
-              <div className="flex items-center gap-4 mb-5">
-                <div className="w-12 h-12 bg-blue-600 dark:bg-blue-800 rounded-2xl flex items-center justify-center shadow-md dark:shadow-blue-900/30">
-                  <Stethoscope className="w-6 h-6 text-white" />
+              {/* Seção: Dados do Médico */}
+              <div className="card dark:bg-slate-800 dark:border-slate-700 dark:shadow-none">
+                <div className="flex items-center gap-4 mb-5">
+                  <div className="w-12 h-12 bg-blue-600 dark:bg-blue-800 rounded-2xl flex items-center justify-center shadow-md dark:shadow-blue-900/30">
+                    <Stethoscope className="w-6 h-6 text-white" />
+                  </div>
+                  <h2 className="text-gray-800 dark:text-slate-100 text-lg md:text-xl font-bold">Dados do Médico</h2>
                 </div>
-                <h2 className="text-gray-800 dark:text-slate-100 text-lg md:text-xl font-bold">Dados do Médico</h2>
+                <DoctorForm formData={formData} updateFormData={updateFormData} />
               </div>
-              <DoctorForm formData={formData} updateFormData={updateFormData} />
             </div>
-
             {/* Botões de Ação */}
-            <ActionButtons 
-              onGenerateWord={handleGenerateWord} 
-              onClear={handleClear}
-              loading={loading}
-            />
+            <div className="mt-8">
+              <ActionButtons 
+                onGenerateWord={handleGenerateWord} 
+                onClear={handleClear}
+                loading={loading}
+              />
+            </div>
           </div>
         </div>
 
