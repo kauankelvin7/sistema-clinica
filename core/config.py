@@ -10,6 +10,9 @@ import logging
 from pathlib import Path
 
 # ===== DETECÇÃO DE AMBIENTE =====
+# Detectar se está em produção (Render, Railway, Vercel)
+IS_PRODUCTION = os.getenv('RENDER') or os.getenv('RAILWAY_ENVIRONMENT') or os.getenv('VERCEL')
+
 def is_frozen():
     """Detecta se está rodando como executável PyInstaller"""
     return getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
