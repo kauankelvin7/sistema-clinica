@@ -19,9 +19,27 @@ export interface FormData {
   ufRegistro: string
 }
 
+export interface Paciente {
+  id: number
+  nome_completo: string
+  tipo_doc: string
+  numero_doc: string
+  cargo: string
+  empresa: string
+}
+
+export interface Medico {
+  id: number
+  nome_completo: string
+  tipo_crm: string
+  crm: string
+  uf_crm: string
+}
+
 export interface PatientFormProps {
   formData: FormData
   updateFormData: (field: keyof FormData, value: string | boolean) => void
+  onLoadPatient?: (patient: Paciente) => void
 }
 
 export interface CertificateFormProps {
@@ -32,6 +50,7 @@ export interface CertificateFormProps {
 export interface DoctorFormProps {
   formData: FormData
   updateFormData: (field: keyof FormData, value: string | boolean) => void
+  onLoadDoctor?: (doctor: Medico) => void
 }
 
 export interface ActionButtonsProps {

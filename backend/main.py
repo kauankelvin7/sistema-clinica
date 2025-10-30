@@ -232,89 +232,88 @@ async def generate_document_endpoint(data: DocumentoRequest):
         logger.error(f"Erro ao gerar documento: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erro ao gerar documento: {str(e)}")
 
-@app.get("/api/patients", response_model=List[PacienteResponse])
+@app.get("/api/patients")
 async def get_patients(search: Optional[str] = None):
     """
     Busca pacientes no banco de dados
     """
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            
+            if search:
+                query = """
+                    SELECT id, nome_completo, tipo_doc, numero_doc, cargo, empresa
+                    FROM pacientes 
+                    WHERE nome_completo LIKE ? OR numero_doc LIKE ?
+                    ORDER BY nome_completo
+                    LIMIT 50
+                """
+                cursor.execute(query, (f"%{search}%", f"%{search}%"))
+            else:
+                query = """
+                    SELECT id, nome_completo, tipo_doc, numero_doc, cargo, empresa
+                    FROM pacientes 
+                    ORDER BY data_criacao DESC
+                    LIMIT 50
+                """
+                cursor.execute(query)
+            
+            pacientes = []
+            for row in cursor.fetchall():
+                pacientes.append({
+                    "id": row[0],
+                    "nome_completo": row[1],
+                    "tipo_doc": row[2],
+                    "numero_doc": row[3],
+                    "cargo": row[4] or "",
+                    "empresa": row[5] or ""
+                })
         
-        if search:
-            query = """
-                SELECT id, nome, tipo_documento, numero_documento, cargo, empresa
-                FROM pacientes 
-                WHERE nome LIKE ? OR numero_documento LIKE ?
-                ORDER BY nome
-                LIMIT 50
-            """
-            cursor.execute(query, (f"%{search}%", f"%{search}%"))
-        else:
-            query = """
-                SELECT id, nome, tipo_documento, numero_documento, cargo, empresa
-                FROM pacientes 
-                ORDER BY nome DESC
-                LIMIT 50
-            """
-            cursor.execute(query)
-        
-        pacientes = []
-        for row in cursor.fetchall():
-            pacientes.append(PacienteResponse(
-                id=row[0],
-                nome=row[1],
-                tipo_documento=row[2],
-                numero_documento=row[3],
-                cargo=row[4],
-                empresa=row[5]
-            ))
-        
-        conn.close()
         return pacientes
         
     except Exception as e:
         logger.error(f"Erro ao buscar pacientes: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erro ao buscar pacientes: {str(e)}")
 
-@app.get("/api/doctors", response_model=List[MedicoResponse])
+@app.get("/api/doctors")
 async def get_doctors(search: Optional[str] = None):
     """
     Busca médicos no banco de dados
     """
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            
+            if search:
+                query = """
+                    SELECT id, nome_completo, tipo_crm, crm, uf_crm
+                    FROM medicos 
+                    WHERE nome_completo LIKE ? OR crm LIKE ?
+                    ORDER BY nome_completo
+                    LIMIT 50
+                """
+                cursor.execute(query, (f"%{search}%", f"%{search}%"))
+            else:
+                query = """
+                    SELECT id, nome_completo, tipo_crm, crm, uf_crm
+                    FROM medicos 
+                    ORDER BY data_criacao DESC
+                    LIMIT 50
+                """
+                cursor.execute(query)
+            
+            medicos = []
+            for row in cursor.fetchall():
+                medicos.append({
+                    "id": row[0],
+                    "nome_completo": row[1],
+                    "tipo_crm": row[2],
+                    "crm": row[3],
+                    "uf_crm": row[4]
+                })
         
-        if search:
-            query = """
-                SELECT id, nome, tipo_registro, numero_registro, uf_registro
-                FROM medicos 
-                WHERE nome LIKE ? OR numero_registro LIKE ?
-                ORDER BY nome
-                LIMIT 50
-            """
-            cursor.execute(query, (f"%{search}%", f"%{search}%"))
-        else:
-            query = """
-                SELECT id, nome, tipo_registro, numero_registro, uf_registro
-                FROM medicos 
-                ORDER BY nome DESC
-                LIMIT 50
-            """
-            cursor.execute(query)
-        
-        medicos = []
-        for row in cursor.fetchall():
-            medicos.append(MedicoResponse(
-                id=row[0],
-                nome=row[1],
-                tipo_registro=row[2],
-                numero_registro=row[3],
-                uf_registro=row[4]
-            ))
-        
-        conn.close()
+        return medicos
         return medicos
         
     except Exception as e:

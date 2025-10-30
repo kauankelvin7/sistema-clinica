@@ -1,5 +1,6 @@
 import { ExternalLink } from 'lucide-react'
-import type { DoctorFormProps } from '../types'
+import type { DoctorFormProps, Medico } from '../types'
+import DoctorSearch from './DoctorSearch'
 
 const UFS = [
   'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
@@ -8,6 +9,13 @@ const UFS = [
 ]
 
 export default function DoctorForm({ formData, updateFormData }: DoctorFormProps) {
+  const handleLoadDoctor = (doctor: Medico) => {
+    updateFormData('nomeMedico', doctor.nome_completo)
+    updateFormData('tipoRegistro', doctor.tipo_crm)
+    updateFormData('numeroRegistro', doctor.crm)
+    updateFormData('ufRegistro', doctor.uf_crm)
+  }
+
   const handleConsultar = () => {
     const urls: Record<string, string> = {
       CRM: 'https://portal.cfm.org.br/busca-medicos/',
@@ -22,6 +30,9 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
 
   return (
     <div className="space-y-2.5">
+      {/* Busca de Médico */}
+      <DoctorSearch onSelect={handleLoadDoctor} />
+
       {/* Nome Completo */}
       <div>
         <label className="block text-xs font-semibold text-gray-700 mb-1">

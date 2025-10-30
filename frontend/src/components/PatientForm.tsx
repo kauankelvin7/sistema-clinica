@@ -1,8 +1,20 @@
-import type { PatientFormProps } from '../types'
+import type { PatientFormProps, Paciente } from '../types'
+import PatientSearch from './PatientSearch'
 
 export default function PatientForm({ formData, updateFormData }: PatientFormProps) {
+  const handleLoadPatient = (patient: Paciente) => {
+    updateFormData('nomePaciente', patient.nome_completo)
+    updateFormData('tipoDocumento', patient.tipo_doc)
+    updateFormData('numeroDocumento', patient.numero_doc)
+    updateFormData('cargo', patient.cargo || '')
+    updateFormData('empresa', patient.empresa || '')
+  }
+
   return (
     <div className="space-y-2.5">
+      {/* Busca de Paciente */}
+      <PatientSearch onSelect={handleLoadPatient} />
+
       {/* Nome Completo */}
       <div>
         <label className="block text-xs font-semibold text-gray-700 mb-1">
