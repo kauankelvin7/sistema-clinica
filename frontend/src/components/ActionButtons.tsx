@@ -6,7 +6,7 @@ export default function ActionButtons({ onGenerateWord, onGeneratePDF, onClear, 
     <div className="flex gap-2 pt-2">
       <button
         onClick={onGenerateWord}
-        disabled={loading}
+        disabled={!!loading}
         className="btn-success flex-1 flex items-center justify-center gap-2 disabled:opacity-50"
       >
         {loading === 'word' ? (
@@ -24,7 +24,7 @@ export default function ActionButtons({ onGenerateWord, onGeneratePDF, onClear, 
 
       <button
         onClick={onGeneratePDF}
-        disabled={loading}
+        disabled={!!loading}
         className="btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-50"
       >
         {loading === 'pdf' ? (
