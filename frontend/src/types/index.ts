@@ -54,7 +54,8 @@ export interface DoctorFormProps {
 }
 
 export interface ActionButtonsProps {
-  onGenerate: () => void
+  onGenerateWord: () => void
+  onGeneratePDF: () => void
   onClear: () => void
-  loading?: boolean
+  loading?: 'word' | 'pdf' | false
 }
