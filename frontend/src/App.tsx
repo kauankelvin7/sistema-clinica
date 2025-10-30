@@ -127,72 +127,64 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen py-4 px-3">
-      <div className="max-w-4xl mx-auto space-y-3">
+    <div className="min-h-screen py-6 px-4 sm:py-8 sm:px-6 md:py-12 md:px-8">
+      <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
         {/* Header */}
         <Header />
 
         {/* Mensagem de Status */}
         {message && (
-          <div className={`rounded-lg p-2.5 flex items-center gap-2 ${
+          <div className={`rounded-xl p-4 flex items-center gap-3 shadow-lg backdrop-blur-sm ${
             message.type === 'success' 
-              ? 'bg-green-50 border border-green-200' 
-              : 'bg-red-50 border border-red-200'
+              ? 'bg-emerald-50/90 border-2 border-emerald-200' 
+              : 'bg-rose-50/90 border-2 border-rose-200'
           }`}>
             {message.type === 'success' ? (
-              <CheckCircle className="w-4 h-4 text-green-600" />
+              <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
             ) : (
-              <XCircle className="w-4 h-4 text-red-600" />
+              <XCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
             )}
-            <p className={`font-medium text-xs ${
-              message.type === 'success' ? 'text-green-800' : 'text-red-800'
+            <p className={`font-semibold text-sm ${
+              message.type === 'success' ? 'text-emerald-800' : 'text-rose-800'
             }`}>
               {message.text}
             </p>
           </div>
         )}
 
-        {/* Indicador de Auto-Save */}
-        <div className="bg-gradient-to-r from-purple-900/90 to-gray-900/90 border-2 border-purple-500/50 rounded-lg p-2 flex items-center gap-2 shadow-lg shadow-purple-500/20">
-          <CheckCircle className="w-3.5 h-3.5 text-purple-400" />
-          <p className="text-xs font-medium text-purple-100">
-            💾 Seus dados são salvos automaticamente e carregados na próxima visita
-          </p>
-        </div>
-
         {/* Container Principal */}
-        <div className="bg-white/95 rounded-xl border-2 border-purple-500/20 shadow-2xl">
-          <div className="space-y-3 p-3">
+        <div className="bg-white/90 backdrop-blur-sm rounded-3xl border border-gray-200/60 shadow-2xl shadow-gray-300/50">
+          <div className="space-y-6 md:space-y-8 p-6 sm:p-8 md:p-10">
             
             {/* Seção: Dados do Paciente */}
             <div className="card">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg flex items-center justify-center shadow-lg shadow-purple-500/30">
-                  <User className="w-4 h-4 text-white" />
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 transform hover:scale-110 transition-transform duration-300">
+                  <User className="w-6 h-6 text-white" />
                 </div>
-                <h2 className="text-gray-900 text-base font-bold">Dados do Paciente</h2>
+                <h2 className="text-gray-800 text-lg md:text-xl font-bold">Dados do Paciente</h2>
               </div>
               <PatientForm formData={formData} updateFormData={updateFormData} />
             </div>
 
             {/* Seção: Dados do Atestado */}
             <div className="card">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg flex items-center justify-center shadow-lg shadow-purple-500/30">
-                  <FileText className="w-4 h-4 text-white" />
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 transform hover:scale-110 transition-transform duration-300">
+                  <FileText className="w-6 h-6 text-white" />
                 </div>
-                <h2 className="text-gray-900 text-base font-bold">Dados do Atestado</h2>
+                <h2 className="text-gray-800 text-lg md:text-xl font-bold">Dados do Atestado</h2>
               </div>
               <CertificateForm formData={formData} updateFormData={updateFormData} />
             </div>
 
             {/* Seção: Dados do Médico */}
             <div className="card">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg flex items-center justify-center shadow-lg shadow-purple-500/30">
-                  <Stethoscope className="w-4 h-4 text-white" />
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 transform hover:scale-110 transition-transform duration-300">
+                  <Stethoscope className="w-6 h-6 text-white" />
                 </div>
-                <h2 className="text-gray-900 text-base font-bold">Dados do Médico</h2>
+                <h2 className="text-gray-800 text-lg md:text-xl font-bold">Dados do Médico</h2>
               </div>
               <DoctorForm formData={formData} updateFormData={updateFormData} />
             </div>
@@ -215,8 +207,12 @@ function App() {
         />
 
         {/* Footer */}
-        <div className="text-center text-white/90 text-xs font-medium">
-          <p>Sistema de Homologação v2.0 - Desenvolvido por Kauan Kelvin</p>
+        <div className="text-center pb-4">
+          <div className="inline-block bg-white/70 backdrop-blur-md border border-gray-200/60 rounded-2xl px-8 py-3 shadow-lg">
+            <p className="text-gray-700 text-xs md:text-sm font-semibold">
+              Sistema de Homologação v2.0 • Desenvolvido por <span className="text-blue-600 font-bold">Kauan Kelvin</span>
+            </p>
+          </div>
         </div>
       </div>
     </div>
