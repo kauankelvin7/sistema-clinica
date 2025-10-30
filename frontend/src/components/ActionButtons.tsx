@@ -1,6 +1,7 @@
 import { FileText, FileCheck, Trash2, Loader2 } from 'lucide-react'
 import type { ActionButtonsProps } from '../types'
 
+// Botões de ação para gerar documentos
 export default function ActionButtons({ onGenerateWord, onGeneratePDF, onClear, loading }: ActionButtonsProps) {
   return (
     <div className="flex gap-2 pt-2">
