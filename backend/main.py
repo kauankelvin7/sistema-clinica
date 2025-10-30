@@ -118,8 +118,8 @@ async def generate_document_endpoint(data: DocumentoRequest):
         documento_data = {
             # Paciente
             "nome_paciente": data.paciente.nome,
-            "tipo_documento_paciente": data.paciente.tipo_documento,
-            "numero_documento_paciente": data.paciente.numero_documento,
+            "tipo_doc_paciente": data.paciente.tipo_documento,
+            "numero_doc_paciente": data.paciente.numero_documento,
             "cargo_paciente": data.paciente.cargo,
             "empresa_paciente": data.paciente.empresa,
             
@@ -130,9 +130,9 @@ async def generate_document_endpoint(data: DocumentoRequest):
             
             # Médico
             "nome_medico": data.medico.nome,
-            "tipo_registro": data.medico.tipo_registro,
-            "numero_registro": data.medico.numero_registro,
-            "uf_registro": data.medico.uf_registro,
+            "tipo_crm": data.medico.tipo_registro,
+            "crm": data.medico.numero_registro,
+            "uf_crm": data.medico.uf_registro,
         }
         
         # Gerar documento
