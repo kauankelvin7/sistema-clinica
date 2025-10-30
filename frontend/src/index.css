@@ -7,6 +7,12 @@
     @apply bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen font-sans antialiased;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
   }
+
+  /* Dark theme defaults when .dark class is applied to <html> */
+  .dark body {
+    @apply bg-gradient-to-br from-slate-900 to-slate-800;
+    color: rgba(241,245,249,1); /* slate-100 */
+  }
 }
 
 @layer components {
@@ -18,6 +24,11 @@
            shadow-sm hover:shadow-md;
   }
 
+  .dark .input-field {
+    @apply bg-slate-700 border-slate-600 text-slate-100 placeholder:text-slate-300;
+    box-shadow: none;
+  }
+
   .input-field:focus {
     @apply border-blue-500 shadow-lg shadow-blue-500/10;
   }
@@ -27,6 +38,11 @@
            rounded-xl hover:bg-blue-700 active:bg-blue-800
            transition-colors duration-150 shadow-md hover:shadow-lg
            disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+
+  .dark .btn-primary {
+    @apply bg-sky-500 hover:bg-sky-600 text-slate-900;
+    box-shadow: 0 8px 20px -10px rgba(56,189,248,0.2);
   }
 
   .btn-success {
@@ -43,10 +59,18 @@
            disabled:opacity-60 disabled:cursor-not-allowed;
   }
 
+  .dark .btn-danger {
+    @apply bg-rose-600 hover:bg-rose-700 text-white;
+  }
+
   .card {
     @apply bg-white border border-gray-200 rounded-2xl p-6 
            shadow-md hover:shadow-lg
            transition-shadow duration-200;
+  }
+
+  .dark .card {
+    @apply bg-slate-800 border-slate-700 shadow-none;
   }
 
   .section-title {
@@ -99,4 +123,13 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(to bottom, #2563eb, #1d4ed8);
+}
+
+/* Dark scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: #0f1724;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #475569, #0f1724);
 }

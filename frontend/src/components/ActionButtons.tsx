@@ -9,7 +9,7 @@ export default function ActionButtons({ onGenerateWord, onClear, loading }: Acti
       <button
         onClick={onGenerateWord}
         disabled={!!loading}
-        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-xl shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150"
+        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-xl shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150 dark:bg-sky-500 dark:hover:bg-sky-600 dark:text-slate-900"
       >
         <div className="flex items-center justify-center gap-3">
           {loading === 'word' ? (
@@ -30,7 +30,7 @@ export default function ActionButtons({ onGenerateWord, onClear, loading }: Acti
       <button
         onClick={onClear}
         disabled={!!loading}
-        className="bg-gray-600 hover:bg-rose-600 text-white font-semibold py-4 px-6 rounded-xl shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150"
+        className="bg-gray-600 hover:bg-rose-600 text-white font-semibold py-4 px-6 rounded-xl shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150 dark:bg-slate-700 dark:hover:bg-rose-600"
       >
         <div className="flex items-center justify-center gap-3">
           <Trash2 className="w-5 h-5" />
