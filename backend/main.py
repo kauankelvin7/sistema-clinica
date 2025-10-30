@@ -21,7 +21,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from core.db_manager import get_db_connection, create_tables
 from core.database import sanitizar_entrada
 from core.document_generator import generate_document
-from core.pdf_converter import convert_docx_to_pdf, PDFConversionError
+from core.pdf_generator import generate_pdf_direct, PDFGenerationError
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
@@ -476,7 +476,7 @@ async def generate_pdf_endpoint(data: DocumentoRequest):
         except Exception as e:
             logger.warning(f"Erro ao salvar no banco (continuando): {str(e)}")
         
-        # Preparar dados no formato EXATO esperado pelo document_generator
+        # Preparar dados no formato EXATO esperado pelo pdf_generator
         documento_data = {
             "nome_paciente": data.paciente.nome,
             "tipo_doc_paciente": data.paciente.tipo_documento,
@@ -492,18 +492,10 @@ async def generate_pdf_endpoint(data: DocumentoRequest):
             "uf_crm_medico": data.medico.uf_registro,
         }
         
-        # Gerar documento Word primeiro
-        caminho_docx = generate_document(documento_data)
-        
-        if not caminho_docx or not os.path.exists(caminho_docx):
-            raise HTTPException(status_code=500, detail="Erro ao gerar documento Word")
-        
-        logger.info(f"Documento Word gerado: {caminho_docx}")
-        
-        # Converter para PDF
+        # Gerar PDF diretamente (sem passar por Word)
         try:
-            caminho_pdf = convert_docx_to_pdf(caminho_docx)
-            logger.info(f"Documento PDF gerado: {caminho_pdf}")
+            caminho_pdf = generate_pdf_direct(documento_data)
+            logger.info(f"PDF gerado com sucesso: {caminho_pdf}")
             
             # Retornar arquivo PDF para download
             return FileResponse(
@@ -512,11 +504,11 @@ async def generate_pdf_endpoint(data: DocumentoRequest):
                 filename=os.path.basename(caminho_pdf)
             )
             
-        except PDFConversionError as e:
-            logger.error(f"Erro ao converter para PDF: {e}")
+        except PDFGenerationError as e:
+            logger.error(f"Erro ao gerar PDF: {e}")
             raise HTTPException(
                 status_code=500, 
-                detail=f"Documento Word gerado, mas falha na conversão PDF: {str(e)}"
+                detail=f"Erro ao gerar PDF: {str(e)}"
             )
         
     except HTTPException:
