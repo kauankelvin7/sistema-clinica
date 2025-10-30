@@ -153,13 +153,13 @@ function App() {
         )}
 
         {/* Container Principal */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-3xl border border-gray-200/60 shadow-2xl shadow-gray-300/50">
+        <div className="bg-white rounded-3xl border border-gray-200 shadow-xl">
           <div className="space-y-6 md:space-y-8 p-6 sm:p-8 md:p-10">
             
             {/* Seção: Dados do Paciente */}
             <div className="card">
               <div className="flex items-center gap-4 mb-5">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 transform hover:scale-110 transition-transform duration-300">
+                <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-md">
                   <User className="w-6 h-6 text-white" />
                 </div>
                 <h2 className="text-gray-800 text-lg md:text-xl font-bold">Dados do Paciente</h2>
@@ -170,7 +170,7 @@ function App() {
             {/* Seção: Dados do Atestado */}
             <div className="card">
               <div className="flex items-center gap-4 mb-5">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 transform hover:scale-110 transition-transform duration-300">
+                <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-md">
                   <FileText className="w-6 h-6 text-white" />
                 </div>
                 <h2 className="text-gray-800 text-lg md:text-xl font-bold">Dados do Atestado</h2>
@@ -181,7 +181,7 @@ function App() {
             {/* Seção: Dados do Médico */}
             <div className="card">
               <div className="flex items-center gap-4 mb-5">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 transform hover:scale-110 transition-transform duration-300">
+                <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-md">
                   <Stethoscope className="w-6 h-6 text-white" />
                 </div>
                 <h2 className="text-gray-800 text-lg md:text-xl font-bold">Dados do Médico</h2>
@@ -208,7 +208,7 @@ function App() {
 
         {/* Footer */}
         <div className="text-center pb-4">
-          <div className="inline-block bg-white/70 backdrop-blur-md border border-gray-200/60 rounded-2xl px-8 py-3 shadow-lg">
+          <div className="inline-block bg-white border border-gray-200 rounded-2xl px-8 py-3 shadow-md">
             <p className="text-gray-700 text-xs md:text-sm font-semibold">
               Sistema de Homologação v2.0 • Desenvolvido por <span className="text-blue-600 font-bold">Kauan Kelvin</span>
             </p>
