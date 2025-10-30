@@ -126,64 +126,62 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen py-6 px-4 sm:py-8 sm:px-6 md:py-12 md:px-8">
+    <div className="min-h-screen py-6 px-4 sm:py-8 sm:px-6 md:py-12 md:px-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-950 transition-colors duration-500">
       <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
         {/* Header */}
         <Header />
 
         {/* Mensagem de Status */}
         {message && (
-          <div className={`rounded-xl p-4 flex items-center gap-3 shadow-lg backdrop-blur-sm ${
-            message.type === 'success' 
-              ? 'bg-emerald-50/90 border-2 border-emerald-200' 
-              : 'bg-rose-50/90 border-2 border-rose-200'
-          }`}>
+          <div className={`rounded-xl p-4 flex items-center gap-3 shadow-lg backdrop-blur-sm border-2 transition-colors duration-300
+            ${message.type === 'success'
+              ? 'bg-emerald-50/90 border-emerald-200 text-emerald-800 dark:bg-emerald-900/80 dark:border-emerald-700 dark:text-emerald-100'
+              : 'bg-rose-50/90 border-rose-200 text-rose-800 dark:bg-rose-900/80 dark:border-rose-700 dark:text-rose-100'}
+          `}>
             {message.type === 'success' ? (
-              <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+              <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-300 flex-shrink-0" />
             ) : (
-              <XCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
+              <XCircle className="w-5 h-5 text-rose-600 dark:text-rose-300 flex-shrink-0" />
             )}
-            <p className={`font-semibold text-sm ${
-              message.type === 'success' ? 'text-emerald-800' : 'text-rose-800'
-            }`}>
+            <p className="font-semibold text-sm">
               {message.text}
             </p>
           </div>
         )}
 
         {/* Container Principal */}
-        <div className="bg-white rounded-3xl border border-gray-200 shadow-xl">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-200 dark:border-slate-700 shadow-xl dark:shadow-none transition-colors duration-500">
           <div className="space-y-6 md:space-y-8 p-6 sm:p-8 md:p-10">
             
             {/* Seção: Dados do Paciente */}
-            <div className="card">
+            <div className="card dark:bg-slate-800 dark:border-slate-700 dark:shadow-none">
               <div className="flex items-center gap-4 mb-5">
-                <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-md">
+                <div className="w-12 h-12 bg-blue-600 dark:bg-blue-800 rounded-2xl flex items-center justify-center shadow-md dark:shadow-blue-900/30">
                   <User className="w-6 h-6 text-white" />
                 </div>
-                <h2 className="text-gray-800 text-lg md:text-xl font-bold">Dados do Paciente</h2>
+                <h2 className="text-gray-800 dark:text-slate-100 text-lg md:text-xl font-bold">Dados do Paciente</h2>
               </div>
               <PatientForm formData={formData} updateFormData={updateFormData} />
             </div>
 
             {/* Seção: Dados do Atestado */}
-            <div className="card">
+            <div className="card dark:bg-slate-800 dark:border-slate-700 dark:shadow-none">
               <div className="flex items-center gap-4 mb-5">
-                <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-md">
+                <div className="w-12 h-12 bg-blue-600 dark:bg-blue-800 rounded-2xl flex items-center justify-center shadow-md dark:shadow-blue-900/30">
                   <FileText className="w-6 h-6 text-white" />
                 </div>
-                <h2 className="text-gray-800 text-lg md:text-xl font-bold">Dados do Atestado</h2>
+                <h2 className="text-gray-800 dark:text-slate-100 text-lg md:text-xl font-bold">Dados do Atestado</h2>
               </div>
               <CertificateForm formData={formData} updateFormData={updateFormData} />
             </div>
 
             {/* Seção: Dados do Médico */}
-            <div className="card">
+            <div className="card dark:bg-slate-800 dark:border-slate-700 dark:shadow-none">
               <div className="flex items-center gap-4 mb-5">
-                <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-md">
+                <div className="w-12 h-12 bg-blue-600 dark:bg-blue-800 rounded-2xl flex items-center justify-center shadow-md dark:shadow-blue-900/30">
                   <Stethoscope className="w-6 h-6 text-white" />
                 </div>
-                <h2 className="text-gray-800 text-lg md:text-xl font-bold">Dados do Médico</h2>
+                <h2 className="text-gray-800 dark:text-slate-100 text-lg md:text-xl font-bold">Dados do Médico</h2>
               </div>
               <DoctorForm formData={formData} updateFormData={updateFormData} />
             </div>
@@ -206,9 +204,9 @@ function App() {
 
         {/* Footer */}
         <div className="text-center pb-4">
-          <div className="inline-block bg-white border border-gray-200 rounded-2xl px-8 py-3 shadow-md">
-            <p className="text-gray-700 text-xs md:text-sm font-semibold">
-              Sistema de Homologação v2.0 • Desenvolvido por <span className="text-blue-600 font-bold">Kauan Kelvin</span>
+          <div className="inline-block bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl px-8 py-3 shadow-md dark:shadow-none transition-colors duration-500">
+            <p className="text-gray-700 dark:text-slate-200 text-xs md:text-sm font-semibold">
+              Sistema de Homologação v2.0 • Desenvolvido por <span className="text-blue-600 dark:text-blue-400 font-bold">Kauan Kelvin</span>
             </p>
           </div>
         </div>
