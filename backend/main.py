@@ -106,7 +106,78 @@ class MedicoResponse(BaseModel):
     numero_registro: str
     uf_registro: str
 
+
 # ===== ENDPOINTS =====
+from fastapi import Query
+class PacienteRankingResponse(BaseModel):
+    id: int
+    nome: str
+    tipo_documento: str
+    numero_documento: str
+    cargo: str
+    empresa: str
+    homologacoes: int
+
+# Endpoint de ranking de pacientes por homologações
+@app.get("/api/patients/ranking", response_model=List[PacienteRankingResponse])
+async def get_patients_ranking(limit: int = Query(10, ge=1, le=100)):
+    """
+    Retorna pacientes ordenados por quantidade de homologações (documentos gerados)
+    """
+    try:
+        is_postgres = os.getenv('RENDER') or os.getenv('RAILWAY_ENVIRONMENT')
+        with get_db_connection() as conn:
+            if is_postgres:
+                from sqlalchemy import text
+                # Supondo que existe uma tabela de atestados/documentos com paciente_id
+                query = text('''
+                    SELECT p.id, p.nome_completo, p.tipo_doc, p.numero_doc, p.cargo, p.empresa, COUNT(a.id) as homologacoes
+                    FROM pacientes p
+                    LEFT JOIN atestados a ON a.paciente_id = p.id
+                    GROUP BY p.id, p.nome_completo, p.tipo_doc, p.numero_doc, p.cargo, p.empresa
+                    ORDER BY homologacoes DESC, p.nome_completo ASC
+                    LIMIT :limit
+                ''')
+                result = conn.execute(query, {"limit": limit})
+                ranking = [
+                    {
+                        "id": row[0],
+                        "nome": row[1],
+                        "tipo_documento": row[2],
+                        "numero_documento": row[3],
+                        "cargo": row[4] or "",
+                        "empresa": row[5] or "",
+                        "homologacoes": row[6] or 0
+                    }
+                    for row in result
+                ]
+            else:
+                cursor = conn.cursor()
+                query = '''
+                    SELECT p.id, p.nome_completo, p.tipo_doc, p.numero_doc, p.cargo, p.empresa, COUNT(a.id) as homologacoes
+                    FROM pacientes p
+                    LEFT JOIN atestados a ON a.paciente_id = p.id
+                    GROUP BY p.id, p.nome_completo, p.tipo_doc, p.numero_doc, p.cargo, p.empresa
+                    ORDER BY homologacoes DESC, p.nome_completo ASC
+                    LIMIT ?
+                '''
+                cursor.execute(query, (limit,))
+                ranking = [
+                    {
+                        "id": row[0],
+                        "nome": row[1],
+                        "tipo_documento": row[2],
+                        "numero_documento": row[3],
+                        "cargo": row[4] or "",
+                        "empresa": row[5] or "",
+                        "homologacoes": row[6] or 0
+                    }
+                    for row in cursor.fetchall()
+                ]
+        return ranking
+    except Exception as e:
+        logger.error(f"Erro ao buscar ranking de pacientes: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao buscar ranking de pacientes: {str(e)}")
 
 @app.get("/")
 async def root():

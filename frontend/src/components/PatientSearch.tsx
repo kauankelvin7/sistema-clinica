@@ -52,7 +52,7 @@ export default function PatientSearch({ onSelect }: PatientSearchProps) {
         <Search className="w-4 h-4 text-gray-400" />
         <input
           type="text"
-          className="input-field flex-1"
+          className="input-field flex-1 border-2 border-primary-300 bg-gradient-to-br from-primary-50 to-secondary-50 focus:border-primary-500 focus:ring-4 focus:ring-primary-400/20 shadow-lg placeholder:text-primary-400 transition-all duration-200"
           placeholder="Buscar paciente cadastrado..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}

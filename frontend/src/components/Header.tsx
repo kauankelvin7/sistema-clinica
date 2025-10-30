@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react'
-import { FileHeart, Sparkles, Sun, Moon } from 'lucide-react'
+import { FileHeart, Sparkles, Sun, Moon, Trophy } from 'lucide-react'
+import RankingModal from './RankingModal'
 
 export default function Header() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    // ...existing code...
+  })
+  const [showRanking, setShowRanking] = useState(false)
     try {
       const saved = localStorage.getItem('theme')
       if (saved === 'dark') return 'dark'
@@ -29,6 +33,7 @@ export default function Header() {
   const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark')
 
   return (
+    <>
     <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-600 rounded-2xl p-6 md:p-8 shadow-2xl">
       {/* Efeito de brilho animado */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
@@ -61,13 +66,21 @@ export default function Header() {
           </p>
         </div>
 
-        {/* Theme toggle */}
-        <div className="flex items-center">
+        {/* Theme toggle + Ranking */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowRanking(true)}
+            aria-label="Ver ranking de pacientes"
+            title="Ranking de Pacientes"
+            className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/90 dark:bg-slate-700 shadow-md hover:scale-105 transform transition border-2 border-amber-400 hover:border-amber-500 focus:ring-2 focus:ring-amber-300"
+          >
+            <Trophy className="w-5 h-5 text-amber-500" />
+          </button>
           <button
             onClick={toggleTheme}
             aria-label="Alternar tema claro/escuro"
             title="Alternar tema"
-            className="ml-3 inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/90 dark:bg-slate-700 shadow-md hover:scale-105 transform transition"
+            className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/90 dark:bg-slate-700 shadow-md hover:scale-105 transform transition"
           >
             {theme === 'dark' ? (
               <Sun className="w-5 h-5 text-yellow-400" />
@@ -78,5 +91,7 @@ export default function Header() {
         </div>
       </div>
     </div>
+    <RankingModal open={showRanking} onClose={() => setShowRanking(false)} />
+    </>
   )
 }
