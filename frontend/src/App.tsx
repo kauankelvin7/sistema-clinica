@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FileText, User, Stethoscope, CheckCircle, XCircle } from 'lucide-react'
 import Header from './components/Header'
 import PatientForm from './components/PatientForm'
@@ -9,7 +9,20 @@ import { generateDocument } from './services/api'
 import type { FormData } from './types'
 
 function App() {
-  const [formData, setFormData] = useState<FormData>({
+  // Carregar dados salvos do localStorage
+  const loadSavedData = (): FormData => {
+    const saved = localStorage.getItem('sistema_clinica_data')
+    if (saved) {
+      try {
+        return JSON.parse(saved)
+      } catch {
+        return getDefaultFormData()
+      }
+    }
+    return getDefaultFormData()
+  }
+
+  const getDefaultFormData = (): FormData => ({
     // Paciente
     nomePaciente: '',
     tipoDocumento: 'CPF',
@@ -30,8 +43,14 @@ function App() {
     ufRegistro: 'DF',
   })
 
+  const [formData, setFormData] = useState<FormData>(loadSavedData())
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+
+  // Salvar dados automaticamente quando mudar
+  useEffect(() => {
+    localStorage.setItem('sistema_clinica_data', JSON.stringify(formData))
+  }, [formData])
 
   const updateFormData = (field: keyof FormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -79,21 +98,9 @@ function App() {
   }
 
   const handleClear = () => {
-    setFormData({
-      nomePaciente: '',
-      tipoDocumento: 'CPF',
-      numeroDocumento: '',
-      cargo: '',
-      empresa: '',
-      dataAtestado: new Date().toISOString().split('T')[0],
-      diasAfastamento: '',
-      cid: '',
-      cidNaoInformado: false,
-      nomeMedico: '',
-      tipoRegistro: 'CRM',
-      numeroRegistro: '',
-      ufRegistro: 'DF',
-    })
+    const defaultData = getDefaultFormData()
+    setFormData(defaultData)
+    localStorage.removeItem('sistema_clinica_data')
     setMessage({ type: 'success', text: 'Formulário limpo com sucesso!' })
   }
 
@@ -122,6 +129,14 @@ function App() {
             </p>
           </div>
         )}
+
+        {/* Indicador de Auto-Save */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 flex items-center gap-2">
+          <CheckCircle className="w-3.5 h-3.5 text-blue-600" />
+          <p className="text-xs font-medium text-blue-800">
+            💾 Seus dados são salvos automaticamente e carregados na próxima visita
+          </p>
+        </div>
 
         {/* Container Principal */}
         <div className="bg-white/95 rounded-xl border border-white/30">
