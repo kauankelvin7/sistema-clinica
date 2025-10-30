@@ -1,23 +1,18 @@
 """
-Módulo de geração direta de PDF
+Módulo de conversão DOCX para PDF
 Sistema de Homologação de Atestados Médicos
 Autor: Kauan Kelvin
 Data: 30/10/2025
 
-Este módulo gera PDFs nativamente usando ReportLab (sem LibreOffice)
+Este módulo converte documentos DOCX para PDF usando docx2pdf (Windows/COM)
+ou reportlab como fallback multiplataforma.
 """
 
 import os
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, Optional
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import cm
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.lib import colors
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -26,157 +21,208 @@ class PDFGenerationError(Exception):
     pass
 
 
-def generate_pdf_direct(data: Dict[str, Any], output_dir: Optional[str] = None) -> str:
+def convert_docx_to_pdf_com(docx_path: str) -> str:
     """
-    Gera PDF diretamente dos dados (sem passar por DOCX).
+    Converte DOCX para PDF usando Word COM automation (Windows apenas).
+    Preserva TODA formatação original.
     
     Args:
-        data: Dicionário com os dados do documento
-        output_dir: Diretório de saída (padrão: data/generated_documents)
+        docx_path: Caminho do arquivo DOCX
         
     Returns:
         str: Caminho do arquivo PDF gerado
-        
-    Raises:
-        PDFGenerationError: Se houver erro na geração
     """
     try:
-        # Diretório de saída
-        if output_dir is None:
-            output_dir = Path(__file__).parent.parent / 'data' / 'generated_documents'
-        else:
-            output_dir = Path(output_dir)
+        from docx2pdf import convert
         
-        output_dir.mkdir(parents=True, exist_ok=True)
+        # Caminho do PDF (mesmo nome, extensão .pdf)
+        pdf_path = str(Path(docx_path).with_suffix('.pdf'))
         
-        # Nome do arquivo
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        nome_paciente = data.get('nome_paciente', 'Paciente').replace(' ', '_')
-        filename = f"Declaracao_{nome_paciente}_{timestamp}.pdf"
-        filepath = output_dir / filename
+        # Converter usando Word COM
+        convert(docx_path, pdf_path)
         
-        # Criar documento PDF
-        doc = SimpleDocTemplate(
-            str(filepath),
+        logger.info(f"PDF gerado via Word COM: {pdf_path}")
+        return pdf_path
+        
+    except Exception as e:
+        logger.warning(f"Erro ao usar docx2pdf: {e}")
+        raise
+
+
+def convert_docx_to_pdf_reportlab(docx_path: str) -> str:
+    """
+    Converte DOCX para PDF usando reportlab (multiplataforma).
+    Extrai texto e formatação básica do DOCX.
+    
+    Args:
+        docx_path: Caminho do arquivo DOCX
+        
+    Returns:
+        str: Caminho do arquivo PDF gerado
+    """
+    try:
+        from docx import Document
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib.units import cm
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether
+        from reportlab.lib import colors
+        
+        # Abrir DOCX
+        doc = Document(docx_path)
+        
+        # Caminho do PDF
+        pdf_path = str(Path(docx_path).with_suffix('.pdf'))
+        
+        # Criar PDF
+        pdf_doc = SimpleDocTemplate(
+            pdf_path,
             pagesize=A4,
-            rightMargin=2*cm,
-            leftMargin=2*cm,
-            topMargin=2*cm,
-            bottomMargin=2*cm
+            rightMargin=2.5*cm,
+            leftMargin=2.5*cm,
+            topMargin=2.5*cm,
+            bottomMargin=2.5*cm
         )
         
         # Estilos
         styles = getSampleStyleSheet()
         
-        # Estilo para título
-        title_style = ParagraphStyle(
-            'CustomTitle',
+        # Criar estilos customizados baseados no Word
+        style_title = ParagraphStyle(
+            'WordTitle',
             parent=styles['Heading1'],
-            fontSize=16,
-            textColor=colors.black,
-            spaceAfter=30,
+            fontSize=14,
+            fontName='Helvetica-Bold',
             alignment=TA_CENTER,
-            fontName='Helvetica-Bold'
+            spaceAfter=20,
+            spaceBefore=10
         )
         
-        # Estilo para texto normal
-        normal_style = ParagraphStyle(
-            'CustomNormal',
+        style_normal = ParagraphStyle(
+            'WordNormal',
             parent=styles['Normal'],
-            fontSize=11,
-            textColor=colors.black,
+            fontSize=12,
+            fontName='Helvetica',
             alignment=TA_JUSTIFY,
             spaceAfter=12,
-            fontName='Helvetica'
+            leading=16
         )
         
-        # Estilo para assinatura
-        signature_style = ParagraphStyle(
-            'Signature',
+        style_center = ParagraphStyle(
+            'WordCenter',
             parent=styles['Normal'],
-            fontSize=10,
-            textColor=colors.black,
+            fontSize=12,
+            fontName='Helvetica',
             alignment=TA_CENTER,
-            spaceAfter=6,
-            fontName='Helvetica'
+            spaceAfter=12
         )
         
-        # Conteúdo do documento
+        # Story (elementos do PDF)
         story = []
         
-        # Título
-        story.append(Paragraph("DECLARAÇÃO DE HOMOLOGAÇÃO", title_style))
-        story.append(Spacer(1, 0.5*cm))
+        # Processar parágrafos do DOCX
+        for para in doc.paragraphs:
+            if not para.text.strip():
+                story.append(Spacer(1, 0.3*cm))
+                continue
+            
+            # Detectar alinhamento
+            alignment = para.alignment
+            if alignment == 1:  # CENTER
+                style = style_center
+            elif alignment == 3:  # JUSTIFY
+                style = style_normal
+            else:
+                style = style_normal
+            
+            # Detectar se é título (negrito ou tamanho maior)
+            is_bold = any(run.bold for run in para.runs)
+            if is_bold and len(para.text) < 50:
+                style = style_title
+            
+            # Adicionar parágrafo
+            story.append(Paragraph(para.text, style))
         
-        # Corpo do texto
-        texto_corpo = f"""
-        Declaro para os devidos fins que o(a) colaborador(a) <b>{data.get('nome_paciente', '')}</b>, 
-        portador(a) do {data.get('tipo_doc_paciente', 'CPF')} nº: <b>{data.get('numero_doc_paciente', '')}</b>, 
-        exercendo a função de <b>{data.get('cargo_paciente', '')}</b> na empresa 
-        <b>{data.get('empresa_paciente', '')}</b>, apresentou atestado médico datado de 
-        <b>{data.get('data_atestado', '')}</b>, com <b>{data.get('qtd_dias_atestado', '')} dia(s)</b> 
-        de afastamento.
-        """
-        
-        story.append(Paragraph(texto_corpo, normal_style))
-        story.append(Spacer(1, 0.3*cm))
-        
-        # CID
-        cid_texto = f"CID: <b>{data.get('codigo_cid', 'Não Informado')}</b>"
-        story.append(Paragraph(cid_texto, normal_style))
-        story.append(Spacer(1, 1*cm))
-        
-        # Data de homologação
-        data_homologacao = datetime.now().strftime("%d/%m/%Y")
-        story.append(Paragraph(f"Brasília-DF, {data_homologacao}", normal_style))
-        story.append(Spacer(1, 2*cm))
-        
-        # Linha de assinatura
-        story.append(Paragraph("_" * 60, signature_style))
-        
-        # Dados do médico
-        tipo_registro = data.get('tipo_registro_medico', 'CRM')
-        numero_registro = data.get('crm__medico', '')
-        uf = data.get('uf_crm_medico', '')
-        
-        medico_completo = f"Dr.(a) {data.get('nome_medico', '')}"
-        if numero_registro:
-            medico_completo += f" - {tipo_registro} {numero_registro}"
-            if uf:
-                medico_completo += f"-{uf}"
-        
-        story.append(Paragraph(medico_completo, signature_style))
+        # Processar tabelas do DOCX
+        for table in doc.tables:
+            table_data = []
+            for row in table.rows:
+                row_data = []
+                for cell in row.cells:
+                    cell_text = '\n'.join([p.text for p in cell.paragraphs])
+                    row_data.append(Paragraph(cell_text, style_center))
+                table_data.append(row_data)
+            
+            # Criar tabela no PDF
+            if table_data:
+                pdf_table = Table(table_data, colWidths=[15*cm])
+                pdf_table.setStyle(TableStyle([
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+                    ('FONTSIZE', (0, 0), (-1, -1), 10),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+                    ('TOPPADDING', (0, 0), (-1, -1), 12),
+                    ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+                ]))
+                story.append(pdf_table)
+                story.append(Spacer(1, 0.5*cm))
         
         # Construir PDF
-        doc.build(story)
+        pdf_doc.build(story)
         
-        logger.info(f"PDF gerado com sucesso: {filepath}")
-        return str(filepath)
+        logger.info(f"PDF gerado via reportlab: {pdf_path}")
+        return pdf_path
         
+    except Exception as e:
+        logger.error(f"Erro ao converter com reportlab: {e}")
+        raise
+
+
+def generate_pdf_direct(data: dict, output_dir: Optional[str] = None) -> str:
+    """
+    Gera PDF a partir de DOCX (mantém formatação original).
+    
+    Fluxo:
+    1. Gera DOCX usando document_generator
+    2. Converte DOCX → PDF (preservando formatação)
+    
+    Args:
+        data: Dicionário com os dados do documento
+        output_dir: Diretório de saída
+        
+    Returns:
+        str: Caminho do arquivo PDF gerado
+    """
+    try:
+        from core.document_generator import generate_document
+        
+        # 1. Gerar DOCX primeiro
+        docx_path = generate_document(data)
+        if not docx_path or not os.path.exists(docx_path):
+            raise PDFGenerationError("Falha ao gerar documento Word")
+        
+        logger.info(f"DOCX gerado: {docx_path}")
+        
+        # 2. Converter para PDF
+        # Tentar docx2pdf primeiro (Windows - preserva 100% formatação)
+        try:
+            pdf_path = convert_docx_to_pdf_com(docx_path)
+            return pdf_path
+        except Exception as e:
+            logger.warning(f"docx2pdf falhou (tentando reportlab): {e}")
+        
+        # Fallback: reportlab (multiplataforma)
+        try:
+            pdf_path = convert_docx_to_pdf_reportlab(docx_path)
+            return pdf_path
+        except Exception as e:
+            logger.error(f"Todas conversões falharam: {e}")
+            raise PDFGenerationError(f"Não foi possível converter para PDF: {e}")
+        
+    except PDFGenerationError:
+        raise
     except Exception as e:
         logger.error(f"Erro ao gerar PDF: {e}", exc_info=True)
         raise PDFGenerationError(f"Erro ao gerar PDF: {e}")
-
-
-if __name__ == '__main__':
-    # Teste
-    test_data = {
-        'nome_paciente': 'João da Silva',
-        'tipo_doc_paciente': 'CPF',
-        'numero_doc_paciente': '123.456.789-00',
-        'cargo_paciente': 'Desenvolvedor',
-        'empresa_paciente': 'Tech Corp',
-        'data_atestado': '30/10/2025',
-        'qtd_dias_atestado': '3',
-        'codigo_cid': 'A00',
-        'nome_medico': 'Maria Santos',
-        'tipo_registro_medico': 'CRM',
-        'crm__medico': '12345',
-        'uf_crm_medico': 'DF'
-    }
-    
-    try:
-        pdf_path = generate_pdf_direct(test_data)
-        print(f"✅ PDF de teste gerado: {pdf_path}")
-    except PDFGenerationError as e:
-        print(f"❌ Erro: {e}")
