@@ -54,21 +54,33 @@
   }
 }
 
-/* Animações leves otimizadas */
+/* Animações bonitas */
 @keyframes shimmer {
   0% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 1;
+    background-position: -1000px 0;
   }
   100% {
-    opacity: 0.5;
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
   }
 }
 
 .animate-shimmer {
-  animation: shimmer 2s ease-in-out infinite;
+  animation: shimmer 3s infinite;
+  background: linear-gradient(to right, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+  background-size: 1000px 100%;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
 }
 
 /* Scrollbar personalizada */

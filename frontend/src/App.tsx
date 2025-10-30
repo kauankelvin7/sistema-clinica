@@ -45,7 +45,7 @@ function App() {
   })
 
   const [formData, setFormData] = useState<FormData>(loadSavedData())
-  const [loading, setLoading] = useState<'word' | 'pdf' | false>(false)
+  const [loading, setLoading] = useState<'word' | false>(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [showValidationModal, setShowValidationModal] = useState(false)
   const [missingFields, setMissingFields] = useState<string[]>([])
@@ -83,7 +83,7 @@ function App() {
     return missing
   }
 
-  const handleGenerate = async (format: 'word' | 'pdf') => {
+  const handleGenerateWord = async () => {
     // Validar campos obrigatórios
     const missing = validateFormData()
     
@@ -93,24 +93,23 @@ function App() {
       return
     }
 
-    setLoading(format)
+    setLoading('word')
     setMessage(null)
 
     try {
-      const blob = await generateDocument(formData, format)
+      const blob = await generateDocument(formData, 'word')
       
       // Criar download do arquivo
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      const extension = format === 'pdf' ? 'pdf' : 'docx'
-      link.download = `Atestado_${formData.nomePaciente.replace(/\s+/g, '_')}_${new Date().getTime()}.${extension}`
+      link.download = `Atestado_${formData.nomePaciente.replace(/\s+/g, '_')}_${new Date().getTime()}.docx`
       document.body.appendChild(link)
       link.click()
       link.remove()
       window.URL.revokeObjectURL(url)
 
-      setMessage({ type: 'success', text: `Documento ${format.toUpperCase()} gerado com sucesso! Download iniciado.` })
+      setMessage({ type: 'success', text: 'Documento Word gerado com sucesso! Download iniciado.' })
     } catch (error) {
       console.error('Erro ao gerar documento:', error)
       setMessage({ type: 'error', text: 'Erro ao gerar documento. Verifique se o backend está rodando.' })
@@ -191,8 +190,7 @@ function App() {
 
             {/* Botões de Ação */}
             <ActionButtons 
-              onGenerateWord={() => handleGenerate('word')} 
-              onGeneratePDF={() => handleGenerate('pdf')}
+              onGenerateWord={handleGenerateWord} 
               onClear={handleClear}
               loading={loading}
             />
