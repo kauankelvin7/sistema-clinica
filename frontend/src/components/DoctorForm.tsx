@@ -21,16 +21,16 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3.5">
       {/* Nome Completo */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
           Nome Completo
         </label>
         <input
           type="text"
           className="input-field"
-          placeholder="Digite o nome completo do médico"
+          placeholder="Digite o nome completo"
           value={formData.nomeMedico}
           onChange={(e) => updateFormData('nomeMedico', e.target.value)}
         />
@@ -38,13 +38,13 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
 
       {/* Registro Profissional */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
           Registro Profissional
         </label>
-        <div className="flex gap-3">
+        <div className="flex gap-2">
           {/* Tipo */}
           <select
-            className="input-field w-28"
+            className="input-field w-24"
             value={formData.tipoRegistro}
             onChange={(e) => updateFormData('tipoRegistro', e.target.value)}
           >
@@ -64,7 +64,7 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
 
           {/* UF */}
           <select
-            className="input-field w-24"
+            className="input-field w-20"
             value={formData.ufRegistro}
             onChange={(e) => updateFormData('ufRegistro', e.target.value)}
           >
@@ -77,13 +77,13 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
           <button
             type="button"
             onClick={handleConsultar}
-            className="px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold 
-                     rounded-2xl shadow-lg hover:shadow-xl hover:from-orange-600 hover:to-orange-500
-                     transition-all duration-300 transform hover:scale-105 active:scale-95
-                     flex items-center gap-2 whitespace-nowrap"
+            className="px-4 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-sm
+                     rounded-xl shadow-md hover:shadow-lg hover:scale-105
+                     transition-all duration-200 active:scale-95
+                     flex items-center gap-1.5 whitespace-nowrap"
           >
             Consultar
-            <ExternalLink className="w-4 h-4" />
+            <ExternalLink className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>

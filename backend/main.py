@@ -114,7 +114,7 @@ async def generate_document_endpoint(data: DocumentoRequest):
     try:
         logger.info("Recebendo requisição para gerar documento")
         
-        # Preparar dados no formato esperado pelo gerador
+        # Preparar dados no formato EXATO esperado pelo document_generator
         documento_data = {
             # Paciente
             "nome_paciente": data.paciente.nome,
@@ -125,14 +125,14 @@ async def generate_document_endpoint(data: DocumentoRequest):
             
             # Atestado
             "data_atestado": data.atestado.data_atestado,
-            "dias_afastamento": str(data.atestado.dias_afastamento),
-            "cid": data.atestado.cid if not data.atestado.cid_nao_informado else "Não Informado",
+            "qtd_dias_atestado": str(data.atestado.dias_afastamento),
+            "codigo_cid": data.atestado.cid if not data.atestado.cid_nao_informado else "Não Informado",
             
-            # Médico
+            # Médico (ATENÇÃO: campos com nomes específicos!)
             "nome_medico": data.medico.nome,
-            "tipo_crm": data.medico.tipo_registro,
-            "crm": data.medico.numero_registro,
-            "uf_crm": data.medico.uf_registro,
+            "tipo_registro_medico": data.medico.tipo_registro,
+            "crm__medico": data.medico.numero_registro,  # Note o duplo underscore!
+            "uf_crm_medico": data.medico.uf_registro,
         }
         
         # Gerar documento
