@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { FileHeart, Sparkles, Sun, Moon, Trophy } from 'lucide-react'
-import RankingModal from './RankingModal'
+import { FileHeart, Sparkles, Sun, Moon } from 'lucide-react'
 
 export default function Header() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -13,7 +12,7 @@ export default function Header() {
     }
     return 'light';
   });
-  const [showRanking, setShowRanking] = useState(false);
+  // Ranking removido
 
   useEffect(() => {
     try {
@@ -63,16 +62,8 @@ export default function Header() {
           </p>
         </div>
 
-        {/* Theme toggle + Ranking */}
+        {/* Theme toggle */}
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowRanking(true)}
-            aria-label="Ver ranking de pacientes"
-            title="Ranking de Pacientes"
-            className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/90 dark:bg-slate-700 shadow-md hover:scale-105 transform transition border-2 border-amber-400 hover:border-amber-500 focus:ring-2 focus:ring-amber-300"
-          >
-            <Trophy className="w-5 h-5 text-amber-500" />
-          </button>
           <button
             onClick={toggleTheme}
             aria-label="Alternar tema claro/escuro"
@@ -88,7 +79,7 @@ export default function Header() {
         </div>
       </div>
     </div>
-    <RankingModal open={showRanking} onClose={() => setShowRanking(false)} />
+  {/* RankingModal removido */}
     </>
   )
 }
