@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import type { DoctorFormProps } from '../types'
 import api from '../config/api'
 import DoctorsListModal from './DoctorsListModal'
+import AutocompleteInput from './AutocompleteInput'
 
 const UFS = [
   'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
@@ -13,12 +14,23 @@ const UFS = [
 export default function DoctorForm({ formData, updateFormData }: DoctorFormProps) {
   const [totalMedicos, setTotalMedicos] = useState<number>(0)
   const [showListModal, setShowListModal] = useState(false)
+  const [medicosOptions, setMedicosOptions] = useState<Array<{label: string, value: string}>>([])
 
   useEffect(() => {
-    // Buscar total de médicos salvos
+    // Buscar total de médicos salvos e criar options para autocomplete
     fetch(api.endpoints.medicos)
       .then(res => res.json())
-      .then(data => setTotalMedicos(data.length))
+      .then(data => {
+        setTotalMedicos(data.length)
+        
+        // Criar options para autocomplete
+        const options = data.map((m: any) => ({
+          label: `${m.nome_completo} - ${m.tipo_crm} ${m.crm}/${m.uf_crm}`,
+          value: m.nome_completo,
+          data: m
+        }))
+        setMedicosOptions(options)
+      })
       .catch(() => setTotalMedicos(0))
   }, [])
 
@@ -57,17 +69,25 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
         </div>
       </button>
 
-      {/* Nome Completo */}
+      {/* Nome Completo com Autocomplete */}
       <div>
         <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
           Nome Completo do Médico
         </label>
-        <input
-          type="text"
-          className="input-field"
-          placeholder="Digite o nome completo do profissional"
+        <AutocompleteInput
           value={formData.nomeMedico}
-          onChange={(e) => updateFormData('nomeMedico', e.target.value)}
+          onChange={(value) => updateFormData('nomeMedico', value)}
+          onSelect={(option: any) => {
+            if (option.data) {
+              updateFormData('nomeMedico', option.data.nome_completo)
+              updateFormData('tipoRegistro', option.data.tipo_crm)
+              updateFormData('numeroRegistro', option.data.crm)
+              updateFormData('ufRegistro', option.data.uf_crm)
+            }
+          }}
+          options={medicosOptions}
+          placeholder="Digite o nome completo do profissional"
+          minChars={2}
         />
       </div>
 

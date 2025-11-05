@@ -1,6 +1,27 @@
+import { useState, useEffect } from 'react'
 import type { CertificateFormProps } from '../types'
+import AutocompleteInput from './AutocompleteInput'
+import { CIDS_COMUNS } from '../data/cids'
+
+interface CidOption {
+  label: string
+  value: string
+  codigo: string
+  descricao: string
+}
 
 export default function CertificateForm({ formData, updateFormData }: CertificateFormProps) {
+  const [cidOptions, setCidOptions] = useState<CidOption[]>([])
+
+  useEffect(() => {
+    const options = CIDS_COMUNS.map(cid => ({
+      label: `${cid.codigo} - ${cid.descricao}`,
+      value: cid.codigo,
+      codigo: cid.codigo,
+      descricao: cid.descricao
+    }))
+    setCidOptions(options)
+  }, [])
   return (
     <div className="space-y-6">
       {/* Data e Dias de Afastamento em linha */}
@@ -38,13 +59,19 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
           Código CID
         </label>
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-          <input
-            type="text"
-            className="input-field flex-1 w-full"
-            placeholder="Ex: A00, F32.9, J06.9"
-            disabled={formData.cidNaoInformado}
+          <AutocompleteInput
             value={formData.cidNaoInformado ? '' : formData.cid}
-            onChange={(e) => updateFormData('cid', e.target.value)}
+            onChange={(value) => updateFormData('cid', value)}
+            onSelect={(option) => {
+              const selectedCid = cidOptions.find(cid => cid.value === option.value)
+              if (selectedCid) {
+                updateFormData('cid', selectedCid.codigo)
+              }
+            }}
+            options={cidOptions}
+            placeholder="Digite o código ou descrição (Ex: J00, gripe, dor)"
+            minChars={1}
+            disabled={formData.cidNaoInformado}
           />
           <label className="flex items-center gap-2 cursor-pointer whitespace-nowrap px-2">
             <input

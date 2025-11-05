@@ -1,4 +1,4 @@
-import { X, User, Phone, Mail, Briefcase, Building2 } from 'lucide-react'
+import { X, User, Phone, Mail, Briefcase, Building2, Search, Filter } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import api from '../config/api'
 
@@ -21,7 +21,14 @@ interface Props {
 
 export default function PatientsListModal({ isOpen, onClose }: Props) {
   const [pacientes, setPacientes] = useState<Paciente[]>([])
+  const [filteredPacientes, setFilteredPacientes] = useState<Paciente[]>([])
   const [loading, setLoading] = useState(true)
+  
+  // Estados dos filtros
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterTipoDoc, setFilterTipoDoc] = useState<'TODOS' | 'CPF' | 'RG'>('TODOS')
+  const [filterEmpresa, setFilterEmpresa] = useState<string>('TODAS')
+  const [empresas, setEmpresas] = useState<string[]>([])
 
   useEffect(() => {
     if (isOpen) {
@@ -30,6 +37,14 @@ export default function PatientsListModal({ isOpen, onClose }: Props) {
         .then(res => res.json())
         .then(data => {
           setPacientes(data)
+          setFilteredPacientes(data)
+          
+          // Extrair lista única de empresas
+          const uniqueEmpresas = Array.from(new Set(
+            data.map((p: Paciente) => p.empresa).filter(Boolean)
+          )) as string[]
+          setEmpresas(uniqueEmpresas.sort())
+          
           setLoading(false)
         })
         .catch(err => {
@@ -38,6 +53,40 @@ export default function PatientsListModal({ isOpen, onClose }: Props) {
         })
     }
   }, [isOpen])
+
+  // Aplicar filtros
+  useEffect(() => {
+    let filtered = [...pacientes]
+
+    // Filtro por termo de busca (nome, documento, cargo)
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase()
+      filtered = filtered.filter(p =>
+        p.nome_completo.toLowerCase().includes(term) ||
+        p.numero_doc.toLowerCase().includes(term) ||
+        (p.cargo && p.cargo.toLowerCase().includes(term)) ||
+        (p.empresa && p.empresa.toLowerCase().includes(term))
+      )
+    }
+
+    // Filtro por tipo de documento
+    if (filterTipoDoc !== 'TODOS') {
+      filtered = filtered.filter(p => p.tipo_doc === filterTipoDoc)
+    }
+
+    // Filtro por empresa
+    if (filterEmpresa !== 'TODAS') {
+      filtered = filtered.filter(p => p.empresa === filterEmpresa)
+    }
+
+    setFilteredPacientes(filtered)
+  }, [searchTerm, filterTipoDoc, filterEmpresa, pacientes])
+
+  const clearFilters = () => {
+    setSearchTerm('')
+    setFilterTipoDoc('TODOS')
+    setFilterEmpresa('TODAS')
+  }
 
   if (!isOpen) return null
 
@@ -52,7 +101,9 @@ export default function PatientsListModal({ isOpen, onClose }: Props) {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-white">Pacientes Cadastrados</h2>
-              <p className="text-emerald-100 text-sm">Total: {pacientes.length} registro{pacientes.length !== 1 ? 's' : ''}</p>
+              <p className="text-emerald-100 text-sm">
+                {filteredPacientes.length} de {pacientes.length} registro{pacientes.length !== 1 ? 's' : ''}
+              </p>
             </div>
           </div>
           <button
@@ -63,21 +114,79 @@ export default function PatientsListModal({ isOpen, onClose }: Props) {
           </button>
         </div>
 
+        {/* Filtros */}
+        <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 space-y-3">
+          {/* Busca por texto */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Buscar por nome, documento, cargo ou empresa..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:focus:ring-emerald-900"
+            />
+          </div>
+
+          {/* Filtros em linha */}
+          <div className="flex flex-wrap gap-3">
+            {/* Filtro Tipo de Documento */}
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-emerald-600" />
+              <select
+                value={filterTipoDoc}
+                onChange={(e) => setFilterTipoDoc(e.target.value as 'TODOS' | 'CPF' | 'RG')}
+                className="px-3 py-2 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:border-emerald-500"
+              >
+                <option value="TODOS">Todos Documentos</option>
+                <option value="CPF">CPF</option>
+                <option value="RG">RG</option>
+              </select>
+            </div>
+
+            {/* Filtro Empresa */}
+            {empresas.length > 0 && (
+              <select
+                value={filterEmpresa}
+                onChange={(e) => setFilterEmpresa(e.target.value)}
+                className="px-3 py-2 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:border-emerald-500"
+              >
+                <option value="TODAS">Todas Empresas</option>
+                {empresas.map(emp => (
+                  <option key={emp} value={emp}>{emp}</option>
+                ))}
+              </select>
+            )}
+
+            {/* Botão Limpar Filtros */}
+            {(searchTerm || filterTipoDoc !== 'TODOS' || filterEmpresa !== 'TODAS') && (
+              <button
+                onClick={clearFilters}
+                className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                Limpar Filtros
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(80vh-120px)]">
+        <div className="p-6 overflow-y-auto max-h-[calc(80vh-280px)]">
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full mx-auto"></div>
               <p className="text-gray-600 dark:text-gray-400 mt-4">Carregando pacientes...</p>
             </div>
-          ) : pacientes.length === 0 ? (
+          ) : filteredPacientes.length === 0 ? (
             <div className="text-center py-12">
               <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600 dark:text-gray-400 text-lg">Nenhum paciente cadastrado ainda</p>
+              <p className="text-gray-600 dark:text-gray-400 text-lg">
+                {pacientes.length === 0 ? 'Nenhum paciente cadastrado ainda' : 'Nenhum paciente encontrado com os filtros aplicados'}
+              </p>
             </div>
           ) : (
             <div className="grid gap-4">
-              {pacientes.map((paciente, index) => (
+              {filteredPacientes.map((paciente, index) => (
                 <div
                   key={paciente.id}
                   className="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border-2 border-emerald-200 dark:border-emerald-700 rounded-xl p-5 hover:shadow-lg transition-shadow"

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { Users, Eye } from 'lucide-react'
 import api from '../config/api'
 import PatientsListModal from './PatientsListModal'
+import AutocompleteInput from './AutocompleteInput'
 
 
 // Função para aplicar máscara de CPF
@@ -18,12 +19,23 @@ function maskCPF(value: string) {
 export default function PatientForm({ formData, updateFormData }: PatientFormProps) {
   const [totalPacientes, setTotalPacientes] = useState<number>(0)
   const [showListModal, setShowListModal] = useState(false)
+  const [pacientesOptions, setPacientesOptions] = useState<Array<{label: string, value: string}>>([])
 
   useEffect(() => {
-    // Buscar total de pacientes salvos
+    // Buscar total de pacientes salvos e criar options para autocomplete
     fetch(api.endpoints.pacientes)
       .then(res => res.json())
-      .then(data => setTotalPacientes(data.length))
+      .then(data => {
+        setTotalPacientes(data.length)
+        
+        // Criar options para autocomplete
+        const options = data.map((p: any) => ({
+          label: p.nome_completo,
+          value: p.nome_completo,
+          data: p
+        }))
+        setPacientesOptions(options)
+      })
       .catch(() => setTotalPacientes(0))
   }, [])
 
@@ -71,17 +83,26 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
         </div>
       </button>
 
-      {/* Nome Completo */}
+      {/* Nome Completo com Autocomplete */}
       <div>
         <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
           Nome Completo
         </label>
-        <input
-          type="text"
-          className="input-field"
-          placeholder="Digite o nome completo do paciente"
+        <AutocompleteInput
           value={formData.nomePaciente}
-          onChange={(e) => updateFormData('nomePaciente', e.target.value)}
+          onChange={(value) => updateFormData('nomePaciente', value)}
+          onSelect={(option: any) => {
+            if (option.data) {
+              updateFormData('nomePaciente', option.data.nome_completo)
+              updateFormData('tipoDocumento', option.data.tipo_doc)
+              updateFormData('numeroDocumento', option.data.numero_doc)
+              updateFormData('cargo', option.data.cargo || '')
+              updateFormData('empresa', option.data.empresa || '')
+            }
+          }}
+          options={pacientesOptions}
+          placeholder="Digite o nome completo do paciente"
+          minChars={2}
         />
       </div>
 

@@ -1,4 +1,4 @@
-import { X, Stethoscope, MapPin, Award } from 'lucide-react'
+import { X, Stethoscope, MapPin, Award, Search, Filter } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import api from '../config/api'
 
@@ -21,7 +21,14 @@ interface Props {
 
 export default function DoctorsListModal({ isOpen, onClose }: Props) {
   const [medicos, setMedicos] = useState<Medico[]>([])
+  const [filteredMedicos, setFilteredMedicos] = useState<Medico[]>([])
   const [loading, setLoading] = useState(true)
+  
+  // Estados dos filtros
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterTipoCRM, setFilterTipoCRM] = useState<'TODOS' | 'CRM' | 'CRO' | 'RMs'>('TODOS')
+  const [filterUF, setFilterUF] = useState<string>('TODAS')
+  const [ufs, setUfs] = useState<string[]>([])
 
   useEffect(() => {
     if (isOpen) {
@@ -30,6 +37,14 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
         .then(res => res.json())
         .then(data => {
           setMedicos(data)
+          setFilteredMedicos(data)
+          
+          // Extrair lista única de UFs
+          const uniqueUFs = Array.from(new Set(
+            data.map((m: Medico) => m.uf_crm)
+          )) as string[]
+          setUfs(uniqueUFs.sort())
+          
           setLoading(false)
         })
         .catch(err => {
@@ -38,6 +53,39 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
         })
     }
   }, [isOpen])
+
+  // Aplicar filtros
+  useEffect(() => {
+    let filtered = [...medicos]
+
+    // Filtro por termo de busca (nome, CRM, especialidade)
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase()
+      filtered = filtered.filter(m =>
+        m.nome_completo.toLowerCase().includes(term) ||
+        m.crm.toLowerCase().includes(term) ||
+        (m.especialidade && m.especialidade.toLowerCase().includes(term))
+      )
+    }
+
+    // Filtro por tipo de registro
+    if (filterTipoCRM !== 'TODOS') {
+      filtered = filtered.filter(m => m.tipo_crm === filterTipoCRM)
+    }
+
+    // Filtro por UF
+    if (filterUF !== 'TODAS') {
+      filtered = filtered.filter(m => m.uf_crm === filterUF)
+    }
+
+    setFilteredMedicos(filtered)
+  }, [searchTerm, filterTipoCRM, filterUF, medicos])
+
+  const clearFilters = () => {
+    setSearchTerm('')
+    setFilterTipoCRM('TODOS')
+    setFilterUF('TODAS')
+  }
 
   if (!isOpen) return null
 
@@ -52,7 +100,9 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-white">Médicos Cadastrados</h2>
-              <p className="text-emerald-100 text-sm">Total: {medicos.length} registro{medicos.length !== 1 ? 's' : ''}</p>
+              <p className="text-emerald-100 text-sm">
+                {filteredMedicos.length} de {medicos.length} registro{medicos.length !== 1 ? 's' : ''}
+              </p>
             </div>
           </div>
           <button
@@ -63,21 +113,80 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
           </button>
         </div>
 
+        {/* Filtros */}
+        <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 space-y-3">
+          {/* Busca por texto */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Buscar por nome, CRM ou especialidade..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:focus:ring-emerald-900"
+            />
+          </div>
+
+          {/* Filtros em linha */}
+          <div className="flex flex-wrap gap-3">
+            {/* Filtro Tipo de Registro */}
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-emerald-600" />
+              <select
+                value={filterTipoCRM}
+                onChange={(e) => setFilterTipoCRM(e.target.value as 'TODOS' | 'CRM' | 'CRO' | 'RMs')}
+                className="px-3 py-2 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:border-emerald-500"
+              >
+                <option value="TODOS">Todos Registros</option>
+                <option value="CRM">CRM</option>
+                <option value="CRO">CRO</option>
+                <option value="RMs">RMs</option>
+              </select>
+            </div>
+
+            {/* Filtro UF */}
+            {ufs.length > 0 && (
+              <select
+                value={filterUF}
+                onChange={(e) => setFilterUF(e.target.value)}
+                className="px-3 py-2 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:border-emerald-500"
+              >
+                <option value="TODAS">Todas UFs</option>
+                {ufs.map(uf => (
+                  <option key={uf} value={uf}>{uf}</option>
+                ))}
+              </select>
+            )}
+
+            {/* Botão Limpar Filtros */}
+            {(searchTerm || filterTipoCRM !== 'TODOS' || filterUF !== 'TODAS') && (
+              <button
+                onClick={clearFilters}
+                className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                Limpar Filtros
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(80vh-120px)]">
+        <div className="p-6 overflow-y-auto max-h-[calc(80vh-280px)]">
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full mx-auto"></div>
               <p className="text-gray-600 dark:text-gray-400 mt-4">Carregando médicos...</p>
             </div>
-          ) : medicos.length === 0 ? (
+          ) : filteredMedicos.length === 0 ? (
             <div className="text-center py-12">
               <Stethoscope className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600 dark:text-gray-400 text-lg">Nenhum médico cadastrado ainda</p>
+              <p className="text-gray-600 dark:text-gray-400 text-lg">
+                {medicos.length === 0 ? 'Nenhum médico cadastrado ainda' : 'Nenhum médico encontrado com os filtros aplicados'}
+              </p>
             </div>
           ) : (
             <div className="grid gap-4">
-              {medicos.map((medico, index) => (
+              {filteredMedicos.map((medico, index) => (
                 <div
                   key={medico.id}
                   className="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border-2 border-emerald-200 dark:border-emerald-700 rounded-xl p-5 hover:shadow-lg transition-shadow"
