@@ -6,9 +6,9 @@ export const api = {
   
   // Endpoints
   endpoints: {
-    pacientes: `${API_URL}/pacientes/`,
-    medicos: `${API_URL}/medicos/`,
-    gerarDocumento: `${API_URL}/gerar-documento/`,
+    pacientes: `${API_URL}/api/patients`,
+    medicos: `${API_URL}/api/doctors`,
+    gerarDocumento: `${API_URL}/api/generate-document`,
   }
 }
 
