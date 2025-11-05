@@ -1,6 +1,7 @@
 import { ExternalLink, Stethoscope } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import type { DoctorFormProps } from '../types'
+import api from '../config/api'
 
 const UFS = [
   'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
@@ -13,7 +14,7 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
 
   useEffect(() => {
     // Buscar total de médicos salvos
-    fetch('http://localhost:8000/medicos/')
+    fetch(api.endpoints.medicos)
       .then(res => res.json())
       .then(data => setTotalMedicos(data.length))
       .catch(() => setTotalMedicos(0))

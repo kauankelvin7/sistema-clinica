@@ -42,6 +42,8 @@ allowed_origins = [
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:5173",  # Vite padrão
+    "https://sistema-clinica-seven.vercel.app",  # Vercel produção
+    "https://*.vercel.app",  # Qualquer preview do Vercel
 ]
 
 # Adicionar URL de produção se configurada

@@ -1,6 +1,7 @@
 import type { PatientFormProps } from '../types'
 import { useState, useEffect } from 'react'
 import { Users } from 'lucide-react'
+import api from '../config/api'
 
 
 // Função para aplicar máscara de CPF
@@ -18,7 +19,7 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
 
   useEffect(() => {
     // Buscar total de pacientes salvos
-    fetch('http://localhost:8000/pacientes/')
+    fetch(api.endpoints.pacientes)
       .then(res => res.json())
       .then(data => setTotalPacientes(data.length))
       .catch(() => setTotalPacientes(0))
