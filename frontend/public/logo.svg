@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="neonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#a855f7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d946ef;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6366f1;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="strongGlow">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Shield Background -->
+  <path d="M 100 20 L 160 45 L 160 100 Q 160 140, 100 170 Q 40 140, 40 100 L 40 45 Z" 
+        fill="url(#shieldGradient)" opacity="0.15" filter="url(#glow)"/>
+  
+  <!-- Medical Cross (Modern) -->
+  <g filter="url(#strongGlow)">
+    <rect x="90" y="60" width="20" height="80" rx="6" fill="url(#neonGradient)"/>
+    <rect x="70" y="90" width="60" height="20" rx="6" fill="url(#neonGradient)"/>
+  </g>
+  
+  <!-- Certificate Document -->
+  <g filter="url(#glow)">
+    <rect x="125" y="50" width="45" height="60" rx="4" fill="none" stroke="url(#neonGradient)" stroke-width="3"/>
+    <line x1="132" y1="65" x2="163" y2="65" stroke="url(#neonGradient)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="132" y1="75" x2="163" y2="75" stroke="url(#neonGradient)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="132" y1="85" x2="155" y2="85" stroke="url(#neonGradient)" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Stethoscope (Elegant) -->
+  <g filter="url(#glow)" stroke="url(#neonGradient)" stroke-width="4" fill="none" stroke-linecap="round">
+    <path d="M 35 75 Q 25 60, 40 48"/>
+    <circle cx="40" cy="42" r="6" fill="url(#neonGradient)"/>
+    <path d="M 40 48 L 40 90 Q 40 100, 50 100 L 70 100"/>
+  </g>
+  
+  <!-- Health Monitor Pulse -->
+  <g filter="url(#glow)" stroke="url(#neonGradient)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 30 150 L 50 150 L 58 135 L 66 165 L 74 150 L 170 150"/>
+  </g>
+  
+  <!-- Accent Elements -->
+  <circle cx="100" cy="100" r="92" stroke="url(#neonGradient)" stroke-width="2" fill="none" opacity="0.2"/>
+  <circle cx="100" cy="100" r="85" stroke="url(#neonGradient)" stroke-width="1" fill="none" opacity="0.15"/>
+  
+  <!-- Glow Dots -->
+  <circle cx="145" cy="115" r="3" fill="url(#neonGradient)" opacity="0.8" filter="url(#glow)"/>
+  <circle cx="55" cy="115" r="3" fill="url(#neonGradient)" opacity="0.8" filter="url(#glow)"/>
+</svg>

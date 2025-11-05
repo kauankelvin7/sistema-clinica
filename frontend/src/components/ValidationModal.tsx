@@ -60,7 +60,7 @@ export const ValidationModal: React.FC<ValidationModalProps> = ({ isOpen, onClos
         <div className="flex justify-end gap-3 p-6 pt-0">
           <button
             onClick={onClose}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-150"
+            className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg"
           >
             Entendi
           </button>

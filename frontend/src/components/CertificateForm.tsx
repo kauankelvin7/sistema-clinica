@@ -49,7 +49,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
           <label className="flex items-center gap-2 cursor-pointer whitespace-nowrap px-2">
             <input
               type="checkbox"
-              className="w-4 h-4 rounded border-2 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500/20"
+              className="w-4 h-4 rounded border-2 border-gray-300 text-emerald-600 focus:ring-2 focus:ring-emerald-500/20"
               checked={formData.cidNaoInformado}
               onChange={(e) => updateFormData('cidNaoInformado', e.target.checked)}
             />

@@ -35,9 +35,9 @@ export default function RankingModal({ open, onClose }: RankingModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-6 w-full max-w-lg relative border border-gray-200 dark:border-slate-700">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 w-full max-w-lg relative border border-gray-200 dark:border-gray-700">
         <button
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 dark:hover:text-slate-200"
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
           onClick={onClose}
           aria-label="Fechar ranking"
         >

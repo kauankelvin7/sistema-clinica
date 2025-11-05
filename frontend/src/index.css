@@ -26,133 +26,40 @@
 
 @layer base {
   body {
-    @apply bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen font-sans antialiased;
+    @apply min-h-screen font-sans antialiased;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
   }
 
-  /* Dark theme defaults when .dark class is applied to <html> */
   .dark body {
-    @apply bg-gradient-to-br from-slate-900 to-slate-800;
-    color: rgba(241,245,249,1); /* slate-100 */
+    background: linear-gradient(135deg, #064e3b 0%, #022c22 100%);
   }
+
 }
 
-@layer components {
-
-  .input-field {
-    @apply w-full px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 text-base placeholder:text-gray-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-150 hover:border-gray-300 shadow-sm;
-    background-blend-mode: lighten;
-  }
-
-
-  .dark .input-field {
-    @apply bg-[#18181b] border-[#2d2e36] text-[#e5e7eb] placeholder:text-[#6b7280] focus:border-purple-600 focus:ring-purple-900;
-    box-shadow: 0 2px 12px 0 rgba(24,24,27,0.10), 0 1.5px 6px 0 rgba(45,46,54,0.08);
-    background-blend-mode: lighten;
-  }
-
-
-  .input-field:focus {
-    @apply border-purple-500 shadow-md;
-  }
-
-  .btn-primary {
-    @apply px-6 py-3.5 bg-blue-600 text-white font-semibold text-sm
-           rounded-xl hover:bg-blue-700 active:bg-blue-800
-           transition-colors duration-150 shadow-md hover:shadow-lg
-           disabled:opacity-60 disabled:cursor-not-allowed;
-  }
-
-  .dark .btn-primary {
-    @apply bg-sky-500 hover:bg-sky-600 text-slate-900;
-    box-shadow: 0 8px 20px -10px rgba(56,189,248,0.2);
-  }
-
-  .btn-success {
-    @apply px-6 py-3.5 bg-emerald-600 text-white font-semibold text-sm
-           rounded-xl hover:bg-emerald-700 active:bg-emerald-800
-           transition-colors duration-150 shadow-md hover:shadow-lg
-           disabled:opacity-60 disabled:cursor-not-allowed;
-  }
-
-  .btn-danger {
-    @apply px-6 py-3.5 bg-gray-600 text-white font-semibold text-sm
-           rounded-xl hover:bg-rose-600 active:bg-rose-700
-           transition-colors duration-150 shadow-md hover:shadow-lg
-           disabled:opacity-60 disabled:cursor-not-allowed;
-  }
-
-  .dark .btn-danger {
-    @apply bg-rose-600 hover:bg-rose-700 text-white;
-  }
-
-  .card {
-    @apply bg-white border border-gray-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow duration-200;
-  }
-  .dark .card {
-    @apply bg-[#23232b] border-[#2d2e36] shadow-none;
-  }
-
-  .section-title {
-    @apply text-gray-800 text-lg font-bold pb-3 mb-4 border-b-2 border-gray-100;
-  }
-  .dark .section-title {
-    @apply text-white border-b-2 border-[#2d2e36];
-  }
-}
-
-/* Animações bonitas */
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-  100% {
-    background-position: 1000px 0;
-  }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.animate-shimmer {
-  animation: shimmer 3s infinite;
-  background: linear-gradient(to right, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
-  background-size: 1000px 100%;
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-/* Scrollbar personalizada */
+/* Scrollbar personalizada verde */
 ::-webkit-scrollbar {
   width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #f0fdf4;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #3b82f6, #2563eb);
+  background: linear-gradient(to bottom, #22c55e, #16a34a);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #2563eb, #1d4ed8);
+  background: linear-gradient(to bottom, #16a34a, #15803d);
 }
 
 /* Dark scrollbar */
 .dark ::-webkit-scrollbar-track {
-  background: #0f1724;
+  background: #022c22;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #475569, #0f1724);
+  background: linear-gradient(to bottom, #166534, #022c22);
 }

@@ -49,49 +49,52 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
 
       {/* Registro Profissional */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
           Registro Profissional
         </label>
-        <div className="flex flex-col sm:flex-row gap-3">
-          {/* Tipo */}
-          <select
-            className="input-field sm:w-28"
-            value={formData.tipoRegistro}
-            onChange={(e) => updateFormData('tipoRegistro', e.target.value)}
-          >
-            <option value="CRM">CRM</option>
-            <option value="CRO">CRO</option>
-            <option value="RMs">RMs</option>
-          </select>
+        <div className="grid grid-cols-1 gap-4">
+          {/* Linha 1: Tipo, Número e UF */}
+          <div className="flex gap-4">
+            {/* Tipo */}
+            <select
+              className="input-field w-28"
+              value={formData.tipoRegistro}
+              onChange={(e) => updateFormData('tipoRegistro', e.target.value)}
+            >
+              <option value="CRM">CRM</option>
+              <option value="CRO">CRO</option>
+              <option value="RMs">RMs</option>
+            </select>
 
-          {/* Número */}
-          <input
-            type="text"
-            className="input-field flex-1"
-            placeholder="Número do registro"
-            value={formData.numeroRegistro}
-            onChange={(e) => updateFormData('numeroRegistro', e.target.value)}
-          />
+            {/* Número */}
+            <input
+              type="text"
+              className="input-field flex-1"
+              placeholder="Número do registro"
+              value={formData.numeroRegistro}
+              onChange={(e) => updateFormData('numeroRegistro', e.target.value)}
+            />
 
-          {/* UF */}
-          <select
-            className="input-field sm:w-20"
-            value={formData.ufRegistro}
-            onChange={(e) => updateFormData('ufRegistro', e.target.value)}
-          >
-            {UFS.map(uf => (
-              <option key={uf} value={uf}>{uf}</option>
-            ))}
-          </select>
+            {/* UF */}
+            <select
+              className="input-field w-24"
+              value={formData.ufRegistro}
+              onChange={(e) => updateFormData('ufRegistro', e.target.value)}
+            >
+              {UFS.map(uf => (
+                <option key={uf} value={uf}>{uf}</option>
+              ))}
+            </select>
+          </div>
 
-          {/* Botão Consultar */}
+          {/* Linha 2: Botão Consultar */}
           <button
             type="button"
             onClick={handleConsultar}
-            className="px-4 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold text-sm rounded-xl shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/30 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 whitespace-nowrap"
+            className="w-full px-6 py-4 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-bold text-base rounded-xl shadow-lg flex items-center justify-center gap-2"
           >
-            <span>Consultar</span>
-            <ExternalLink className="w-4 h-4" />
+            <span>Consultar Registro Online</span>
+            <ExternalLink className="w-5 h-5" />
           </button>
         </div>
       </div>

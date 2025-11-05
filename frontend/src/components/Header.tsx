@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { FileHeart, Sun, Moon } from 'lucide-react'
+import { Sun, Moon } from 'lucide-react'
 
 export default function Header() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -34,10 +34,15 @@ export default function Header() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
           {/* Logo e Título */}
           <div className="flex items-center gap-5">
-            {/* Logo Container */}
+            {/* Logo Container com Estetoscópio */}
             <div className="relative">
               <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg">
-                <FileHeart className="w-9 h-9 text-emerald-600" strokeWidth={2.5} />
+                <svg className="w-9 h-9 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  {/* Estetoscópio */}
+                  <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3" />
+                  <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4" />
+                  <circle cx="20" cy="10" r="2" />
+                </svg>
               </div>
             </div>
             
