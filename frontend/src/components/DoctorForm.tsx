@@ -1,7 +1,8 @@
-import { ExternalLink, Stethoscope } from 'lucide-react'
+import { ExternalLink, Stethoscope, Eye } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import type { DoctorFormProps } from '../types'
 import api from '../config/api'
+import DoctorsListModal from './DoctorsListModal'
 
 const UFS = [
   'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
@@ -11,6 +12,7 @@ const UFS = [
 
 export default function DoctorForm({ formData, updateFormData }: DoctorFormProps) {
   const [totalMedicos, setTotalMedicos] = useState<number>(0)
+  const [showListModal, setShowListModal] = useState(false)
 
   useEffect(() => {
     // Buscar total de médicos salvos
@@ -34,18 +36,26 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
 
   return (
     <div className="space-y-6">
-      {/* Contador de Médicos Salvos */}
-      <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border-2 border-emerald-200 dark:border-emerald-700 rounded-xl p-4">
+      {/* Modal de Listagem */}
+      <DoctorsListModal isOpen={showListModal} onClose={() => setShowListModal(false)} />
+
+      {/* Contador de Médicos Salvos - Clicável */}
+      <button
+        type="button"
+        onClick={() => setShowListModal(true)}
+        className="w-full bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border-2 border-emerald-200 dark:border-emerald-700 rounded-xl p-4 hover:shadow-lg hover:scale-[1.02] transition-all"
+      >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center">
             <Stethoscope className="w-5 h-5 text-white" />
           </div>
-          <div>
+          <div className="text-left flex-1">
             <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Médicos Cadastrados</p>
             <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{totalMedicos}</p>
           </div>
+          <Eye className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
         </div>
-      </div>
+      </button>
 
       {/* Nome Completo */}
       <div>

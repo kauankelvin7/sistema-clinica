@@ -1,7 +1,8 @@
 import type { PatientFormProps } from '../types'
 import { useState, useEffect } from 'react'
-import { Users } from 'lucide-react'
+import { Users, Eye } from 'lucide-react'
 import api from '../config/api'
+import PatientsListModal from './PatientsListModal'
 
 
 // Função para aplicar máscara de CPF
@@ -16,6 +17,7 @@ function maskCPF(value: string) {
 
 export default function PatientForm({ formData, updateFormData }: PatientFormProps) {
   const [totalPacientes, setTotalPacientes] = useState<number>(0)
+  const [showListModal, setShowListModal] = useState(false)
 
   useEffect(() => {
     // Buscar total de pacientes salvos
@@ -48,18 +50,26 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
 
   return (
     <div className="space-y-6">
-      {/* Contador de Pacientes Salvos */}
-      <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border-2 border-emerald-200 dark:border-emerald-700 rounded-xl p-4">
+      {/* Modal de Listagem */}
+      <PatientsListModal isOpen={showListModal} onClose={() => setShowListModal(false)} />
+
+      {/* Contador de Pacientes Salvos - Clicável */}
+      <button
+        type="button"
+        onClick={() => setShowListModal(true)}
+        className="w-full bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border-2 border-emerald-200 dark:border-emerald-700 rounded-xl p-4 hover:shadow-lg hover:scale-[1.02] transition-all"
+      >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center">
             <Users className="w-5 h-5 text-white" />
           </div>
-          <div>
+          <div className="text-left flex-1">
             <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Pacientes Cadastrados</p>
             <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{totalPacientes}</p>
           </div>
+          <Eye className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
         </div>
-      </div>
+      </button>
 
       {/* Nome Completo */}
       <div>
