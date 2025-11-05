@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import type { CertificateFormProps } from '../types'
 import AutocompleteInput from './AutocompleteInput'
-import { CIDS_COMUNS } from '../data/cids'
+import { searchCID } from '../data/cids'
 
 interface CidOption {
   label: string
@@ -13,15 +13,17 @@ interface CidOption {
 export default function CertificateForm({ formData, updateFormData }: CertificateFormProps) {
   const [cidOptions, setCidOptions] = useState<CidOption[]>([])
 
-  useEffect(() => {
-    const options = CIDS_COMUNS.map(cid => ({
+  // Atualiza opções de CID conforme o usuário digita (busca dinâmica)
+  const handleCidSearch = (value: string) => {
+    const results = searchCID(value)
+    const options = results.map(cid => ({
       label: `${cid.codigo} - ${cid.descricao}`,
       value: cid.codigo,
       codigo: cid.codigo,
       descricao: cid.descricao
     }))
     setCidOptions(options)
-  }, [])
+  }
   return (
     <div className="space-y-6">
       {/* Data e Dias de Afastamento em linha */}
@@ -61,7 +63,10 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
           <AutocompleteInput
             value={formData.cidNaoInformado ? '' : formData.cid}
-            onChange={(value) => updateFormData('cid', value)}
+            onChange={(value) => {
+              updateFormData('cid', value)
+              handleCidSearch(value) // Busca dinâmica conforme digita
+            }}
             onSelect={(option) => {
               const selectedCid = cidOptions.find(cid => cid.value === option.value)
               if (selectedCid) {

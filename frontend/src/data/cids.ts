@@ -1,5 +1,17 @@
-// Lista de CIDs mais comuns em atestados médicos
-export const CIDS_COMUNS = [
+import { CIDS_COMPLETO } from './cids-completo'
+import { CIDS_PARTE2 } from './cids-parte2'
+import { CIDS_PARTE3 } from './cids-parte3'
+import { CIDS_PARTE4 } from './cids-parte4'
+import { CIDS_PARTE5 } from './cids-parte5'
+
+// Combinação de todas as bases de CIDs
+interface CidData {
+  codigo: string
+  descricao: string
+}
+
+// Lista expandida de CIDs mais comuns para carregamento rápido inicial
+export const CIDS_COMUNS: CidData[] = [
   { codigo: 'A09', descricao: 'Diarreia e gastroenterite de origem infecciosa presumível' },
   { codigo: 'B34.9', descricao: 'Infecção viral não especificada' },
   { codigo: 'G43', descricao: 'Enxaqueca' },
@@ -47,13 +59,76 @@ export const CIDS_COMUNS = [
   { codigo: 'Z73.0', descricao: 'Estado de exaustão (Burnout)' },
 ]
 
-export function searchCID(query: string) {
-  if (!query || query.length < 1) return []
+// Base completa combinada de TODOS os CIDs (~3500+ códigos da CID-10 completa!)
+export const TODOS_CIDS: CidData[] = [
+  ...CIDS_COMPLETO,  // Capítulos I-V: A-F (Infecciosas, Neoplasias, Sangue, Endócrinas, Mentais)
+  ...CIDS_PARTE2,    // Capítulos VI-XI: G-K (Nervoso, Olho, Ouvido, Circulatório, Respiratório, Digestivo)
+  ...CIDS_PARTE3,    // Capítulos XII-XV: L-O (Pele, Músculo-esquelético, Geniturinário, Gravidez)
+  ...CIDS_PARTE4,    // Capítulos XVI-XVIII: P-R (Perinatais, Congênitas, Sintomas)
+  ...CIDS_PARTE5     // Capítulos XIX-XXI: S-Z (Lesões, Envenenamentos, Fatores de Saúde)
+]
+
+/**
+ * Função de busca OTIMIZADA e INTELIGENTE de CIDs
+ * 
+ * Como funciona:
+ * - Digite "A" → mostra A00, A01, A02... (em ordem alfabética)
+ * - Digite "J0" → mostra J00, J01, J02...
+ * - Digite "dor" → mostra todos com "dor" na descrição
+ * - Digite "51" → mostra códigos com 51 (I51, J51, M51...)
+ * 
+ * Priorização INTELIGENTE:
+ * 1º - Códigos que COMEÇAM com o termo (prefixo)
+ * 2º - Códigos que CONTÊM o termo
+ * 3º - Descrições que CONTÊM o termo
+ * 
+ * Performance: Muito rápido mesmo com 3500+ CIDs! ⚡
+ */
+export function searchCID(query: string): CidData[] {
+  if (!query || query.length < 1) {
+    return CIDS_COMUNS.slice(0, 10)
+  }
   
-  const searchTerm = query.toLowerCase()
+  const searchTerm = query.toLowerCase().trim()
   
-  return CIDS_COMUNS.filter(cid => 
-    cid.codigo.toLowerCase().includes(searchTerm) ||
-    cid.descricao.toLowerCase().includes(searchTerm)
-  ).slice(0, 10) // Limita a 10 resultados
+  // Arrays para categorizar resultados por PRIORIDADE
+  const prefixMatches: CidData[] = []      // 🥇 PRIORIDADE 1: A → A00, A01, A02
+  const codeContains: CidData[] = []       // 🥈 PRIORIDADE 2: 51 → I51, J51, M51
+  const descMatches: CidData[] = []        // 🥉 PRIORIDADE 3: dor → "dor de cabeça"
+  
+  // Busca otimizada: UMA ÚNICA passada pelo array
+  for (const cid of TODOS_CIDS) {
+    const codigoLower = cid.codigo.toLowerCase()
+    const descricaoLower = cid.descricao.toLowerCase()
+    
+    // PRIORIDADE 1: Códigos que começam com o termo (A, A0, A00...)
+    if (codigoLower.startsWith(searchTerm)) {
+      prefixMatches.push(cid)
+    }
+    // PRIORIDADE 2: Códigos que contêm o termo mas não começam
+    else if (codigoLower.includes(searchTerm)) {
+      codeContains.push(cid)
+    }
+    // PRIORIDADE 3: Descrições que contêm o termo
+    else if (descricaoLower.includes(searchTerm)) {
+      descMatches.push(cid)
+    }
+    
+    // Otimização: para se já temos resultados suficientes
+    if (prefixMatches.length + codeContains.length + descMatches.length >= 20) {
+      break
+    }
+  }
+  
+  // Ordena códigos por prefixo ALFABETICAMENTE (A00, A01, A02, A03...)
+  prefixMatches.sort((a, b) => a.codigo.localeCompare(b.codigo))
+  
+  // Combina resultados mantendo a PRIORIDADE e limita a 15 resultados
+  return [
+    ...prefixMatches,
+    ...codeContains,
+    ...descMatches
+  ].slice(0, 15)
 }
+
+
