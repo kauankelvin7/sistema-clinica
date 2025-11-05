@@ -43,13 +43,13 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Busca de Paciente */}
       <PatientSearch onSelect={handleLoadPatient} />
 
       {/* Nome Completo */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
           Nome Completo
         </label>
         <input
@@ -63,12 +63,12 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
 
       {/* Documento (CPF/RG) */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
           Documento
         </label>
-        <div className="flex gap-3">
+        <div className="flex gap-4">
           <select
-            className="input-field w-24"
+            className="input-field w-32"
             value={formData.tipoDocumento}
             onChange={handleTipoDocumentoChange}
           >
@@ -88,9 +88,9 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
       </div>
 
       {/* Cargo e Empresa em linha */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
             Cargo
           </label>
           <input
@@ -103,7 +103,7 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
             Empresa
           </label>
           <input

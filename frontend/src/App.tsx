@@ -126,33 +126,33 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen py-6 px-4 sm:py-8 sm:px-6 md:py-12 md:px-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-950 transition-colors duration-500">
-  <div className="w-full px-2 sm:px-6 space-y-6 md:space-y-8">
+    <div className="min-h-screen py-8 px-6 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-gray-900 dark:to-emerald-950">
+  <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <Header />
 
         {/* Mensagem de Status */}
         {message && (
-          <div className={`rounded-xl p-4 flex items-center gap-3 shadow-lg backdrop-blur-sm border-2 transition-colors duration-300
+          <div className={`rounded-xl p-5 flex items-center gap-4 shadow-lg border-2
             ${message.type === 'success'
-              ? 'bg-emerald-50/90 border-emerald-200 text-emerald-800 dark:bg-emerald-900/80 dark:border-emerald-700 dark:text-emerald-100'
-              : 'bg-rose-50/90 border-rose-200 text-rose-800 dark:bg-rose-900/80 dark:border-rose-700 dark:text-rose-100'}
+              ? 'bg-emerald-50 border-emerald-300 text-emerald-900 dark:bg-emerald-900/80 dark:border-emerald-600 dark:text-emerald-100'
+              : 'bg-rose-50 border-rose-300 text-rose-900 dark:bg-rose-900/80 dark:border-rose-600 dark:text-rose-100'}
           `}>
             {message.type === 'success' ? (
-              <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-300 flex-shrink-0" />
+              <CheckCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-300 flex-shrink-0" />
             ) : (
-              <XCircle className="w-5 h-5 text-rose-600 dark:text-rose-300 flex-shrink-0" />
+              <XCircle className="w-6 h-6 text-rose-600 dark:text-rose-300 flex-shrink-0" />
             )}
-            <p className="font-semibold text-sm">
+            <p className="font-semibold text-base">
               {message.text}
             </p>
           </div>
         )}
 
         {/* Container Principal */}
-  <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-200 dark:border-slate-700 shadow-xl dark:shadow-none transition-colors duration-500 w-full">
-          <div className="p-4 sm:p-6 md:p-8">
-            <div className="grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-3">
+  <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-2 border-gray-100 dark:border-gray-700">
+          <div className="p-10">
+            <div className="grid gap-8 grid-cols-1 lg:grid-cols-3">
               {/* Seção: Dados do Paciente */}
               <div className="card dark:bg-slate-800 dark:border-slate-700 dark:shadow-none min-w-[260px] flex-1">
                 <div className="flex items-center gap-4 mb-5">
@@ -185,7 +185,7 @@ function App() {
               </div>
             </div>
             {/* Botões de Ação */}
-            <div className="mt-8">
+            <div className="mt-10 pt-10 border-t-2 border-gray-100 dark:border-gray-700">
               <ActionButtons 
                 onGenerateWord={handleGenerateWord} 
                 onClear={handleClear}
@@ -203,10 +203,10 @@ function App() {
         />
 
         {/* Footer */}
-        <div className="text-center pb-4">
-          <div className="inline-block bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl px-8 py-3 shadow-md dark:shadow-none transition-colors duration-500">
-            <p className="text-gray-700 dark:text-slate-200 text-xs md:text-sm font-semibold">
-              Sistema de Homologação v2.0 • Desenvolvido por <span className="text-blue-600 dark:text-blue-400 font-bold">Kauan Kelvin</span>
+        <div className="text-center">
+          <div className="inline-block bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl px-8 py-4 shadow-md">
+            <p className="text-gray-700 dark:text-gray-300 text-sm font-semibold">
+              Sistema de Homologação v2.0 • Desenvolvido por <span className="text-emerald-600 dark:text-emerald-400 font-bold">Kauan Kelvin</span>
             </p>
           </div>
         </div>

@@ -4,23 +4,23 @@ import type { ActionButtonsProps } from '../types'
 // Botões de ação para gerar documentos
 export default function ActionButtons({ onGenerateWord, onClear, loading }: ActionButtonsProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 pt-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
       {/* Botão Gerar Word */}
       <button
         onClick={onGenerateWord}
         disabled={!!loading}
-        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-xl shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150 dark:bg-sky-500 dark:hover:bg-sky-600 dark:text-slate-900"
+        className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-bold py-5 px-8 rounded-xl shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed dark:from-emerald-500 dark:to-green-500"
       >
         <div className="flex items-center justify-center gap-3">
           {loading === 'word' ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span className="text-sm md:text-base font-semibold">Gerando Documento...</span>
+              <Loader2 className="w-6 h-6 animate-spin" />
+              <span className="text-base font-bold">Gerando Documento...</span>
             </>
           ) : (
             <>
-              <FileText className="w-5 h-5" />
-              <span className="text-sm md:text-base font-semibold">Gerar Documento</span>
+              <FileText className="w-6 h-6" />
+              <span className="text-base font-bold">Gerar Documento</span>
             </>
           )}
         </div>
@@ -30,11 +30,11 @@ export default function ActionButtons({ onGenerateWord, onClear, loading }: Acti
       <button
         onClick={onClear}
         disabled={!!loading}
-        className="bg-gray-600 hover:bg-rose-600 text-white font-semibold py-4 px-6 rounded-xl shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150 dark:bg-slate-700 dark:hover:bg-rose-600"
+        className="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-rose-600 hover:to-rose-700 text-white font-bold py-5 px-8 rounded-xl shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed"
       >
         <div className="flex items-center justify-center gap-3">
-          <Trash2 className="w-5 h-5" />
-          <span className="text-sm md:text-base font-semibold">Limpar Tudo</span>
+          <Trash2 className="w-6 h-6" />
+          <span className="text-base font-bold">Limpar Tudo</span>
         </div>
       </button>
     </div>

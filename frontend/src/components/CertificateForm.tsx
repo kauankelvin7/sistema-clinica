@@ -2,11 +2,11 @@ import type { CertificateFormProps } from '../types'
 
 export default function CertificateForm({ formData, updateFormData }: CertificateFormProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Data e Dias de Afastamento em linha */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
             Data do Atestado
           </label>
           <input
@@ -18,7 +18,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
             Dias de Afastamento
           </label>
           <input
@@ -34,10 +34,10 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
 
       {/* CID */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Código CID (Classificação Internacional de Doenças)
+        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          Código CID
         </label>
-        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
           <input
             type="text"
             className="input-field flex-1 w-full"

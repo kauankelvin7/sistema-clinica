@@ -29,13 +29,13 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Busca de Médico */}
       <DoctorSearch onSelect={handleLoadDoctor} />
 
       {/* Nome Completo */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
           Nome Completo do Médico
         </label>
         <input
