@@ -1,5 +1,6 @@
-import type { PatientFormProps, Paciente } from '../types'
-import PatientSearch from './PatientSearch'
+import type { PatientFormProps } from '../types'
+import { useState, useEffect } from 'react'
+import { Users } from 'lucide-react'
 
 
 // Função para aplicar máscara de CPF
@@ -13,13 +14,15 @@ function maskCPF(value: string) {
 }
 
 export default function PatientForm({ formData, updateFormData }: PatientFormProps) {
-  const handleLoadPatient = (patient: Paciente) => {
-    updateFormData('nomePaciente', patient.nome_completo)
-    updateFormData('tipoDocumento', patient.tipo_doc)
-    updateFormData('numeroDocumento', patient.numero_doc)
-    updateFormData('cargo', patient.cargo || '')
-    updateFormData('empresa', patient.empresa || '')
-  }
+  const [totalPacientes, setTotalPacientes] = useState<number>(0)
+
+  useEffect(() => {
+    // Buscar total de pacientes salvos
+    fetch('http://localhost:8000/pacientes/')
+      .then(res => res.json())
+      .then(data => setTotalPacientes(data.length))
+      .catch(() => setTotalPacientes(0))
+  }, [])
 
   // Atualiza o campo de documento com máscara se for CPF
   const handleDocumentoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,8 +47,18 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
 
   return (
     <div className="space-y-6">
-      {/* Busca de Paciente */}
-      <PatientSearch onSelect={handleLoadPatient} />
+      {/* Contador de Pacientes Salvos */}
+      <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border-2 border-emerald-200 dark:border-emerald-700 rounded-xl p-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center">
+            <Users className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Pacientes Cadastrados</p>
+            <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{totalPacientes}</p>
+          </div>
+        </div>
+      </div>
 
       {/* Nome Completo */}
       <div>

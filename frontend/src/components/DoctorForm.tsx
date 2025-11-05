@@ -1,6 +1,6 @@
-import { ExternalLink } from 'lucide-react'
-import type { DoctorFormProps, Medico } from '../types'
-import DoctorSearch from './DoctorSearch'
+import { ExternalLink, Stethoscope } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import type { DoctorFormProps } from '../types'
 
 const UFS = [
   'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
@@ -9,12 +9,15 @@ const UFS = [
 ]
 
 export default function DoctorForm({ formData, updateFormData }: DoctorFormProps) {
-  const handleLoadDoctor = (doctor: Medico) => {
-    updateFormData('nomeMedico', doctor.nome_completo)
-    updateFormData('tipoRegistro', doctor.tipo_crm)
-    updateFormData('numeroRegistro', doctor.crm)
-    updateFormData('ufRegistro', doctor.uf_crm)
-  }
+  const [totalMedicos, setTotalMedicos] = useState<number>(0)
+
+  useEffect(() => {
+    // Buscar total de médicos salvos
+    fetch('http://localhost:8000/medicos/')
+      .then(res => res.json())
+      .then(data => setTotalMedicos(data.length))
+      .catch(() => setTotalMedicos(0))
+  }, [])
 
   const handleConsultar = () => {
     const urls: Record<string, string> = {
@@ -30,8 +33,18 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
 
   return (
     <div className="space-y-6">
-      {/* Busca de Médico */}
-      <DoctorSearch onSelect={handleLoadDoctor} />
+      {/* Contador de Médicos Salvos */}
+      <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border-2 border-emerald-200 dark:border-emerald-700 rounded-xl p-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center">
+            <Stethoscope className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Médicos Cadastrados</p>
+            <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{totalMedicos}</p>
+          </div>
+        </div>
+      </div>
 
       {/* Nome Completo */}
       <div>
