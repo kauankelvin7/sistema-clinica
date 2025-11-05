@@ -42,8 +42,7 @@ allowed_origins = [
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:5173",  # Vite padrão
-    "https://sistema-clinica-seven.vercel.app",  # Vercel produção
-    "https://*.vercel.app",  # Qualquer preview do Vercel
+    "https://sistema-clinica-seven.vercel.app",  # Vercel produção principal
 ]
 
 # Adicionar URL de produção se configurada
@@ -53,6 +52,7 @@ if FRONTEND_URL and FRONTEND_URL not in allowed_origins:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",  # Permite qualquer subdomínio Vercel
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
