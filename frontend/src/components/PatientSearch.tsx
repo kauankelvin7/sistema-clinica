@@ -49,7 +49,7 @@ export default function PatientSearch({ onSelect }: PatientSearchProps) {
   return (
     <div className="relative">
       <div className="flex items-center gap-2">
-        <Search className="w-4 h-4 text-gray-400" />
+        <Search className="w-4 h-4 text-black-400" />
         <input
           type="text"
           className="input-field flex-1 text-black dark:text-black border-2 border-primary-300 bg-gradient-to-br from-primary-50 to-secondary-50 focus:border-primary-500 focus:ring-4 focus:ring-primary-400/20 shadow-lg transition-all duration-200 placeholder:text-gray-500 dark:placeholder:text-slate-400"

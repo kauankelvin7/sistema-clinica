@@ -126,8 +126,8 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen py-8 px-6 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-gray-900 dark:to-emerald-950">
-  <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen py-8 px-4 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-gray-900 dark:to-emerald-950">
+  <div className="max-w-[1800px] mx-auto space-y-8">
         {/* Header */}
         <Header />
 
@@ -151,10 +151,10 @@ function App() {
 
         {/* Container Principal */}
   <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-2 border-gray-100 dark:border-gray-700">
-          <div className="p-10">
-            <div className="grid gap-8 grid-cols-1 lg:grid-cols-3">
+          <div className="p-12">
+            <div className="grid gap-10 grid-cols-1 lg:grid-cols-3">
               {/* Seção: Dados do Paciente */}
-              <div className="card dark:bg-gray-800 dark:border-gray-700 dark:shadow-none min-w-[260px] flex-1">
+              <div className="card dark:bg-gray-800 dark:border-gray-700 dark:shadow-none min-w-[300px] flex-1">
                 <div className="flex items-center gap-4 mb-5">
                   <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center shadow-md dark:shadow-emerald-900/30">
                     <User className="w-6 h-6 text-white" />
@@ -164,7 +164,7 @@ function App() {
                 <PatientForm formData={formData} updateFormData={updateFormData} />
               </div>
               {/* Seção: Dados do Atestado */}
-              <div className="card dark:bg-gray-800 dark:border-gray-700 dark:shadow-none min-w-[260px] flex-1">
+              <div className="card dark:bg-gray-800 dark:border-gray-700 dark:shadow-none min-w-[300px] flex-1">
                 <div className="flex items-center gap-4 mb-5">
                   <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center shadow-md dark:shadow-emerald-900/30">
                     <FileText className="w-6 h-6 text-white" />
@@ -174,7 +174,7 @@ function App() {
                 <CertificateForm formData={formData} updateFormData={updateFormData} />
               </div>
               {/* Seção: Dados do Médico */}
-              <div className="card dark:bg-gray-800 dark:border-gray-700 dark:shadow-none min-w-[260px] flex-1">
+              <div className="card dark:bg-gray-800 dark:border-gray-700 dark:shadow-none min-w-[300px] flex-1">
                 <div className="flex items-center gap-4 mb-5">
                   <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center shadow-md dark:shadow-emerald-900/30">
                     <Stethoscope className="w-6 h-6 text-white" />
