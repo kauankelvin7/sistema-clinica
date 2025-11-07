@@ -1,0 +1,42 @@
+# Fly.io App Configuration
+app = "sistema-clinica-api"
+primary_region = "gru" # São Paulo, Brazil
+
+[build]
+  # Buildpack Python automático
+  [build.args]
+    PYTHON_VERSION = "3.11"
+
+[env]
+  PORT = "8000"
+  PYTHON_VERSION = "3.11"
+  RENDER = "true" # Para que db_manager use PostgreSQL
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0 # 0 = permite sleep (grátis), 1 = sempre ativo
+
+[http_service.concurrency]
+  type = "connections"
+  hard_limit = 25
+  soft_limit = 20
+
+[[http_service.checks]]
+  interval = "30s"
+  timeout = "5s"
+  grace_period = "10s"
+  method = "GET"
+  path = "/api/health"
+
+# Deploy com zero downtime
+[deploy]
+  release_command = "python -c 'from core.db_manager import create_tables; create_tables()'"
+
+# Recursos (Free tier - NÃO MUDE!)
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256

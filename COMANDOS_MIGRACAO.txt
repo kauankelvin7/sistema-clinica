@@ -1,0 +1,82 @@
+# GUIA RAPIDO - MIGRACAO FLY.IO
+# Execute linha por linha
+
+# ========================================
+# 1. INSTALAR FLY CLI
+# ========================================
+iwr https://fly.io/install.ps1 -useb | iex
+
+# FECHE E REABRA o PowerShell apos instalar!
+
+# ========================================
+# 2. LOGIN NO FLY.IO
+# ========================================
+fly auth login
+# (Abre navegador - faca login/cadastro)
+
+# ========================================
+# 3. CRIAR APP E BANCO
+# ========================================
+cd backend
+fly launch --no-deploy
+
+# Responda:
+#   App name: sistema-clinica-api
+#   Region: gru (Sao Paulo)
+#   PostgreSQL: Yes
+#   Configuration: Development
+#   Redis: No
+
+# ========================================
+# 4. CONFIGURAR VARIAVEIS
+# ========================================
+fly secrets set FRONTEND_URL=https://sistema-clinica-seven.vercel.app
+fly secrets set RENDER=true
+
+# ========================================
+# 5. IMPORTAR DADOS DO BACKUP
+# ========================================
+# Em UM terminal:
+fly proxy 5432 -a sistema-clinica-api-db
+
+# Em OUTRO PowerShell:
+cd C:\Users\Kauan\Desktop\sistema_clinica_homologacao\backups
+
+# Pegar senha do banco Fly.io:
+fly postgres connect -a sistema-clinica-api-db
+# (Anote a senha que aparecer)
+
+# Importar backup:
+psql "postgresql://postgres:SENHA_AQUI@localhost:5432/sistema_clinica_api" < backup_render_20251107_142703.sql
+
+# Verificar dados:
+fly postgres connect -a sistema-clinica-api-db
+SELECT COUNT(*) FROM pacientes;  # Deve mostrar 64
+SELECT COUNT(*) FROM medicos;    # Deve mostrar 61
+\q
+
+# ========================================
+# 6. DEPLOY!
+# ========================================
+cd C:\Users\Kauan\Desktop\sistema_clinica_homologacao\backend
+fly deploy
+
+# ========================================
+# 7. TESTAR
+# ========================================
+fly open /api/health
+fly logs
+
+# ========================================
+# 8. ATUALIZAR VERCEL
+# ========================================
+# 1. Acesse: https://vercel.com/seu-usuario/sistema-clinica-seven
+# 2. Settings > Environment Variables
+# 3. Edite VITE_API_URL:
+#    ANTES: https://sistema-clinica-api.onrender.com
+#    AGORA: https://sistema-clinica-api.fly.dev
+# 4. Redeploy
+
+# ========================================
+# PRONTO! MIGRACAO COMPLETA
+# ========================================

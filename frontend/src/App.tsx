@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { FileText, User, Stethoscope, CheckCircle, XCircle } from 'lucide-react'
+import { FileText, User, Stethoscope, CheckCircle, XCircle, Smartphone, Monitor } from 'lucide-react'
 import Header from './components/Header'
 import PatientForm from './components/PatientForm'
 import CertificateForm from './components/CertificateForm'
@@ -10,6 +10,17 @@ import { generateDocument } from './services/api'
 import type { FormData } from './types'
 
 function App() {
+  // Estado do layout (vertical = mobile, horizontal = desktop)
+  const [layoutMode, setLayoutMode] = useState<'vertical' | 'horizontal'>(() => {
+    const saved = localStorage.getItem('layout_mode')
+    return (saved as 'vertical' | 'horizontal') || 'horizontal'
+  })
+
+  // Salvar preferência de layout
+  useEffect(() => {
+    localStorage.setItem('layout_mode', layoutMode)
+  }, [layoutMode])
+
   // Carregar dados salvos do localStorage
   const loadSavedData = (): FormData => {
     const saved = localStorage.getItem('sistema_clinica_data')
@@ -127,9 +138,33 @@ function App() {
 
   return (
     <div className="min-h-screen py-8 px-4 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-gray-900 dark:to-emerald-950">
-  <div className="max-w-[1800px] mx-auto space-y-8">
+      <div className="max-w-[1800px] mx-auto space-y-8">
         {/* Header */}
         <Header />
+
+        {/* Botão de Alternância de Layout */}
+        <div className="flex justify-end">
+          <button
+            onClick={() => setLayoutMode(prev => prev === 'horizontal' ? 'vertical' : 'horizontal')}
+            className="group flex items-center gap-3 px-6 py-3 bg-white dark:bg-gray-800 border-2 border-emerald-200 dark:border-emerald-700 rounded-xl shadow-md hover:shadow-lg hover:border-emerald-400 dark:hover:border-emerald-500 transition-all duration-300"
+          >
+            {layoutMode === 'horizontal' ? (
+              <>
+                <Smartphone className="w-5 h-5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Modo Vertical (Mobile)
+                </span>
+              </>
+            ) : (
+              <>
+                <Monitor className="w-5 h-5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Modo Horizontal (Desktop)
+                </span>
+              </>
+            )}
+          </button>
+        </div>
 
         {/* Mensagem de Status */}
         {message && (
@@ -150,9 +185,9 @@ function App() {
         )}
 
         {/* Container Principal */}
-  <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-2 border-gray-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-2 border-gray-100 dark:border-gray-700">
           <div className="p-12">
-            <div className="grid gap-10 grid-cols-1 lg:grid-cols-3">
+            <div className={`grid gap-10 ${layoutMode === 'horizontal' ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}>
               {/* Seção: Dados do Paciente */}
               <div className="card dark:bg-gray-800 dark:border-gray-700 dark:shadow-none min-w-[300px] flex-1">
                 <div className="flex items-center gap-4 mb-5">
