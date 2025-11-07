@@ -539,7 +539,6 @@ async def get_patients(search: Optional[str] = None):
                         FROM pacientes 
                         WHERE nome_completo ILIKE :search OR numero_doc LIKE :search
                         ORDER BY nome_completo
-                        LIMIT 50
                     """)
                     result = conn.execute(query, {"search": f"%{search}%"})
                 else:
@@ -547,7 +546,6 @@ async def get_patients(search: Optional[str] = None):
                         SELECT id, nome_completo, tipo_doc, numero_doc, cargo, empresa
                         FROM pacientes 
                         ORDER BY data_criacao DESC
-                        LIMIT 50
                     """)
                     result = conn.execute(query)
                 
@@ -570,7 +568,6 @@ async def get_patients(search: Optional[str] = None):
                         FROM pacientes 
                         WHERE nome_completo LIKE ? OR numero_doc LIKE ?
                         ORDER BY nome_completo
-                        LIMIT 50
                     """
                     cursor.execute(query, (f"%{search}%", f"%{search}%"))
                 else:
@@ -578,7 +575,6 @@ async def get_patients(search: Optional[str] = None):
                         SELECT id, nome_completo, tipo_doc, numero_doc, cargo, empresa
                         FROM pacientes 
                         ORDER BY data_criacao DESC
-                        LIMIT 50
                     """
                     cursor.execute(query)
                 
@@ -618,7 +614,6 @@ async def get_doctors(search: Optional[str] = None):
                         FROM medicos 
                         WHERE nome_completo ILIKE :search OR crm LIKE :search
                         ORDER BY nome_completo
-                        LIMIT 50
                     """)
                     result = conn.execute(query, {"search": f"%{search}%"})
                 else:
@@ -626,7 +621,6 @@ async def get_doctors(search: Optional[str] = None):
                         SELECT id, nome_completo, tipo_crm, crm, uf_crm
                         FROM medicos 
                         ORDER BY data_criacao DESC
-                        LIMIT 50
                     """)
                     result = conn.execute(query)
                 
@@ -648,7 +642,6 @@ async def get_doctors(search: Optional[str] = None):
                         FROM medicos 
                         WHERE nome_completo LIKE ? OR crm LIKE ?
                         ORDER BY nome_completo
-                        LIMIT 50
                     """
                     cursor.execute(query, (f"%{search}%", f"%{search}%"))
                 else:
@@ -656,7 +649,6 @@ async def get_doctors(search: Optional[str] = None):
                         SELECT id, nome_completo, tipo_crm, crm, uf_crm
                         FROM medicos 
                         ORDER BY data_criacao DESC
-                        LIMIT 50
                     """
                     cursor.execute(query)
                 
