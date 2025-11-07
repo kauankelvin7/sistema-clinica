@@ -1,6 +1,7 @@
 import { X, Stethoscope, MapPin, Award, Search, Filter } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import api from '../config/api'
+import { normalizeText } from '../utils/normalize'
 
 interface Medico {
   id: number
@@ -58,13 +59,13 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
   useEffect(() => {
     let filtered = [...medicos]
 
-    // Filtro por termo de busca (nome, CRM, especialidade)
+    // Filtro por termo de busca (nome, CRM, especialidade) - ignorando acentos
     if (searchTerm) {
-      const term = searchTerm.toLowerCase()
+      const normalizedSearch = normalizeText(searchTerm)
       filtered = filtered.filter(m =>
-        m.nome_completo.toLowerCase().includes(term) ||
-        m.crm.toLowerCase().includes(term) ||
-        (m.especialidade && m.especialidade.toLowerCase().includes(term))
+        normalizeText(m.nome_completo).includes(normalizedSearch) ||
+        normalizeText(m.crm).includes(normalizedSearch) ||
+        (m.especialidade && normalizeText(m.especialidade).includes(normalizedSearch))
       )
     }
 

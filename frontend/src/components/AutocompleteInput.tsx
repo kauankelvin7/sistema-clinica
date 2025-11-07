@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Search } from 'lucide-react'
+import { normalizeText } from '../utils/normalize'
 
 interface AutocompleteOption {
   label: string
@@ -34,8 +35,9 @@ export default function AutocompleteInput({
 
   useEffect(() => {
     if (value.length >= minChars) {
+      const normalizedSearch = normalizeText(value)
       const filtered = options.filter(option =>
-        option.label.toLowerCase().includes(value.toLowerCase())
+        normalizeText(option.label).includes(normalizedSearch)
       )
       setFilteredOptions(filtered)
       setShowSuggestions(filtered.length > 0)
