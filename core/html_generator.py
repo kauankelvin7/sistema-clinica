@@ -154,7 +154,7 @@ def get_html_template() -> str:
             font-size: clamp(10pt, 1.5vw, 11pt); /* Responsivo: min 10pt, ideal 1.5vw, max 11pt */
             line-height: 1.3;
             color: #000;
-            background: #f5f5f5;
+            background: #ffffff;
             padding: 10px;
         }
         
@@ -255,7 +255,7 @@ def get_html_template() -> str:
             margin-bottom: 10px;
             line-height: 1.4;
             padding: clamp(5px, 1.5vw, 10px);
-            background: #f5f5f5;
+            background: #ffffff;
             hyphens: auto; /* Hifenização automática */
             word-wrap: break-word;
         }
@@ -466,7 +466,7 @@ def get_html_template() -> str:
         @media screen and (min-width: 1921px) {
             body {
                 padding: 40px;
-                background: #e0e0e0;
+                background: #ffffff;
             }
             
             .page {
