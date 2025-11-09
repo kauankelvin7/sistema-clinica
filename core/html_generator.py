@@ -182,7 +182,7 @@ def get_html_template() -> str:
             max-width: 210mm;
             min-height: 26cm; /* Reduzido para caber melhor */
             margin: 0 auto 20px auto; /* Restaura margin-bottom */
-            padding: 20px 25px 20px 25px; /* Margens maiores e simétricas */
+            padding: 15px 20px 15px 20px; /* Padding reduzido para aproveitar mais espaço */
             background: white;
             position: relative;
             border: 3px double #000;
@@ -201,8 +201,8 @@ def get_html_template() -> str:
             display: flex;
             align-items: center;
             gap: 15px;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
+            margin-bottom: 10px; /* Reduzido de 15px */
+            padding-bottom: 8px; /* Reduzido de 10px */
             border-bottom: 1px solid #000; /* Linha simples, não dupla */
         }
         
@@ -237,8 +237,8 @@ def get_html_template() -> str:
         /* ========== RODAPÉ ========== */
         .footer {
             margin-top: auto;
-            padding-top: 15px;
-            padding-bottom: 10px;
+            padding-top: 10px; /* Reduzido de 15px */
+            padding-bottom: 8px; /* Reduzido de 10px */
             border-top: none; /* Remover linha superior do rodapé */
             text-align: center;
             font-family: 'Times New Roman', Times, serif;
@@ -258,8 +258,8 @@ def get_html_template() -> str:
         
         /* ========== ASSINATURA ========== */
         .signature-section {
-            margin-top: 80px;
-            margin-bottom: 30px;
+            margin-top: 50px; /* Reduzido de 80px */
+            margin-bottom: 20px; /* Reduzido de 30px */
             text-align: center;
         }
         
@@ -289,7 +289,7 @@ def get_html_template() -> str:
             width: 100%;
             border: 3px double #000;
             border-collapse: collapse;
-            margin-bottom: 15px;
+            margin-bottom: 10px; /* Reduzido de 15px */
         }
         
         .title-table td {
@@ -305,8 +305,8 @@ def get_html_template() -> str:
         .main-text {
             text-align: justify;
             font-size: 12pt;
-            margin-bottom: 20px;
-            line-height: 1.7;
+            margin-bottom: 15px; /* Reduzido de 20px */
+            line-height: 1.6; /* Reduzido de 1.7 */
             padding: 0; /* Remover padding interno */
             background: #ffffff;
             font-family: 'Times New Roman', Times, serif;
@@ -317,13 +317,13 @@ def get_html_template() -> str:
             width: 100%;
             border: 2px solid #000;
             border-collapse: collapse;
-            margin: 15px 0;
+            margin: 10px 0; /* Reduzido de 15px */
             background: #fff;
             color: #000;
         }
         
         .decision-box td {
-            padding: 12px;
+            padding: 10px; /* Reduzido de 12px */
             border: 1px solid #000;
             font-family: 'Times New Roman', Times, serif;
         }
@@ -331,13 +331,13 @@ def get_html_template() -> str:
         .decision-title {
             font-weight: bold;
             text-align: left;
-            margin-bottom: 10px;
+            margin-bottom: 8px; /* Reduzido de 10px */
             font-size: 11pt;
             font-family: 'Times New Roman', Times, serif;
         }
         
         .decision-options {
-            line-height: 1.8;
+            line-height: 1.6; /* Reduzido de 1.8 */
             font-size: 11pt;
             font-family: 'Times New Roman', Times, serif;
         }
@@ -556,7 +556,7 @@ def get_html_template() -> str:
                 max-width: 21cm;
                 min-height: 26cm; /* Reduzido para evitar espaços em branco */
                 margin: 0;
-                padding: 15mm 20mm 10mm 20mm; /* Padding ajustado */
+                padding: 12mm 15mm 10mm 15mm; /* Padding otimizado para aproveitar melhor o espaço */
                 border: 3px double #000;
                 box-shadow: none;
                 box-sizing: border-box;
@@ -580,8 +580,8 @@ def get_html_template() -> str:
             
             .footer {
                 margin-top: auto;
-                padding-top: 15px;
-                padding-bottom: 10px;
+                padding-top: 10px;
+                padding-bottom: 8px;
                 border-top: none; /* Sem linha no rodapé */
                 flex-shrink: 0;
                 page-break-inside: avoid;
@@ -675,8 +675,6 @@ def get_html_template() -> str:
             </tr>
         </table>
         
-        <br>
-        
         <!-- Texto principal -->
         <div class="main-text">
             Declaro que o Sr. (A) <strong>{nome_paciente}</strong> de <strong>{documento_paciente_formatado}</strong>. 
@@ -685,8 +683,6 @@ def get_html_template() -> str:
             <strong>{qtd_dias_atestado} dia(s)</strong> com CID: <strong>{codigo_cid}</strong> emitido (a) pelo (a) 
             Dr. (a) <strong>{nome_medico} {crm_medico}-{uf_crm_medico}</strong>.
         </div>
-        
-        <br>
         
         <!-- Caixa de decisão -->
         <table class="decision-box">
@@ -707,13 +703,12 @@ def get_html_template() -> str:
             </tr>
         </table>
         
-        <br>
-        
         <!-- Assinatura -->
         <div class="signature-section">
             <div class="signature-line"></div><br>
-            <div class="signature-label">Médico do trabalho / Examinador</div><br><br>
+            <div class="signature-label">Médico do trabalho / Examinador</div>
             <div class="date-line">Brasília, ___/___/____</div>
+            <br><br>
         </div>
         
         </div> <!-- Fim page-content -->
@@ -745,8 +740,6 @@ def get_html_template() -> str:
             </tr>
         </table>
         
-        <br>
-        
         <!-- Tabela de dados do paciente -->
         <table class="patient-table">
             <tr>
@@ -772,8 +765,6 @@ def get_html_template() -> str:
             </tr>
         </table>
         
-        <br>
-        
         <!-- Caixa de decisão (segunda página) -->
         <table class="decision-box">
             <tr>
@@ -788,13 +779,12 @@ def get_html_template() -> str:
             </tr>
         </table>
         
-        <br><br>
-        
         <!-- Assinatura (segunda página) -->
         <div class="signature-section">
             <div class="signature-line"></div><br>
             <div class="signature-label">Médico do trabalho / Examinador</div><br>
             <div class="date-line">Brasília, ___/___/____</div>
+            <br><br>
         </div>
         
         </div> <!-- Fim page-content -->
