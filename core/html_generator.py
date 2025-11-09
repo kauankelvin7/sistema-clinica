@@ -168,9 +168,9 @@ def get_html_template() -> str:
         
         /* ========== ESTILOS BASE (Desktop) ========== */
         body {
-            font-family: 'Calibri', 'Carlito', 'Helvetica Neue', Arial, sans-serif;
-            font-size: 11pt;
-            line-height: 1.4;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12pt;
+            line-height: 1.5;
             color: #000;
             background: #ffffff;
             padding: 20px;
@@ -181,28 +181,30 @@ def get_html_template() -> str:
             width: 100%;
             max-width: 210mm;
             margin: 0 auto 20px auto;
-            padding: 15px 20px 80px 20px; /* Padding inferior maior para o rodapé */
+            padding: 15px 20px 20px 20px;
             background: white;
             position: relative;
             border: 3px double #000;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
         }
         
-        /* ========== CABEÇALHO RESPONSIVO ========== */
+        /* ========== CABEÇALHO ========== */
         .header {
             display: flex;
-            align-items: flex-start;
-            gap: 15px;
-            margin-bottom: 8px;
-            padding: 8px 10px 8px 20px;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 10px;
+            padding: 10px 15px;
             border-bottom: 2px solid #000;
         }
         
-        /* ========== LOGO RESPONSIVO ========== */
+        /* ========== LOGO ========== */
         .header-logo {
-            width: 70px;
-            height: 70px;
+            width: 80px;
+            height: 80px;
             flex-shrink: 0;
             object-fit: contain;
         }
@@ -210,27 +212,27 @@ def get_html_template() -> str:
         .header-text {
             flex: 1;
             text-align: center;
+            font-family: 'Times New Roman', Times, serif;
         }
         
         .header-title {
-            font-size: 13pt;
+            font-size: 14pt;
             font-weight: bold;
-            color: #000;
-            margin-bottom: 2px;
+            color: #0066cc;
+            margin-bottom: 4px;
+            font-family: 'Times New Roman', Times, serif;
         }
         
         .header-subtitle {
-            font-size: 11pt;
-            color: #555;
+            font-size: 12pt;
+            color: #0066cc;
+            font-family: 'Times New Roman', Times, serif;
         }
         
         /* ========== RODAPÉ ========== */
         .footer {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            padding-top: 10px;
+            margin-top: auto;
+            padding-top: 15px;
             border-top: 1px solid #e0e0e0;
             text-align: center;
             font-family: 'Times New Roman', Times, serif;
@@ -276,25 +278,27 @@ def get_html_template() -> str:
             width: 100%;
             border: 3px double #000;
             border-collapse: collapse;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
         }
         
         .title-table td {
-            padding: 6px;
+            padding: 8px;
             text-align: center;
-            font-size: 16pt;
+            font-size: 14pt;
             font-weight: bold;
             background: #fff;
+            font-family: 'Times New Roman', Times, serif;
         }
         
         /* ========== TEXTO PRINCIPAL ========== */
         .main-text {
             text-align: justify;
             font-size: 12pt;
-            margin-bottom: 12px;
-            line-height: 1.5;
-            padding: 8px;
+            margin-bottom: 15px;
+            line-height: 1.6;
+            padding: 10px;
             background: #ffffff;
+            font-family: 'Times New Roman', Times, serif;
         }
         
         /* ========== CAIXA DE DECISÃO ========== */
@@ -302,26 +306,29 @@ def get_html_template() -> str:
             width: 100%;
             border: 2px solid #000;
             border-collapse: collapse;
-            margin: 12px 0;
+            margin: 15px 0;
             background: #fff;
             color: #000;
         }
         
         .decision-box td {
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #000;
+            font-family: 'Times New Roman', Times, serif;
         }
         
         .decision-title {
             font-weight: bold;
             text-align: left;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-size: 11pt;
+            font-family: 'Times New Roman', Times, serif;
         }
         
         .decision-options {
             line-height: 1.8;
             font-size: 11pt;
+            font-family: 'Times New Roman', Times, serif;
         }
         
         .checkbox {
@@ -339,6 +346,7 @@ def get_html_template() -> str:
             padding-top: 8px;
             border-top: 1px solid #000;
             text-align: center;
+            font-family: 'Times New Roman', Times, serif;
         }
         
         /* ========== TABELA PRONTUÁRIO ========== */
@@ -351,11 +359,12 @@ def get_html_template() -> str:
         }
         
         .prontuario-title td {
-            padding: 6px;
+            padding: 8px;
             text-align: center;
             font-weight: bold;
-            font-size: 11pt;
+            font-size: 14pt;
             background: #fff;
+            font-family: 'Times New Roman', Times, serif;
         }
         
         /* ========== TABELA PACIENTE ========== */
@@ -369,25 +378,27 @@ def get_html_template() -> str:
         }
         
         .patient-table td {
-            padding: 8px;
+            padding: 10px;
             border: 1px solid #000;
             font-size: 11pt;
             word-wrap: break-word;
+            font-family: 'Times New Roman', Times, serif;
         }
         
         .patient-table strong {
             color: #000;
+            font-family: 'Times New Roman', Times, serif;
         }
         
         /* ========== ASSINATURA ========== */
         .signature-section {
-            margin-top: 80px;
+            margin-top: 60px;
             text-align: center;
         }
         
         .signature-line {
             display: inline-block;
-            width: 300px;
+            width: 350px;
             border-top: 1px solid #000;
             margin-bottom: 5px;
         }
@@ -396,12 +407,14 @@ def get_html_template() -> str:
             font-weight: bold;
             font-size: 11pt;
             margin-top: 5px;
+            font-family: 'Times New Roman', Times, serif;
         }
         
         .date-line {
             font-weight: bold;
-            margin-top: 20px;
+            margin-top: 15px;
             font-size: 11pt;
+            font-family: 'Times New Roman', Times, serif;
         }
         
         /* ========== QUEBRA DE PÁGINA ========== */
@@ -531,24 +544,27 @@ def get_html_template() -> str:
                 width: 100%;
                 max-width: 21cm;
                 margin: 0;
-                padding: 15px 20px 80px 20px;
+                padding: 15px 20px 20px 20px;
                 border: 3px double #000;
                 box-shadow: none;
                 box-sizing: border-box;
                 position: relative;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .page:first-child {
                 page-break-after: always;
             }
             
             .page:last-child {
-                page-break-after: auto;
+                page-break-after: avoid;
             }
             
             .footer {
-                position: absolute;
-                bottom: 20px;
-                left: 20px;
-                right: 20px;
-                page-break-inside: avoid;
+                margin-top: auto;
+                padding-top: 15px;
+                border-top: 1px solid #e0e0e0;
             }
             
             .header, .title-table, .decision-box, .signature, .signature-section {
@@ -560,12 +576,14 @@ def get_html_template() -> str:
             }
             
             .page-break {
-                page-break-after: always;
-                break-after: page;
+                page-break-after: always !important;
+                break-after: page !important;
                 display: block;
                 height: 0;
                 margin: 0;
                 padding: 0;
+                border: none;
+                visibility: hidden;
             }
         }
     </style>
