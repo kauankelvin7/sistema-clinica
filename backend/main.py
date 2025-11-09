@@ -1,3 +1,41 @@
+from fastapi import Query
+# ═══════════════════════════════════════════════════════════════════════════════
+# ENDPOINT DE CONSULTA DE PROFISSIONAIS (CRM, CRO, RMs)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@app.get("/api/consultar-profissional")
+async def consultar_profissional(
+    tipo_registro: str = Query(..., description="Tipo de registro profissional (CRM, CRO, RMS)"),
+    numero_registro: str = Query(..., description="Número do registro profissional"),
+    uf_registro: str = Query(..., description="UF do registro profissional")
+):
+    """
+    Retorna a URL de consulta do profissional conforme tipo, número e UF.
+    """
+    tipo_registro = tipo_registro.strip().upper()
+    numero_registro = numero_registro.strip()
+    uf_registro = uf_registro.strip().upper()
+
+    if tipo_registro == "CRM":
+        url = "https://portal.cfm.org.br/busca-medicos/"
+        info = "A consulta CRM requer preenchimento manual e reCAPTCHA no site oficial."
+    elif tipo_registro == "CRO":
+        url = f"https://website.cfo.org.br/busca-profissionais/"
+        info = "A consulta CRO pode ser feita diretamente pelo link gerado."
+    elif tipo_registro in ["RMS", "RMS"]:
+        url = f"https://www.google.com/search?q=consulta+registro+profissional+saude+{tipo_registro}+{numero_registro}+{uf_registro}"
+        info = "A consulta RMs é feita via busca no Google."
+    else:
+        url = None
+        info = "Tipo de registro não reconhecido."
+
+    return {
+        "tipo_registro": tipo_registro,
+        "numero_registro": numero_registro,
+        "uf_registro": uf_registro,
+        "consulta_url": url,
+        "info": info
+    }
 """
 ═══════════════════════════════════════════════════════════════════════════════
 Sistema de Homologação de Atestados Médicos - Backend API

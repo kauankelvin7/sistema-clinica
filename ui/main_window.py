@@ -1423,39 +1423,4 @@ class MainWindow(QMainWindow):
     def update_status(self, message):
         self._statusBar.showMessage(message)
 
-    def open_online_consultation(self):
-        tipo_registro = self.tipo_registro_medico_combo.currentText().strip()
-        numero_registro = self.numero_registro_medico_input.text().strip()
-        uf_registro = self.uf_crm_input.currentText().strip()
-
-        if not numero_registro or not uf_registro:
-            QMessageBox.warning(self, "Consulta Online", "Por favor, preencha o número de registro e a UF para consultar online.")
-            self.update_status("Campos incompletos para consulta online.")
-            return
-
-        consult_urls = {
-            "CRM": "https://portal.cfm.org.br/busca-medicos/",
-            "CRO": f"https://website.cfo.org.br/profissionais/busca-de-profissionais/?q={numero_registro}&uf={uf_registro}",
-            "CRN": f"http://www.crn3.org.br/busca-nutricionista?uf={uf_registro}&numero={numero_registro}",
-            "RMs": "https://www.google.com/search?q=consulta+registro+profissional+saude+"+tipo_registro+"+"+numero_registro+"+"+uf_registro
-        }
-
-        url = consult_urls.get(tipo_registro)
-
-        if url:
-            try:
-                QDesktopServices.openUrl(QUrl(url))
-                self.update_status(f"Abrindo consulta online para {tipo_registro} {numero_registro}-{uf_registro} no navegador.")
-                
-                if tipo_registro == "CRM":
-                    QMessageBox.information(self, "Instruções para Consulta Online", 
-                        "A página de consulta do CRM requer preenchimento manual e um reCAPTCHA. "
-                        "Por favor, digite o nome do médico, a UF e o CRM diretamente na página do navegador que foi aberta e resolva o CAPTCHA para continuar."
-                    )
-                
-            except Exception as e:
-                QMessageBox.critical(self, "Erro ao Abrir Navegador", f"Não foi possível abrir o navegador. Erro: {e}")
-                self.update_status(f"Erro ao abrir o navegador: {e}.")
-        else:
-            QMessageBox.warning(self, "Consulta Online", f"Não há URL de consulta configurada para o tipo de registro: {tipo_registro}. Por favor, consulte manualmente.")
-            self.update_status(f"URL de consulta não configurada para {tipo_registro}.")
+    # Consulta online removida do desktop. Agora deve ser feita pelo backend web.

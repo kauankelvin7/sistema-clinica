@@ -34,15 +34,22 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
       .catch(() => setTotalMedicos(0))
   }, [])
 
-  const handleConsultar = () => {
-    const urls: Record<string, string> = {
-      CRM: 'https://portal.cfm.org.br/busca-medicos/',
-      CRO: 'https://website.cfo.org.br/profissionais/busca-de-profissionais/',
-    }
-    
-    const url = urls[formData.tipoRegistro]
-    if (url) {
-      window.open(url, '_blank')
+  const handleConsultar = async () => {
+    try {
+      const params = new URLSearchParams({
+        tipo_registro: formData.tipoRegistro,
+        numero_registro: formData.numeroRegistro,
+        uf_registro: formData.ufRegistro
+      })
+  const response = await fetch(`${api.baseURL}/api/consultar-profissional?${params.toString()}`)
+      const data = await response.json()
+      if (data.consulta_url) {
+        window.open(data.consulta_url, '_blank')
+      } else {
+        alert('Tipo de registro não reconhecido ou dados insuficientes.')
+      }
+    } catch (err) {
+      alert('Erro ao consultar registro online.')
     }
   }
 
