@@ -180,11 +180,16 @@ function App() {
       // Pegar HTML como texto
       const htmlContent = await response.text()
       
-      // Abrir HTML em nova aba
+      // Abrir HTML em nova aba e disparar impressão
       const newWindow = window.open('', '_blank')
       if (newWindow) {
         newWindow.document.write(htmlContent)
         newWindow.document.close()
+        // Aguarda o carregamento do DOM antes de disparar o print
+        newWindow.onload = function() {
+          newWindow.focus()
+          newWindow.print()
+        }
       }
 
       setMessage({ type: 'success', text: 'Documento aberto em uma nova aba com sucesso!' })
