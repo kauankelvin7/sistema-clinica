@@ -173,15 +173,15 @@ def get_html_template() -> str:
             line-height: 1.5;
             color: #000;
             background: #ffffff;
-            padding: 0; /* Remove padding do body */
+            padding: 20px; /* Restaura padding do body */
             margin: 0;
         }
         
         .page {
             width: 100%;
             max-width: 210mm;
-            min-height: 27cm;
-            margin: 0 auto; /* Remove margin-bottom entre páginas */
+            min-height: 26cm; /* Reduzido para caber melhor */
+            margin: 0 auto 20px auto; /* Restaura margin-bottom */
             padding: 20px 25px 20px 25px; /* Margens maiores e simétricas */
             background: white;
             position: relative;
@@ -542,7 +542,7 @@ def get_html_template() -> str:
             
             @page {
                 size: A4;
-                margin: 0; /* Remove margem da página de impressão */
+                margin: 10mm; /* Margem mínima na impressão */
             }
             
             body {
@@ -554,9 +554,9 @@ def get_html_template() -> str:
             .page {
                 width: 100%;
                 max-width: 21cm;
-                min-height: 27cm;
-                margin: 0; /* Remove todas as margens na impressão */
-                padding: 15mm 20mm 15mm 20mm; /* Margens em milímetros para impressão precisa */
+                min-height: 26cm; /* Reduzido para evitar espaços em branco */
+                margin: 0;
+                padding: 15mm 20mm 10mm 20mm; /* Padding ajustado */
                 border: 3px double #000;
                 box-shadow: none;
                 box-sizing: border-box;
@@ -675,6 +675,8 @@ def get_html_template() -> str:
             </tr>
         </table>
         
+        <br>
+        
         <!-- Texto principal -->
         <div class="main-text">
             Declaro que o Sr. (A) <strong>{nome_paciente}</strong> de <strong>{documento_paciente_formatado}</strong>. 
@@ -683,6 +685,8 @@ def get_html_template() -> str:
             <strong>{qtd_dias_atestado} dia(s)</strong> com CID: <strong>{codigo_cid}</strong> emitido (a) pelo (a) 
             Dr. (a) <strong>{nome_medico} {crm_medico}-{uf_crm_medico}</strong>.
         </div>
+        
+        <br>
         
         <!-- Caixa de decisão -->
         <table class="decision-box">
@@ -702,6 +706,8 @@ def get_html_template() -> str:
                 </td>
             </tr>
         </table>
+        
+        <br>
         
         <!-- Assinatura -->
         <div class="signature-section">
@@ -739,6 +745,8 @@ def get_html_template() -> str:
             </tr>
         </table>
         
+        <br>
+        
         <!-- Tabela de dados do paciente -->
         <table class="patient-table">
             <tr>
@@ -764,6 +772,8 @@ def get_html_template() -> str:
             </tr>
         </table>
         
+        <br>
+        
         <!-- Caixa de decisão (segunda página) -->
         <table class="decision-box">
             <tr>
@@ -777,6 +787,8 @@ def get_html_template() -> str:
                 </td>
             </tr>
         </table>
+        
+        <br><br>
         
         <!-- Assinatura (segunda página) -->
         <div class="signature-section">
