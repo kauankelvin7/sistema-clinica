@@ -187,10 +187,10 @@ function App() {
         newWindow.document.close()
       }
 
-      setMessage({ type: 'success', text: 'Documento HTML gerado e aberto em nova aba!' })
+      setMessage({ type: 'success', text: 'Documento gerado com sucesso!' })
     } catch (error) {
       console.error('Erro ao gerar documento:', error)
-      setMessage({ type: 'error', text: 'Erro ao gerar documento. Verifique se o backend está rodando.' })
+      setMessage({ type: 'error', text: 'Erro ao gerar documento.' })
     } finally {
       setLoading(false)
     }
