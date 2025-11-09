@@ -169,43 +169,41 @@ def get_html_template() -> str:
         /* ========== ESTILOS BASE (Desktop) ========== */
         body {
             font-family: 'Calibri', 'Carlito', 'Helvetica Neue', Arial, sans-serif;
-            font-size: clamp(10pt, 1.5vw, 11pt); /* Responsivo: min 10pt, ideal 1.5vw, max 11pt */
-            line-height: 1.3;
+            font-size: 11pt;
+            line-height: 1.4;
             color: #000;
             background: #ffffff;
-            padding: 10px;
+            padding: 20px;
             margin: 0;
         }
         
         .page {
             width: 100%;
-            max-width: 21cm; /* Largura exata A4 */
-            min-height: 29.7cm; /* Altura exata A4 */
-            margin: 0 auto;
-            padding: 1.5cm 2cm; /* Margens adequadas para impressão: 1.5cm topo/baixo, 2cm laterais */
+            max-width: 210mm;
+            margin: 0 auto 20px auto;
+            padding: 15px 20px;
             background: white;
             position: relative;
             border: 3px double #000;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             box-sizing: border-box;
+            page-break-inside: avoid;
         }
         
         /* ========== CABEÇALHO RESPONSIVO ========== */
         .header {
             display: flex;
             align-items: flex-start;
-            flex-wrap: wrap; /* Permite quebra em telas pequenas */
-            gap: clamp(10px, 2vw, 20px);
-            margin-bottom: 5px;
-            padding: clamp(5px, 1.5vw, 10px);
+            gap: 15px;
+            margin-bottom: 8px;
+            padding: 8px 10px 8px 20px;
             border-bottom: 2px solid #000;
-            padding-left: clamp(10px, 3vw, 30px);
         }
         
         /* ========== LOGO RESPONSIVO ========== */
         .header-logo {
-            width: clamp(50px, 8vw, 80px); /* Min 50px, ideal 8vw, max 80px */
-            height: clamp(50px, 8vw, 80px);
+            width: 70px;
+            height: 70px;
             flex-shrink: 0;
             object-fit: contain;
         }
@@ -213,86 +211,101 @@ def get_html_template() -> str:
         .header-text {
             flex: 1;
             text-align: center;
-            min-width: 200px; /* Garante largura mínima */
         }
         
         .header-title {
-            font-size: clamp(12pt, 2vw, 14pt); /* Título responsivo */
+            font-size: 13pt;
             font-weight: bold;
             color: #000;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
         
         .header-subtitle {
-            font-size: clamp(10pt, 1.8vw, 12pt); /* Subtítulo responsivo */
-            color: #333;
+            font-size: 11pt;
+            color: #555;
         }
         
-        /* ========== RODAPÉ RESPONSIVO ========== */
+        /* ========== RODAPÉ ========== */
         .footer {
-            position: absolute;
-            bottom: clamp(0.2in, 2vh, 0.3in);
-            left: clamp(0.2in, 3vw, 0.4in);
-            right: clamp(0.2in, 3vw, 0.4in);
+            margin-top: 30px;
+            padding-top: 10px;
             text-align: center;
             font-family: 'Times New Roman', Times, serif;
-            font-size: clamp(10pt, 1.8vw, 12pt);
+            font-size: 10pt;
             color: #00a651;
-            padding-top: 5px;
         }
         
         .footer-line1 {
             font-weight: bold;
             margin-bottom: 2px;
-            font-size: clamp(10pt, 1.8vw, 12pt);
         }
         
         .footer-line2 {
-            font-size: clamp(10pt, 1.8vw, 12pt);
+            font-size: 10pt;
         }
         
-        /* ========== TABELA TÍTULO RESPONSIVA ========== */
+        /* ========== ASSINATURA ========== */
+        .signature {
+            margin-top: 40px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .signature-line {
+            width: 300px;
+            margin: 0 auto 8px auto;
+            border-top: 1px solid #000;
+            padding-top: 5px;
+        }
+        
+        .signature-text {
+            font-size: 11pt;
+            font-weight: bold;
+        }
+        
+        .signature-date {
+            font-size: 11pt;
+            margin-top: 5px;
+        }
+        
+        /* ========== TABELA TÍTULO ========== */
         .title-table {
             width: 100%;
             border: 3px double #000;
             border-collapse: collapse;
-            margin-bottom: 10px;
-            overflow-x: auto; /* Scroll horizontal em telas pequenas */
+            margin-bottom: 12px;
         }
         
         .title-table td {
-            padding: clamp(4px, 1.2vw, 8px);
+            padding: 6px;
             text-align: center;
-            font-size: clamp(14pt, 2.5vw, 18pt); /* Título grande responsivo */
+            font-size: 16pt;
             font-weight: bold;
             background: #fff;
         }
         
-        /* ========== TEXTO PRINCIPAL RESPONSIVO ========== */
+        /* ========== TEXTO PRINCIPAL ========== */
         .main-text {
             text-align: justify;
-            font-size: clamp(12pt, 2vw, 14pt); /* Texto principal responsivo */
-            margin-bottom: 10px;
-            line-height: 1.4;
-            padding: clamp(5px, 1.5vw, 10px);
+            font-size: 12pt;
+            margin-bottom: 12px;
+            line-height: 1.5;
+            padding: 8px;
             background: #ffffff;
-            hyphens: auto; /* Hifenização automática */
-            word-wrap: break-word;
         }
         
-        /* ========== CAIXA DE DECISÃO RESPONSIVA ========== */
+        /* ========== CAIXA DE DECISÃO ========== */
         .decision-box {
             width: 100%;
             border: 2px solid #000;
             border-collapse: collapse;
-            margin: 10px 0;
+            margin: 12px 0;
             background: #fff;
             color: #000;
-            overflow-x: auto;
         }
         
         .decision-box td {
-            padding: clamp(6px, 1.5vw, 12px);
+            padding: 10px;
             border: 1px solid #000;
         }
         
@@ -300,50 +313,49 @@ def get_html_template() -> str:
             font-weight: bold;
             text-align: left;
             margin-bottom: 8px;
-            font-size: clamp(10pt, 1.6vw, 11pt);
+            font-size: 11pt;
         }
         
         .decision-options {
             line-height: 1.8;
-            font-size: clamp(10pt, 1.6vw, 11pt); /* Opções responsivas */
+            font-size: 11pt;
         }
         
         .checkbox {
             display: inline-block;
-            width: clamp(12px, 2vw, 14px); /* Checkbox responsivo */
-            height: clamp(12px, 2vw, 14px);
+            width: 14px;
+            height: 14px;
             border: 2px solid #000;
             background: #fff;
-            margin-right: clamp(4px, 1vw, 8px);
+            margin-right: 6px;
             vertical-align: middle;
         }
         
         .decision-note {
-            font-size: clamp(10pt, 1.6vw, 11pt);
-            padding-top: clamp(5px, 1.5vw, 10px);
+            font-size: 10pt;
+            padding-top: 8px;
             border-top: 1px solid #000;
             text-align: center;
         }
         
-        /* ========== TABELA PRONTUÁRIO RESPONSIVA ========== */
+        /* ========== TABELA PRONTUÁRIO ========== */
         .prontuario-title {
             width: 100%;
             border: 3px double #000;
             border-collapse: collapse;
             margin-top: 10px;
             margin-bottom: 10px;
-            overflow-x: auto;
         }
         
         .prontuario-title td {
-            padding: clamp(4px, 1.2vw, 8px);
+            padding: 6px;
             text-align: center;
             font-weight: bold;
-            font-size: clamp(10pt, 1.6vw, 11pt);
+            font-size: 11pt;
             background: #fff;
         }
         
-        /* ========== TABELA PACIENTE RESPONSIVA ========== */
+        /* ========== TABELA PACIENTE ========== */
         .patient-table {
             width: 100%;
             border: 2px solid #000;
@@ -351,13 +363,12 @@ def get_html_template() -> str:
             margin-bottom: 10px;
             background: #fff;
             color: #000;
-            overflow-x: auto;
         }
         
         .patient-table td {
-            padding: clamp(6px, 1.5vw, 10px);
+            padding: 8px;
             border: 1px solid #000;
-            font-size: clamp(10pt, 1.6vw, 11pt);
+            font-size: 11pt;
             word-wrap: break-word;
         }
         
@@ -365,29 +376,29 @@ def get_html_template() -> str:
             color: #000;
         }
         
-        /* ========== ASSINATURA RESPONSIVA ========== */
+        /* ========== ASSINATURA ========== */
         .signature-section {
-            margin-top: clamp(60px, 12vh, 120px); /* Espaço responsivo */
+            margin-top: 80px;
             text-align: center;
         }
         
         .signature-line {
             display: inline-block;
-            width: clamp(200px, 50vw, 350px); /* Linha responsiva */
+            width: 300px;
             border-top: 1px solid #000;
             margin-bottom: 5px;
         }
         
         .signature-label {
             font-weight: bold;
-            font-size: clamp(10pt, 1.6vw, 11pt);
+            font-size: 11pt;
             margin-top: 5px;
         }
         
         .date-line {
             font-weight: bold;
-            margin-top: clamp(15px, 3vh, 30px);
-            font-size: clamp(10pt, 1.6vw, 11pt);
+            margin-top: 20px;
+            font-size: 11pt;
         }
         
         /* ========== QUEBRA DE PÁGINA ========== */
@@ -504,7 +515,7 @@ def get_html_template() -> str:
             
             @page {
                 size: A4;
-                margin: 0;
+                margin: 0.5cm;
             }
             
             body {
@@ -514,18 +525,18 @@ def get_html_template() -> str:
             }
             
             .page {
-                width: 21cm;
-                height: 29.7cm;
+                width: 100%;
+                max-width: 21cm;
                 margin: 0;
-                padding: 1.5cm 2cm;
+                padding: 15px 20px;
                 border: 3px double #000;
                 box-shadow: none;
-                page-break-after: always;
                 box-sizing: border-box;
+                page-break-inside: avoid;
             }
             
-            .page:last-child {
-                page-break-after: auto;
+            .header, .title-table, .decision-box, .signature {
+                page-break-inside: avoid;
             }
             
             .page-break {
