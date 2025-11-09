@@ -219,6 +219,7 @@ async def root():
             "patients": "/api/patients",
             "doctors": "/api/doctors",
             "generate_word": "/api/generate-document",
+            "generate_html": "/api/generate-html",
             "generate_pdf": "/api/generate-pdf"
         }
     }
@@ -421,6 +422,138 @@ async def generate_document_endpoint(data: DocumentoRequest):
     except Exception as e:
         logger.error(f"Erro ao gerar documento: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erro ao gerar documento: {str(e)}")
+
+@app.post("/api/generate-html")
+async def generate_html_endpoint(data: DocumentoRequest):
+    """
+    Gera documento de atestado médico em HTML (rápido, pronto para impressão como PDF)
+    """
+    try:
+        logger.info("Recebendo requisição para gerar HTML")
+        
+        # Importar gerador unificado
+        from core.unified_generator import generate_document_unified
+        
+        # SALVAR PACIENTE NO BANCO DE DADOS (mesmo código do endpoint Word)
+        try:
+            is_postgres = os.getenv('RENDER') or os.getenv('RAILWAY_ENVIRONMENT')
+            
+            with get_db_connection() as conn:
+                if is_postgres:
+                    from sqlalchemy import text
+                    
+                    # Verificar paciente
+                    result = conn.execute(text("""
+                        SELECT id FROM pacientes WHERE numero_doc = :numero_doc
+                    """), {"numero_doc": sanitizar_entrada(data.paciente.numero_documento)})
+                    paciente_existente = result.fetchone()
+                    
+                    if not paciente_existente:
+                        conn.execute(text("""
+                            INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, cargo, empresa)
+                            VALUES (:nome, :tipo_doc, :numero_doc, :cargo, :empresa)
+                        """), {
+                            "nome": sanitizar_entrada(data.paciente.nome),
+                            "tipo_doc": sanitizar_entrada(data.paciente.tipo_documento),
+                            "numero_doc": sanitizar_entrada(data.paciente.numero_documento),
+                            "cargo": sanitizar_entrada(data.paciente.cargo),
+                            "empresa": sanitizar_entrada(data.paciente.empresa)
+                        })
+                        logger.info(f"Paciente salvo: {data.paciente.nome}")
+                    else:
+                        conn.execute(text("""
+                            UPDATE pacientes 
+                            SET nome_completo = :nome, tipo_doc = :tipo_doc, cargo = :cargo, empresa = :empresa
+                            WHERE numero_doc = :numero_doc
+                        """), {
+                            "nome": sanitizar_entrada(data.paciente.nome),
+                            "tipo_doc": sanitizar_entrada(data.paciente.tipo_documento),
+                            "cargo": sanitizar_entrada(data.paciente.cargo),
+                            "empresa": sanitizar_entrada(data.paciente.empresa),
+                            "numero_doc": sanitizar_entrada(data.paciente.numero_documento)
+                        })
+                        logger.info(f"Paciente atualizado: {data.paciente.nome}")
+                        
+                    # Salvar médico (mesmo processo)
+                    result = conn.execute(text("""
+                        SELECT id FROM medicos WHERE numero_registro = :numero_registro AND uf = :uf
+                    """), {
+                        "numero_registro": sanitizar_entrada(data.medico.numero_registro),
+                        "uf": sanitizar_entrada(data.medico.uf_registro)
+                    })
+                    medico_existente = result.fetchone()
+                    
+                    if not medico_existente:
+                        conn.execute(text("""
+                            INSERT INTO medicos (nome_completo, tipo_registro, numero_registro, uf)
+                            VALUES (:nome, :tipo_registro, :numero_registro, :uf)
+                        """), {
+                            "nome": sanitizar_entrada(data.medico.nome),
+                            "tipo_registro": sanitizar_entrada(data.medico.tipo_registro),
+                            "numero_registro": sanitizar_entrada(data.medico.numero_registro),
+                            "uf": sanitizar_entrada(data.medico.uf_registro)
+                        })
+                        logger.info(f"Médico salvo: {data.medico.nome}")
+                    else:
+                        conn.execute(text("""
+                            UPDATE medicos 
+                            SET nome_completo = :nome, tipo_registro = :tipo_registro
+                            WHERE numero_registro = :numero_registro AND uf = :uf
+                        """), {
+                            "nome": sanitizar_entrada(data.medico.nome),
+                            "tipo_registro": sanitizar_entrada(data.medico.tipo_registro),
+                            "numero_registro": sanitizar_entrada(data.medico.numero_registro),
+                            "uf": sanitizar_entrada(data.medico.uf_registro)
+                        })
+                        logger.info(f"Médico atualizado: {data.medico.nome}")
+                    
+                    conn.commit()
+                    
+        except Exception as db_error:
+            logger.warning(f"Erro ao salvar no banco (continuando): {str(db_error)}")
+        
+        # Preparar dados para o gerador
+        documento_data = {
+            "paciente": {
+                "nome": data.paciente.nome,
+                "tipo_documento": data.paciente.tipo_documento,
+                "numero_documento": data.paciente.numero_documento,
+                "cargo": data.paciente.cargo,
+                "empresa": data.paciente.empresa
+            },
+            "atestado": {
+                "data_atestado": data.atestado.data_atestado,
+                "dias_afastamento": data.atestado.dias_afastamento,
+                "cid": data.atestado.cid,
+                "cid_nao_informado": data.atestado.cid_nao_informado
+            },
+            "medico": {
+                "nome": data.medico.nome,
+                "tipo_registro": data.medico.tipo_registro,
+                "numero_registro": data.medico.numero_registro,
+                "uf_registro": data.medico.uf_registro
+            }
+        }
+        
+        # Gerar HTML
+        resultado = generate_document_unified(documento_data, output_format='html')
+        caminho_html = resultado.get('html')
+        
+        if not caminho_html or not os.path.exists(caminho_html):
+            raise HTTPException(status_code=500, detail="Erro ao gerar HTML")
+        
+        logger.info(f"HTML gerado: {caminho_html}")
+        
+        # Retornar arquivo HTML
+        return FileResponse(
+            caminho_html,
+            media_type='text/html',
+            filename=f"Atestado_{data.paciente.nome.replace(' ', '_')}.html"
+        )
+        
+    except Exception as e:
+        logger.error(f"Erro ao gerar HTML: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao gerar HTML: {str(e)}")
 
 @app.post("/api/generate-pdf")
 async def generate_pdf_endpoint(data: DocumentoRequest):

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Declaração de Homologação de Atestado Médico</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        
+        body {
+            font-family: 'Calibri', 'Arial', sans-serif;
+            font-size: 12pt;
+            line-height: 1.5;
+            color: #000;
+            background: #fff;
+        }
+        
+        .container {
+            max-width: 21cm;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+        }
+        
+        /* Cabeçalho com logos */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #003366;
+            padding-bottom: 15px;
+        }
+        
+        .logo {
+            max-width: 150px;
+            max-height: 80px;
+        }
+        
+        .header-center {
+            flex: 1;
+            text-align: center;
+            padding: 0 20px;
+        }
+        
+        .header-title {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #003366;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .header-subtitle {
+            font-size: 11pt;
+            color: #666;
+        }
+        
+        /* Título do documento */
+        .doc-title {
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            margin: 30px 0 20px;
+            text-transform: uppercase;
+            text-decoration: underline;
+        }
+        
+        /* Conteúdo */
+        .content {
+            text-align: justify;
+            margin-bottom: 20px;
+        }
+        
+        .content p {
+            margin-bottom: 15px;
+            text-indent: 2em;
+        }
+        
+        .highlight {
+            font-weight: bold;
+        }
+        
+        /* Tabela de informações */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            border: 2px solid #003366;
+        }
+        
+        .info-table th,
+        .info-table td {
+            padding: 10px;
+            border: 1px solid #003366;
+            text-align: left;
+        }
+        
+        .info-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            width: 30%;
+        }
+        
+        /* Rodapé */
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+        }
+        
+        .signature-line {
+            margin-top: 60px;
+            border-top: 1px solid #000;
+            width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            padding-top: 5px;
+            font-size: 10pt;
+        }
+        
+        .footer-info {
+            margin-top: 30px;
+            font-size: 9pt;
+            color: #666;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+        }
+        
+        /* Impressão */
+        @media print {
+            .container {
+                padding: 0;
+            }
+            
+            body {
+                background: white;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Cabeçalho com logos -->
+        <div class="header">
+            
+            <div class="header-center">
+                <div class="header-title">Sistema de Homologação</div>
+                <div class="header-subtitle">Atestados Médicos</div>
+            </div>
+            
+        </div>
+        
+        <!-- Título do documento -->
+        <div class="doc-title">
+            Declaração de Homologação de Atestado Médico
+        </div>
+        
+        <!-- Conteúdo principal -->
+        <div class="content">
+            <p>
+                Declaro para os devidos fins que o(a) Sr(a). <span class="highlight">João Silva Santos</span>, 
+                portador(a) do <span class="highlight">CPF nº: 123.456.789-00</span>, 
+                apresentou atestado médico com data de <span class="highlight">09/11/2025</span>, 
+                para afastamento de <span class="highlight">3 dia(s)</span>.
+            </p>
+            
+            <p>
+                O atestado apresentado está em conformidade com a Resolução CFM nº 1.658/2002 
+                e demais legislações vigentes aplicáveis.
+            </p>
+        </div>
+        
+        <!-- Tabela de informações -->
+        <table class="info-table">
+            <tr>
+                <th>Paciente</th>
+                <td>João Silva Santos</td>
+            </tr>
+            <tr>
+                <th>Documento</th>
+                <td>CPF nº: 123.456.789-00</td>
+            </tr>
+            <tr>
+                <th>Cargo</th>
+                <td>Analista de Sistemas</td>
+            </tr>
+            <tr>
+                <th>Empresa</th>
+                <td>Tech Solutions LTDA</td>
+            </tr>
+            <tr>
+                <th>Data do Atestado</th>
+                <td>09/11/2025</td>
+            </tr>
+            <tr>
+                <th>Período de Afastamento</th>
+                <td>3 dia(s)</td>
+            </tr>
+            <tr>
+                <th>CID</th>
+                <td>Z76.5</td>
+            </tr>
+            <tr>
+                <th>Médico Responsável</th>
+                <td>Dr(a). Maria Santos - CRM 12345-DF</td>
+            </tr>
+        </table>
+        
+        <!-- Rodapé -->
+        <div class="footer">
+            <div class="signature-line">
+                Responsável pela Homologação
+            </div>
+            
+            <div class="footer-info">
+                Documento gerado em 09/11/2025 às 10:59<br>
+                Sistema de Homologação de Atestados Médicos v1.0
+            </div>
+        </div>
+    </div>
+</body>
+</html>

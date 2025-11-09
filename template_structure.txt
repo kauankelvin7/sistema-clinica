@@ -1,0 +1,82 @@
+======================================================================
+ESTRUTURA COMPLETA DO TEMPLATE
+======================================================================
+
+CONTEÚDO COMPLETO:
+----------------------------------------------------------------------
+
+[Parágrafo 3 - Estilo: Normal]
+Declaro que o Sr. (A) {nome_paciente} de {documento_paciente_formatado}. Compareceu a esta clínica com objetivo de submeter-se a avaliação médica administrativa em virtude do atestado médico data do {data_atestado} em que foi sugerido afastamento pelo período de {qtd_dias_atestado} dia(s) com CID: {código_cid} emitido (a) pelo (a) Dr. (a) {nome_medico} {crm__medico}-{uf_crm_medico}.
+
+[Parágrafo 6 - Estilo: Normal]
+                              _________________________________________________________
+
+[Parágrafo 7 - Estilo: Normal]
+Médico do trabalho / Examinador
+
+[Parágrafo 8 - Estilo: Normal]
+Brasília, ___/___/____
+
+[Parágrafo 17 - Estilo: Normal]
+                              _________________________________________________________
+
+[Parágrafo 18 - Estilo: Normal]
+Médico do trabalho / Examinador
+
+[Parágrafo 19 - Estilo: Normal]
+Brasília, ___/___/____
+
+
+======================================================================
+TABELAS:
+======================================================================
+
+TABELA 1:
+----------------------------------------------------------------------
+[0,0] DECLARAÇÃO
+
+
+TABELA 2:
+----------------------------------------------------------------------
+[0,0]   
+  APÓS AVALIAÇAO CLÍNICA, FOI DECIDIDO:
+          Afastamento Total:
+          Afastamento parcial pelo período de:
+          Negada licença médica por motivo de doença:
+
+
+[1,0] Caso o paciente não se sinta apto para retornar ao trabalho, deverá retornar ao médico assistente para uma nova avaliação.
+
+
+TABELA 3:
+----------------------------------------------------------------------
+[0,0]                          PRONTUÁRIO DE PÉRICIA MÉDICA
+
+[1,0]  
+
+
+TABELA 4:
+----------------------------------------------------------------------
+[0,0] NOME: {nome_paciente}	
+
+[1,0] EMPRESA: {empresa_paciente}
+
+[2,0] CARGO: {cargo_paciente}
+
+[3,0] CID10: {código_cid}			
+
+[4,0] DATA DO ATESTADO: {data_atestado} |  Nº DE DIAS DE AFASTAMENTO: {qtd_dias_atestado}
+
+[5,0] IDENTIFICAÇÃO DO PROFISSIONAL DE SAÚDE QUE FORNECEU O ATESTADO: 
+Dr. (a) {nome_medico}{crm__medico}-{uf_crm_medico}
+
+
+TABELA 5:
+----------------------------------------------------------------------
+[0,0]    APÓS AVALIAÇAO CLÍNICA, FOI DECIDIDO:
+              Afastamento Total:
+            Afastamento parcial pelo período de:
+            Negada licença médica por motivo de doença:
+
+
+

@@ -1,0 +1,66 @@
+# Dependências para Geração de Documentos
+# Sistema de Homologação de Atestados Médicos
+
+# ===================================
+# CORE (Obrigatório)
+# ===================================
+python-docx>=0.8.11
+Pillow>=10.0.0
+
+# ===================================
+# GERAÇÃO DE PDF (Escolha pelo menos uma)
+# ===================================
+
+# Opção 1: WeasyPrint (RECOMENDADO - Melhor qualidade CSS)
+# Rápido, excelente suporte CSS3, imagens base64
+weasyprint>=60.0
+
+# Opção 2: pdfkit (Requer wkhtmltopdf instalado separadamente)
+# pdfkit>=1.0.0
+# Baixar wkhtmltopdf: https://wkhtmltopdf.org/downloads.html
+
+# Opção 3: xhtml2pdf (Mais leve, CSS limitado)
+# xhtml2pdf>=0.2.11
+
+# ===================================
+# CONVERSÃO HTML → DOCX (Escolha pelo menos uma)
+# ===================================
+
+# Opção 1: htmldocx (RECOMENDADO)
+# Melhor preservação de formatação HTML→DOCX
+htmldocx>=0.0.6
+
+# Opção 2: pypandoc (Requer pandoc instalado)
+# pypandoc>=1.11
+# Instalar pandoc: https://pandoc.org/installing.html
+
+# Opção 3: BeautifulSoup4 (Para conversão básica)
+beautifulsoup4>=4.12.0
+
+# ===================================
+# CONVERSÃO DOCX → PDF (Legado - Opcional)
+# ===================================
+
+# Para Windows COM automation (Word)
+# docx2pdf>=0.1.8  # Apenas Windows
+
+# ===================================
+# OUTRAS DEPENDÊNCIAS
+# ===================================
+
+# Para backend/API
+flask>=3.0.0
+flask-cors>=4.0.0
+
+# Utilitários
+python-dateutil>=2.8.2
+
+# ===================================
+# INSTALAÇÃO RÁPIDA
+# ===================================
+
+# Instalação mínima (PDF + DOCX):
+# pip install weasyprint htmldocx python-docx beautifulsoup4
+
+# Instalação completa:
+# pip install -r requirements-documents.txt

@@ -56,7 +56,7 @@ function App() {
   })
 
   const [formData, setFormData] = useState<FormData>(loadSavedData())
-  const [loading, setLoading] = useState<'word' | false>(false)
+  const [loading, setLoading] = useState<'word' | 'html' | false>(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [showValidationModal, setShowValidationModal] = useState(false)
   const [missingFields, setMissingFields] = useState<string[]>([])
@@ -121,6 +121,43 @@ function App() {
       window.URL.revokeObjectURL(url)
 
       setMessage({ type: 'success', text: 'Documento Word gerado com sucesso! Download iniciado.' })
+    } catch (error) {
+      console.error('Erro ao gerar documento:', error)
+      setMessage({ type: 'error', text: 'Erro ao gerar documento. Verifique se o backend está rodando.' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGenerateHTML = async () => {
+    // Validar campos obrigatórios
+    const missing = validateFormData()
+    
+    if (missing.length > 0) {
+      setMissingFields(missing)
+      setShowValidationModal(true)
+      return
+    }
+
+    setLoading('html')
+    setMessage(null)
+
+    try {
+      const blob = await generateDocument(formData, 'html')
+      
+      // Abrir HTML em nova aba
+      const url = window.URL.createObjectURL(blob)
+      window.open(url, '_blank')
+      
+      // Também oferecer download
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `Atestado_${formData.nomePaciente.replace(/\s+/g, '_')}_${new Date().getTime()}.html`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+
+      setMessage({ type: 'success', text: 'Documento HTML gerado! Aberto em nova aba e download iniciado.' })
     } catch (error) {
       console.error('Erro ao gerar documento:', error)
       setMessage({ type: 'error', text: 'Erro ao gerar documento. Verifique se o backend está rodando.' })
@@ -222,7 +259,8 @@ function App() {
             {/* Botões de Ação */}
             <div className="mt-10 pt-10 border-t-2 border-gray-100 dark:border-gray-700">
               <ActionButtons 
-                onGenerateWord={handleGenerateWord} 
+                onGenerateWord={handleGenerateWord}
+                onGenerateHTML={handleGenerateHTML}
                 onClear={handleClear}
                 loading={loading}
               />

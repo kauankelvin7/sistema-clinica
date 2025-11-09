@@ -34,7 +34,7 @@ export interface DocumentRequest {
 }
 
 // Gerar documento
-export const generateDocument = async (formData: FormData, format: 'word' | 'pdf' = 'word'): Promise<Blob> => {
+export const generateDocument = async (formData: FormData, format: 'word' | 'pdf' | 'html' = 'word'): Promise<Blob> => {
   const request: DocumentRequest = {
     paciente: {
       nome: formData.nomePaciente,
@@ -57,7 +57,14 @@ export const generateDocument = async (formData: FormData, format: 'word' | 'pdf
     },
   }
 
-  const endpoint = format === 'pdf' ? '/api/generate-pdf' : '/api/generate-document'
+  let endpoint: string
+  if (format === 'pdf') {
+    endpoint = '/api/generate-pdf'
+  } else if (format === 'html') {
+    endpoint = '/api/generate-html'
+  } else {
+    endpoint = '/api/generate-document'
+  }
   
   const response = await api.post(endpoint, request, {
     responseType: 'blob',
