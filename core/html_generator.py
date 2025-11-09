@@ -180,12 +180,12 @@ def get_html_template() -> str:
         .page {
             width: 100%;
             max-width: 210mm;
-            min-height: 26cm;
+            min-height: 297mm; /* Altura exata A4 - força rodapé ao final */
             margin: 0 auto 20px auto;
-            padding: 15px 12px 15px 12px; /* Margens laterais reduzidas de 20px para 12px */
+            padding: 15mm 18mm 15mm 18mm; /* Margem normal nos cantos */
             background: white;
             position: relative;
-            border: 3px double #000;
+            border: 3px solid #000; /* BORDA SIMPLES PRETA ao redor de TUDO */
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             box-sizing: border-box;
             display: flex;
@@ -193,23 +193,25 @@ def get_html_template() -> str:
         }
         
         .page-content {
-            flex: 1;
+            flex: 1; /* Preenche espaço disponível */
+            display: flex;
+            flex-direction: column;
         }
         
         /* ========== CABEÇALHO ========== */
         .header {
             display: flex;
             align-items: center;
-            gap: 15px;
-            margin-bottom: 10px; /* Reduzido de 15px */
-            padding-bottom: 8px; /* Reduzido de 10px */
-            border-bottom: 1px solid #000; /* Linha simples, não dupla */
+            gap: 10px;
+            margin-bottom: 15px; /* AUMENTADO de 8px para 15px - mais espaço antes da DECLARAÇÃO */
+            padding-bottom: 10px; /* AUMENTADO de 6px para 10px */
+            border-bottom: 1px solid #000;
         }
         
         /* ========== LOGO ========== */
         .header-logo {
-            width: 80px;
-            height: 80px;
+            width: 70px; /* Reduzido de 80px */
+            height: 70px;
             flex-shrink: 0;
             object-fit: contain;
         }
@@ -221,28 +223,28 @@ def get_html_template() -> str:
         }
         
         .header-title {
-            font-size: 14pt;
+            font-size: 18pt; /* AUMENTADO de 13pt para 18pt */
             font-weight: bold;
-            color: #003366; /* Azul escuro marinho */
-            margin-bottom: 4px;
+            color: #003366;
+            margin-bottom: 3px;
             font-family: 'Times New Roman', Times, serif;
         }
         
         .header-subtitle {
-            font-size: 12pt;
-            color: #003366; /* Azul escuro marinho */
+            font-size: 11pt;
+            color: #003366;
             font-family: 'Times New Roman', Times, serif;
         }
         
         /* ========== RODAPÉ ========== */
         .footer {
             margin-top: auto;
-            padding-top: 10px; /* Reduzido de 15px */
-            padding-bottom: 8px; /* Reduzido de 10px */
-            border-top: none; /* Remover linha superior do rodapé */
+            padding-top: 8px; /* Reduzido */
+            padding-bottom: 6px; /* Reduzido */
+            border-top: none;
             text-align: center;
             font-family: 'Times New Roman', Times, serif;
-            font-size: 10pt;
+            font-size: 9pt; /* Reduzido de 10pt */
             color: #00a651;
             flex-shrink: 0;
         }
@@ -253,34 +255,34 @@ def get_html_template() -> str:
         }
         
         .footer-line2 {
-            font-size: 10pt;
+            font-size: 9pt; /* Reduzido de 10pt */
         }
         
         /* ========== ASSINATURA ========== */
         .signature-section {
-            margin-top: 50px; /* Reduzido de 80px */
-            margin-bottom: 20px; /* Reduzido de 30px */
+            margin-top: 30px; /* Reduzido */
+            margin-bottom: 10px; /* Reduzido */
             text-align: center;
         }
         
         .signature-line {
             display: inline-block;
-            width: 400px; /* Linha mais larga */
+            width: 350px; /* Reduzido de 400px */
             border-top: 1px solid #000;
             margin-bottom: 5px;
         }
         
         .signature-label {
             font-weight: bold;
-            font-size: 11pt;
+            font-size: 10pt; /* Reduzido de 11pt */
             margin-top: 5px;
             font-family: 'Times New Roman', Times, serif;
         }
         
         .date-line {
             font-weight: bold;
-            margin-top: 20px;
-            font-size: 11pt;
+            margin-top: 15px; /* Reduzido de 20px */
+            font-size: 10pt; /* Reduzido de 11pt */
             font-family: 'Times New Roman', Times, serif;
         }
         
@@ -289,13 +291,13 @@ def get_html_template() -> str:
             width: 100%;
             border: 3px double #000;
             border-collapse: collapse;
-            margin-bottom: 20px; /* Aumentado de 10px para 20px - mais espaço após título */
+            margin-bottom: 5px; /* Menor espaço abaixo da tabela */
         }
         
         .title-table td {
-            padding: 8px;
+            padding: 8px; /* AUMENTADO de 6px para 8px */
             text-align: center;
-            font-size: 14pt;
+            font-size: 13pt;
             font-weight: bold;
             background: #fff;
             font-family: 'Times New Roman', Times, serif;
@@ -304,9 +306,10 @@ def get_html_template() -> str:
         /* ========== TEXTO PRINCIPAL ========== */
         .main-text {
             text-align: justify;
-            font-size: 12pt;
-            margin-bottom: 20px; /* Aumentado de 15px para 20px - mais espaço após texto */
-            line-height: 1.6;
+            font-size: 12pt; /* AUMENTADO de 11pt para 12pt */
+            margin-top: 15px; /* ESPAÇAMENTO maior entre DECLARAÇÃO e texto */
+            margin-bottom: 15px;
+            line-height: 1.6; /* AUMENTADO de 1.5 para 1.6 */
             padding: 0;
             background: #ffffff;
             font-family: 'Times New Roman', Times, serif;
@@ -317,13 +320,13 @@ def get_html_template() -> str:
             width: 100%;
             border: 2px solid #000;
             border-collapse: collapse;
-            margin: 15px 0; /* Aumentado de 10px para 15px - mais espaço ao redor */
+            margin: 8px 0; /* Reduzido */
             background: #fff;
             color: #000;
         }
         
         .decision-box td {
-            padding: 10px; /* Reduzido de 12px */
+            padding: 8px; /* Reduzido */
             border: 1px solid #000;
             font-family: 'Times New Roman', Times, serif;
         }
@@ -331,30 +334,30 @@ def get_html_template() -> str:
         .decision-title {
             font-weight: bold;
             text-align: left;
-            margin-bottom: 8px; /* Reduzido de 10px */
-            font-size: 11pt;
+            margin-bottom: 6px;
+            font-size: 11pt; /* AUMENTADO de 10pt para 11pt */
             font-family: 'Times New Roman', Times, serif;
         }
         
         .decision-options {
-            line-height: 1.6; /* Reduzido de 1.8 */
-            font-size: 11pt;
+            line-height: 1.5;
+            font-size: 11pt; /* AUMENTADO de 10pt para 11pt */
             font-family: 'Times New Roman', Times, serif;
         }
         
         .checkbox {
             display: inline-block;
-            width: 14px;
-            height: 14px;
+            width: 12px; /* Reduzido de 14px */
+            height: 12px;
             border: 2px solid #000;
             background: #fff;
-            margin-right: 6px;
+            margin-right: 5px; /* Reduzido de 6px */
             vertical-align: middle;
         }
         
         .decision-note {
-            font-size: 10pt;
-            padding-top: 8px;
+            font-size: 10pt; /* AUMENTADO de 9pt para 10pt */
+            padding-top: 6px;
             border-top: 1px solid #000;
             text-align: center;
             font-family: 'Times New Roman', Times, serif;
@@ -365,15 +368,15 @@ def get_html_template() -> str:
             width: 100%;
             border: 3px double #000;
             border-collapse: collapse;
-            margin-top: 10px;
-            margin-bottom: 20px; /* Aumentado de 10px para 20px - mais espaço após título */
+            margin-top: 8px; /* Reduzido de 10px */
+            margin-bottom: 10px; /* Reduzido */
         }
         
         .prontuario-title td {
-            padding: 8px;
+            padding: 6px; /* Reduzido de 8px */
             text-align: center;
             font-weight: bold;
-            font-size: 14pt;
+            font-size: 13pt; /* Reduzido de 14pt */
             background: #fff;
             font-family: 'Times New Roman', Times, serif;
         }
@@ -383,15 +386,15 @@ def get_html_template() -> str:
             width: 100%;
             border: 2px solid #000;
             border-collapse: collapse;
-            margin-bottom: 20px; /* Aumentado de 10px para 20px - espaço para anotações médicas */
+            margin-bottom: 10px; /* Reduzido */
             background: #fff;
             color: #000;
         }
         
         .patient-table td {
-            padding: 10px;
+            padding: 8px; /* Reduzido de 10px */
             border: 1px solid #000;
-            font-size: 11pt;
+            font-size: 10pt; /* Reduzido de 11pt */
             word-wrap: break-word;
             font-family: 'Times New Roman', Times, serif;
         }
@@ -406,13 +409,13 @@ def get_html_template() -> str:
             width: 100%;
             border: 2px solid #000;
             border-collapse: collapse;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             background: #fff;
-            min-height: 80px; /* Espaço mínimo para anotações */
+            min-height: 100px; /* AUMENTADO para 100px - mais espaço para médico escrever */
         }
         
         .observacoes-medicas td {
-            padding: 12px;
+            padding: 10px;
             border: 1px solid #000;
             font-family: 'Times New Roman', Times, serif;
             vertical-align: top;
@@ -420,15 +423,21 @@ def get_html_template() -> str:
         
         .observacoes-title {
             font-weight: bold;
-            font-size: 11pt;
+            font-size: 10pt; /* Reduzido */
             margin-bottom: 8px;
             font-family: 'Times New Roman', Times, serif;
         }
         
         .observacoes-content {
-            min-height: 60px; /* Espaço para médico escrever */
+            min-height: 80px; /* AUMENTADO para 80px - área maior de escrita */
             border-top: 1px dotted #ccc;
             padding-top: 10px;
+        }
+        
+        /* ========== PREENCHIMENTO VERTICAL (invisível) ========== */
+        .vertical-spacer {
+            flex: 1; /* Preenche espaço restante para empurrar rodapé ao final */
+            min-height: 20px; /* Mínimo de 20px */
         }
         
         /* ========== ASSINATURA ========== */
@@ -572,7 +581,7 @@ def get_html_template() -> str:
             
             @page {
                 size: A4;
-                margin: 10mm; /* Margem mínima na impressão */
+                margin: 0; /* Margem 0 permite que usuário ajuste no diálogo */
             }
             
             body {
@@ -583,11 +592,11 @@ def get_html_template() -> str:
             
             .page {
                 width: 100%;
-                max-width: 21cm;
-                min-height: 26cm;
+                max-width: 100%; /* Permite escala ajustável */
+                min-height: 297mm; /* Altura exata A4 */
                 margin: 0;
-                padding: 12mm 10mm 10mm 10mm; /* Margens laterais reduzidas de 15mm para 10mm */
-                border: 3px double #000;
+                padding: 15mm 18mm 15mm 18mm; /* Margem normal */
+                border: 3px solid #000; /* BORDA SIMPLES PRETA */
                 box-shadow: none;
                 box-sizing: border-box;
                 position: relative;
@@ -735,11 +744,13 @@ def get_html_template() -> str:
         
         <!-- Assinatura -->
         <div class="signature-section">
-            <div class="signature-line"></div><br>
+            <div class="signature-line"></div>
             <div class="signature-label">Médico do trabalho / Examinador</div>
             <div class="date-line">Brasília, ___/___/____</div>
-            <br><br>
         </div>
+        
+        <!-- Preenchimento vertical invisível (empurra rodapé para o final) -->
+        <div class="vertical-spacer"></div>
         
         </div> <!-- Fim page-content -->
         
@@ -823,11 +834,13 @@ def get_html_template() -> str:
         
         <!-- Assinatura (segunda página) -->
         <div class="signature-section">
-            <div class="signature-line"></div><br>
-            <div class="signature-label">Médico do trabalho / Examinador</div><br>
+            <div class="signature-line"></div>
+            <div class="signature-label">Médico do trabalho / Examinador</div>
             <div class="date-line">Brasília, ___/___/____</div>
-            <br><br>
         </div>
+        
+        <!-- Preenchimento vertical invisível (empurra rodapé para o final) -->
+        <div class="vertical-spacer"></div>
         
         </div> <!-- Fim page-content -->
         
