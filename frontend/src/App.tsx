@@ -216,19 +216,9 @@ function App() {
             className="group flex items-center gap-3 px-6 py-3 bg-white dark:bg-gray-800 border-2 border-emerald-200 dark:border-emerald-700 rounded-xl shadow-md hover:shadow-lg hover:border-emerald-400 dark:hover:border-emerald-500 transition-all duration-300"
           >
             {layoutMode === 'horizontal' ? (
-              <>
-                <Smartphone className="w-5 h-5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
-                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Modo Vertical (Mobile)
-                </span>
-              </>
+              <Smartphone className="w-5 h-5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
             ) : (
-              <>
-                <Monitor className="w-5 h-5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
-                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Modo Horizontal (Desktop)
-                </span>
-              </>
+              <Monitor className="w-5 h-5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
             )}
           </button>
         </div>

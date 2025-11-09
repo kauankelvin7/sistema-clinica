@@ -44,7 +44,7 @@ export default function ActionButtons({ onGenerateWord, onGenerateHTML, onClear,
               {loading === 'html' ? (
                 <>
                   <Loader2 className="w-6 h-6 animate-spin" />
-                  <span className="text-base font-bold">Gerando HTML...</span>
+                  <span className="text-base font-bold">Gerando Homologação...</span>
                 </>
               ) : loading === 'word' ? (
                 <>
