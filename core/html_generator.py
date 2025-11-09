@@ -21,6 +21,9 @@ from typing import Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
 
+# Cache global para logo em base64 (melhora performance)
+_LOGO_CACHE = None
+
 # Importar configurações
 try:
     from .config import GENERATED_DOCS_DIR
@@ -75,6 +78,7 @@ def encode_image_to_base64(image_path: str) -> Optional[str]:
     """
     Converte imagem para formato base64 para incorporação direta no HTML
     Isso elimina a necessidade de arquivos externos de imagem
+    Usa cache global para melhorar performance em múltiplas gerações
     
     Args:
         image_path: Caminho completo do arquivo de imagem
@@ -83,6 +87,12 @@ def encode_image_to_base64(image_path: str) -> Optional[str]:
         str: String base64 com prefixo data URI (ex: data:image/png;base64,...)
         None: Se a imagem não existir ou houver erro na conversão
     """
+    global _LOGO_CACHE
+    
+    # Usar cache se disponível
+    if _LOGO_CACHE is not None:
+        return _LOGO_CACHE
+    
     try:
         if not os.path.exists(image_path):
             logger.warning(f"⚠️ Imagem não encontrada: {image_path}")
@@ -103,9 +113,17 @@ def encode_image_to_base64(image_path: str) -> Optional[str]:
         }
         mime = mime_types.get(ext, 'image/png')
         
-        return f"data:{mime};base64,{encoded}"
+        # Criar string base64 completa com prefixo data URI
+        result = f"data:{mime};base64,{encoded}"
+        
+        # Armazenar no cache para próximas gerações
+        _LOGO_CACHE = result
+        
+        return result
+        
     except Exception as e:
-        logger.error(f"❌ Erro ao codificar imagem: {e}")
+        logger.error(f"❌ Erro ao converter imagem para base64: {e}")
+        return None
         return None
 
 
@@ -156,18 +174,20 @@ def get_html_template() -> str:
             color: #000;
             background: #ffffff;
             padding: 10px;
+            margin: 0;
         }
         
         .page {
             width: 100%;
-            max-width: 8.27in;
-            min-height: 11.69in;
+            max-width: 21cm; /* Largura exata A4 */
+            min-height: 29.7cm; /* Altura exata A4 */
             margin: 0 auto;
-            padding: clamp(0.2in, 3vw, 0.4in); /* Padding responsivo */
+            padding: 1.5cm 2cm; /* Margens adequadas para impressão: 1.5cm topo/baixo, 2cm laterais */
             background: white;
             position: relative;
             border: 3px double #000;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-sizing: border-box;
         }
         
         /* ========== CABEÇALHO RESPONSIVO ========== */
@@ -475,24 +495,42 @@ def get_html_template() -> str:
             }
         }
         
-        /* Impressão */
+        /* Impressão - Otimizado para A4 */
         @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            @page {
+                size: A4;
+                margin: 0;
+            }
+            
             body {
                 padding: 0;
+                margin: 0;
                 background: white;
             }
             
             .page {
+                width: 21cm;
+                height: 29.7cm;
                 margin: 0;
-                padding: 0.4in;
+                padding: 1.5cm 2cm;
+                border: 3px double #000;
+                box-shadow: none;
+                page-break-after: always;
+                box-sizing: border-box;
             }
             
-            body {
-                background: white;
+            .page:last-child {
+                page-break-after: auto;
             }
             
             .page-break {
                 page-break-after: always;
+                break-after: page;
             }
         }
     </style>
