@@ -180,8 +180,9 @@ def get_html_template() -> str:
         .page {
             width: 100%;
             max-width: 210mm;
+            min-height: 27cm; /* Altura mínima para garantir rodapé no final */
             margin: 0 auto 20px auto;
-            padding: 15px 20px 20px 20px;
+            padding: 15px 20px 15px 20px;
             background: white;
             position: relative;
             border: 3px double #000;
@@ -189,6 +190,10 @@ def get_html_template() -> str:
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
+        }
+        
+        .page-content {
+            flex: 1;
         }
         
         /* ========== CABEÇALHO ========== */
@@ -232,12 +237,14 @@ def get_html_template() -> str:
         /* ========== RODAPÉ ========== */
         .footer {
             margin-top: auto;
-            padding-top: 15px;
+            padding-top: 10px;
+            padding-bottom: 5px;
             border-top: 1px solid #e0e0e0;
             text-align: center;
             font-family: 'Times New Roman', Times, serif;
             font-size: 10pt;
             color: #00a651;
+            flex-shrink: 0;
         }
         
         .footer-line1 {
@@ -543,14 +550,16 @@ def get_html_template() -> str:
             .page {
                 width: 100%;
                 max-width: 21cm;
+                min-height: 27cm;
                 margin: 0;
-                padding: 15px 20px 20px 20px;
+                padding: 15px 20px 15px 20px;
                 border: 3px double #000;
                 box-shadow: none;
                 box-sizing: border-box;
                 position: relative;
                 display: flex;
                 flex-direction: column;
+                page-break-inside: avoid;
             }
             
             .page:first-child {
@@ -558,16 +567,23 @@ def get_html_template() -> str:
             }
             
             .page:last-child {
-                page-break-after: avoid;
+                page-break-after: avoid !important;
+            }
+            
+            .page-content {
+                flex: 1;
             }
             
             .footer {
                 margin-top: auto;
-                padding-top: 15px;
+                padding-top: 10px;
+                padding-bottom: 5px;
                 border-top: 1px solid #e0e0e0;
+                flex-shrink: 0;
+                page-break-inside: avoid;
             }
             
-            .header, .title-table, .decision-box, .signature, .signature-section {
+            .header, .title-table, .decision-box, .signature-section {
                 page-break-inside: avoid;
             }
             
@@ -576,21 +592,59 @@ def get_html_template() -> str:
             }
             
             .page-break {
-                page-break-after: always !important;
-                break-after: page !important;
-                display: block;
-                height: 0;
-                margin: 0;
-                padding: 0;
-                border: none;
-                visibility: hidden;
+                display: none !important;
+                height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                visibility: hidden !important;
+            }
+            
+            /* Remover espaços em branco desnecessários */
+            br:last-child {
+                display: none;
             }
         }
     </style>
+    <script>
+        // Script para remover páginas vazias ao carregar
+        window.addEventListener('DOMContentLoaded', function() {
+            // Remover elementos .page-break vazios
+            const pageBreaks = document.querySelectorAll('.page-break');
+            pageBreaks.forEach(pb => {
+                if (!pb.textContent.trim()) {
+                    pb.style.display = 'none';
+                    pb.style.height = '0';
+                    pb.style.margin = '0';
+                    pb.style.padding = '0';
+                }
+            });
+            
+            // Verificar se há páginas vazias
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => {
+                const content = page.textContent.trim();
+                if (content.length < 50) { // Página muito vazia
+                    page.style.display = 'none';
+                }
+            });
+        });
+        
+        // Ajustar altura das páginas antes de imprimir
+        window.addEventListener('beforeprint', function() {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => {
+                const footer = page.querySelector('.footer');
+                if (footer) {
+                    footer.style.marginTop = 'auto';
+                }
+            });
+        });
+    </script>
 </head>
 <body>
     <!-- PÁGINA 1 -->
     <div class="page">
+        <div class="page-content">
         
         <!-- CABEÇALHO com logo e texto -->
         <div class="header">
@@ -643,6 +697,8 @@ def get_html_template() -> str:
             <div class="date-line">Brasília, ___/___/____</div>
         </div>
         
+        </div> <!-- Fim page-content -->
+        
         <!-- RODAPÉ -->
         <div class="footer">
             <div class="footer-line1">NOVA MEDICINA E SEGURANÇA DO TRABALHO LTDA.</div>
@@ -650,11 +706,9 @@ def get_html_template() -> str:
         </div>
     </div>
     
-    <!-- QUEBRA DE PÁGINA -->
-    <div class="page-break"></div>
-    
     <!-- PÁGINA 2 -->
     <div class="page">
+        <div class="page-content">
         
         <!-- CABEÇALHO (repetido) -->
         <div class="header">
@@ -717,6 +771,8 @@ def get_html_template() -> str:
             <div class="signature-label">Médico do trabalho / Examinador</div><br>
             <div class="date-line">Brasília, ___/___/____</div>
         </div>
+        
+        </div> <!-- Fim page-content -->
         
         <!-- RODAPÉ (repetido) -->
         <div class="footer">
