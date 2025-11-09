@@ -143,21 +143,50 @@ function App() {
     setMessage(null)
 
     try {
-      const blob = await generateDocument(formData, 'html')
+      // Fazer requisição para gerar HTML
+      const response = await fetch('http://localhost:8000/api/generate-html', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          paciente: {
+            nome: formData.nomePaciente,
+            tipo_documento: formData.tipoDocumento,
+            numero_documento: formData.numeroDocumento,
+            cargo: formData.cargo,
+            empresa: formData.empresa,
+          },
+          atestado: {
+            data_atestado: formData.dataAtestado,
+            dias_afastamento: parseInt(formData.diasAfastamento),
+            cid: formData.cid,
+            cid_nao_informado: formData.cidNaoInformado,
+          },
+          medico: {
+            nome: formData.nomeMedico,
+            tipo_registro: formData.tipoRegistro,
+            numero_registro: formData.numeroRegistro,
+            uf_registro: formData.ufRegistro,
+          },
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao gerar documento')
+      }
+
+      // Pegar HTML como texto
+      const htmlContent = await response.text()
       
       // Abrir HTML em nova aba
-      const url = window.URL.createObjectURL(blob)
-      window.open(url, '_blank')
-      
-      // Também oferecer download
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `Atestado_${formData.nomePaciente.replace(/\s+/g, '_')}_${new Date().getTime()}.html`
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
+      const newWindow = window.open('', '_blank')
+      if (newWindow) {
+        newWindow.document.write(htmlContent)
+        newWindow.document.close()
+      }
 
-      setMessage({ type: 'success', text: 'Documento HTML gerado! Aberto em nova aba e download iniciado.' })
+      setMessage({ type: 'success', text: 'Documento HTML gerado e aberto em nova aba!' })
     } catch (error) {
       console.error('Erro ao gerar documento:', error)
       setMessage({ type: 'error', text: 'Erro ao gerar documento. Verifique se o backend está rodando.' })

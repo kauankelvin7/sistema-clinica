@@ -512,27 +512,21 @@ async def generate_html_endpoint(data: DocumentoRequest):
         except Exception as db_error:
             logger.warning(f"Erro ao salvar no banco (continuando): {str(db_error)}")
         
-        # Preparar dados para o gerador
+        # Preparar dados para o gerador (formato esperado pelo html_generator)
         documento_data = {
-            "paciente": {
-                "nome": data.paciente.nome,
-                "tipo_documento": data.paciente.tipo_documento,
-                "numero_documento": data.paciente.numero_documento,
-                "cargo": data.paciente.cargo,
-                "empresa": data.paciente.empresa
-            },
-            "atestado": {
-                "data_atestado": data.atestado.data_atestado,
-                "dias_afastamento": data.atestado.dias_afastamento,
-                "cid": data.atestado.cid,
-                "cid_nao_informado": data.atestado.cid_nao_informado
-            },
-            "medico": {
-                "nome": data.medico.nome,
-                "tipo_registro": data.medico.tipo_registro,
-                "numero_registro": data.medico.numero_registro,
-                "uf_registro": data.medico.uf_registro
-            }
+            "nome_paciente": data.paciente.nome,
+            "tipo_doc_paciente": data.paciente.tipo_documento,
+            "numero_doc_paciente": data.paciente.numero_documento,
+            "cargo_paciente": data.paciente.cargo,
+            "empresa_paciente": data.paciente.empresa,
+            "data_atestado": data.atestado.data_atestado,
+            "qtd_dias_atestado": data.atestado.dias_afastamento,
+            "codigo_cid": data.atestado.cid,
+            "cid_nao_informado": data.atestado.cid_nao_informado,
+            "nome_medico": data.medico.nome,
+            "tipo_registro_medico": data.medico.tipo_registro,
+            "crm__medico": data.medico.numero_registro,
+            "uf_crm_medico": data.medico.uf_registro
         }
         
         # Gerar HTML
@@ -544,12 +538,12 @@ async def generate_html_endpoint(data: DocumentoRequest):
         
         logger.info(f"HTML gerado: {caminho_html}")
         
-        # Retornar arquivo HTML
-        return FileResponse(
-            caminho_html,
-            media_type='text/html',
-            filename=f"Atestado_{data.paciente.nome.replace(' ', '_')}.html"
-        )
+        # Ler conteúdo do HTML e retornar como resposta HTML (abre em nova aba)
+        with open(caminho_html, 'r', encoding='utf-8') as f:
+            html_content = f.read()
+        
+        from fastapi.responses import HTMLResponse
+        return HTMLResponse(content=html_content, status_code=200)
         
     except Exception as e:
         logger.error(f"Erro ao gerar HTML: {str(e)}")
