@@ -27,7 +27,7 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
   
   // Estados dos filtros
   const [searchTerm, setSearchTerm] = useState('')
-  const [filterTipoCRM, setFilterTipoCRM] = useState<'TODOS' | 'CRM' | 'CRO' | 'RMs'>('TODOS')
+  const [filterTipoCRM, setFilterTipoCRM] = useState<'TODOS' | 'CRM' | 'CRO' | 'RMS'>('TODOS')
   const [filterUF, setFilterUF] = useState<string>('TODAS')
   const [ufs, setUfs] = useState<string[]>([])
 
@@ -137,13 +137,13 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
               <Filter className="w-4 h-4 text-emerald-600" />
               <select
                 value={filterTipoCRM}
-                onChange={(e) => setFilterTipoCRM(e.target.value as 'TODOS' | 'CRM' | 'CRO' | 'RMs')}
+                onChange={(e) => setFilterTipoCRM(e.target.value as 'TODOS' | 'CRM' | 'CRO' | 'RMS')}
                 className="px-3 py-2 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:border-emerald-500"
               >
                 <option value="TODOS">Todos Registros</option>
                 <option value="CRM">CRM</option>
                 <option value="CRO">CRO</option>
-                <option value="RMs">RMs</option>
+                <option value="RMS">RMS</option>
               </select>
             </div>
 

@@ -105,9 +105,8 @@ DATETIME_FORMAT = 'dd/MM/yyyy HH:mm:ss'
 # ===== URLS DE CONSULTA ONLINE =====
 CONSULTA_URLS = {
     "CRM": "https://portal.cfm.org.br/busca-medicos/",
-    "CRO": "https://website.cfo.org.br/profissionais/busca-de-profissionais/",
-    "CRN": "http://www.cfn.org.br/index.php/pesquisa-de-nutricionistas/",
-    "RMs": "https://www.google.com/search?q=consulta+registro+profissional+saude"
+    "CRO": "https://website.cfo.org.br/busca-profissionais/",
+    "RMS": "https://www.google.com/search?q=consulta+registro+profissional+saude"
 }
 
 # ===== LISTA DE UFs BRASILEIRAS =====
@@ -121,7 +120,7 @@ UFS_BRASIL = [
 TIPOS_DOCUMENTO = ["CPF", "RG"]
 
 # ===== TIPOS DE REGISTRO PROFISSIONAL =====
-TIPOS_REGISTRO = ["CRM", "CRO", "CRN", "RMs"]
+TIPOS_REGISTRO = ["CRM", "CRO", "RMS"]
 
 # ===== CONFIGURAÇÕES DE INTERFACE =====
 THEME_PRIMARY_COLOR = "#38b2ac"

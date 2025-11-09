@@ -107,7 +107,7 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
             >
               <option value="CRM">CRM</option>
               <option value="CRO">CRO</option>
-              <option value="RMs">RMs</option>
+              <option value="RMS">RMS</option>
             </select>
 
             {/* Número */}

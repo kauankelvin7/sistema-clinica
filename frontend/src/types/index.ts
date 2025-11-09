@@ -14,7 +14,7 @@ export interface FormData {
   
   // Médico
   nomeMedico: string
-  tipoRegistro: 'CRM' | 'CRO' | 'RMs'
+  tipoRegistro: 'CRM' | 'CRO' | 'RMS'
   numeroRegistro: string
   ufRegistro: string
 }

@@ -137,7 +137,7 @@ def validar_dados_medico(tipo_crm: str, crm: str, nome: str, uf: str) -> bool:
     Returns:
         bool: True se válido, False caso contrário
     """
-    if tipo_crm not in ['CRM', 'CRO', 'CRN', 'RMs']:
+    if tipo_crm not in ['CRM', 'CRO', 'RMS']:
         logger.warning(f"Tipo de registro inválido: {tipo_crm}")
         return False
     

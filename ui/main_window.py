@@ -48,10 +48,10 @@ except ImportError:
                   "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
                   "RS", "RO", "RR", "SC", "SP", "SE", "TO"]
     TIPOS_DOCUMENTO = ["CPF", "RG"]
-    TIPOS_REGISTRO = ["CRM", "CRO", "CRN", "RMs"]
+    TIPOS_REGISTRO = ["CRM", "CRO", "RMS"]
     CONSULTA_URLS = {
         "CRM": "https://portal.cfm.org.br/busca-medicos/",
-        "CRO": "https://website.cfo.org.br/profissionais/busca-de-profissionais/",
+        "CRO": "https://website.cfo.org.br/busca-profissionais/",
     }
     MSG_CAMPO_OBRIGATORIO = "O campo '{campo}' é obrigatório."
     MSG_CPF_INVALIDO = "O CPF deve conter 11 dígitos."
