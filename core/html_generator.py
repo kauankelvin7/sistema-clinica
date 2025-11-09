@@ -180,9 +180,9 @@ def get_html_template() -> str:
         .page {
             width: 100%;
             max-width: 210mm;
-            min-height: 27cm; /* Altura mínima para garantir rodapé no final */
+            min-height: 27cm;
             margin: 0 auto 20px auto;
-            padding: 15px 20px 15px 20px;
+            padding: 20px 25px 20px 25px; /* Margens maiores e simétricas */
             background: white;
             position: relative;
             border: 3px double #000;
@@ -200,10 +200,10 @@ def get_html_template() -> str:
         .header {
             display: flex;
             align-items: center;
-            gap: 20px;
-            margin-bottom: 10px;
-            padding: 10px 15px;
-            border-bottom: 2px solid #000;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #000; /* Linha simples, não dupla */
         }
         
         /* ========== LOGO ========== */
@@ -223,23 +223,23 @@ def get_html_template() -> str:
         .header-title {
             font-size: 14pt;
             font-weight: bold;
-            color: #0066cc;
+            color: #003366; /* Azul escuro marinho */
             margin-bottom: 4px;
             font-family: 'Times New Roman', Times, serif;
         }
         
         .header-subtitle {
             font-size: 12pt;
-            color: #0066cc;
+            color: #003366; /* Azul escuro marinho */
             font-family: 'Times New Roman', Times, serif;
         }
         
         /* ========== RODAPÉ ========== */
         .footer {
             margin-top: auto;
-            padding-top: 10px;
-            padding-bottom: 5px;
-            border-top: 1px solid #e0e0e0;
+            padding-top: 15px;
+            padding-bottom: 10px;
+            border-top: none; /* Remover linha superior do rodapé */
             text-align: center;
             font-family: 'Times New Roman', Times, serif;
             font-size: 10pt;
@@ -257,27 +257,31 @@ def get_html_template() -> str:
         }
         
         /* ========== ASSINATURA ========== */
-        .signature {
-            margin-top: 40px;
-            margin-bottom: 20px;
+        .signature-section {
+            margin-top: 80px;
+            margin-bottom: 30px;
             text-align: center;
         }
         
         .signature-line {
-            width: 300px;
-            margin: 0 auto 8px auto;
+            display: inline-block;
+            width: 400px; /* Linha mais larga */
             border-top: 1px solid #000;
-            padding-top: 5px;
+            margin-bottom: 5px;
         }
         
-        .signature-text {
-            font-size: 11pt;
+        .signature-label {
             font-weight: bold;
-        }
-        
-        .signature-date {
             font-size: 11pt;
             margin-top: 5px;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        
+        .date-line {
+            font-weight: bold;
+            margin-top: 20px;
+            font-size: 11pt;
+            font-family: 'Times New Roman', Times, serif;
         }
         
         /* ========== TABELA TÍTULO ========== */
@@ -301,9 +305,9 @@ def get_html_template() -> str:
         .main-text {
             text-align: justify;
             font-size: 12pt;
-            margin-bottom: 15px;
-            line-height: 1.6;
-            padding: 10px;
+            margin-bottom: 20px;
+            line-height: 1.7;
+            padding: 0; /* Remover padding interno */
             background: #ffffff;
             font-family: 'Times New Roman', Times, serif;
         }
@@ -552,7 +556,7 @@ def get_html_template() -> str:
                 max-width: 21cm;
                 min-height: 27cm;
                 margin: 0;
-                padding: 15px 20px 15px 20px;
+                padding: 20px 25px 20px 25px; /* Margens simétricas na impressão */
                 border: 3px double #000;
                 box-shadow: none;
                 box-sizing: border-box;
@@ -576,11 +580,15 @@ def get_html_template() -> str:
             
             .footer {
                 margin-top: auto;
-                padding-top: 10px;
-                padding-bottom: 5px;
-                border-top: 1px solid #e0e0e0;
+                padding-top: 15px;
+                padding-bottom: 10px;
+                border-top: none; /* Sem linha no rodapé */
                 flex-shrink: 0;
                 page-break-inside: avoid;
+            }
+            
+            .header {
+                border-bottom: 1px solid #000; /* Linha simples */
             }
             
             .header, .title-table, .decision-box, .signature-section {
@@ -693,7 +701,7 @@ def get_html_template() -> str:
         <!-- Assinatura -->
         <div class="signature-section">
             <div class="signature-line"></div><br>
-            <div class="signature-label">Médico do trabalho / Examinador</div><br>
+            <div class="signature-label">Médico do trabalho / Examinador</div><br><br>
             <div class="date-line">Brasília, ___/___/____</div>
         </div>
         
