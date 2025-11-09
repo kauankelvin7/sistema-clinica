@@ -674,13 +674,21 @@ async def health_check():
     Verifica saúde da API e banco de dados
     """
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM pacientes")
-        pacientes_count = cursor.fetchone()[0]
-        cursor.execute("SELECT COUNT(*) FROM medicos")
-        medicos_count = cursor.fetchone()[0]
-        conn.close()
+        is_postgres = os.getenv('RENDER') or os.getenv('RAILWAY_ENVIRONMENT')
+        
+        with get_db_connection() as conn:
+            if is_postgres:
+                from sqlalchemy import text
+                result = conn.execute(text("SELECT COUNT(*) FROM pacientes"))
+                pacientes_count = result.fetchone()[0]
+                result = conn.execute(text("SELECT COUNT(*) FROM medicos"))
+                medicos_count = result.fetchone()[0]
+            else:
+                cursor = conn.cursor()
+                cursor.execute("SELECT COUNT(*) FROM pacientes")
+                pacientes_count = cursor.fetchone()[0]
+                cursor.execute("SELECT COUNT(*) FROM medicos")
+                medicos_count = cursor.fetchone()[0]
         
         return {
             "status": "healthy",
