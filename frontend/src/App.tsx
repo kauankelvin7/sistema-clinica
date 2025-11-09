@@ -144,7 +144,7 @@ function App() {
 
     try {
       // Fazer requisição para gerar HTML
-      const response = await fetch('http://localhost:8000/api/generate-html', {
+      const response = await fetch(`${api.baseURL}/api/generate-html`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
