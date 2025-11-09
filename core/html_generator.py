@@ -173,7 +173,7 @@ def get_html_template() -> str:
             line-height: 1.5;
             color: #000;
             background: #ffffff;
-            padding: 20px;
+            padding: 0; /* Remove padding do body */
             margin: 0;
         }
         
@@ -181,7 +181,7 @@ def get_html_template() -> str:
             width: 100%;
             max-width: 210mm;
             min-height: 27cm;
-            margin: 0 auto 20px auto;
+            margin: 0 auto; /* Remove margin-bottom entre páginas */
             padding: 20px 25px 20px 25px; /* Margens maiores e simétricas */
             background: white;
             position: relative;
@@ -542,7 +542,7 @@ def get_html_template() -> str:
             
             @page {
                 size: A4;
-                margin: 0.5cm;
+                margin: 0; /* Remove margem da página de impressão */
             }
             
             body {
@@ -555,8 +555,8 @@ def get_html_template() -> str:
                 width: 100%;
                 max-width: 21cm;
                 min-height: 27cm;
-                margin: 0;
-                padding: 20px 25px 20px 25px; /* Margens simétricas na impressão */
+                margin: 0; /* Remove todas as margens na impressão */
+                padding: 15mm 20mm 15mm 20mm; /* Margens em milímetros para impressão precisa */
                 border: 3px double #000;
                 box-shadow: none;
                 box-sizing: border-box;
@@ -635,6 +635,11 @@ def get_html_template() -> str:
                     page.style.display = 'none';
                 }
             });
+            
+            // Abrir automaticamente o diálogo de impressão após carregar
+            setTimeout(function() {
+                window.print();
+            }, 500); // Aguarda 500ms para garantir que tudo foi carregado
         });
         
         // Ajustar altura das páginas antes de imprimir
