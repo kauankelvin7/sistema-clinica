@@ -50,6 +50,8 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
         })
         .catch(err => {
           console.error('Erro ao carregar médicos:', err)
+          setMedicos([])
+          setFilteredMedicos([])
           setLoading(false)
         })
     }

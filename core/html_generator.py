@@ -181,13 +181,14 @@ def get_html_template() -> str:
             width: 100%;
             max-width: 210mm;
             margin: 0 auto 20px auto;
-            padding: 15px 20px;
+            padding: 15px 20px 60px 20px; /* Aumentar padding inferior para o rodapé */
             background: white;
             position: relative;
             border: 3px double #000;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             box-sizing: border-box;
             page-break-inside: avoid;
+            min-height: 280mm; /* Garantir altura mínima para A4 */
         }
         
         /* ========== CABEÇALHO RESPONSIVO ========== */
@@ -227,8 +228,12 @@ def get_html_template() -> str:
         
         /* ========== RODAPÉ ========== */
         .footer {
-            margin-top: 30px;
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
             padding-top: 10px;
+            border-top: 1px solid #e0e0e0;
             text-align: center;
             font-family: 'Times New Roman', Times, serif;
             font-size: 10pt;
@@ -527,11 +532,26 @@ def get_html_template() -> str:
             .page {
                 width: 100%;
                 max-width: 21cm;
+                height: 29.7cm;
                 margin: 0;
-                padding: 15px 20px;
+                padding: 15px 20px 60px 20px;
                 border: 3px double #000;
                 box-shadow: none;
                 box-sizing: border-box;
+                page-break-inside: avoid;
+                page-break-after: always;
+                position: relative;
+            }
+            
+            .page:last-child {
+                page-break-after: auto;
+            }
+            
+            .footer {
+                position: absolute;
+                bottom: 20px;
+                left: 20px;
+                right: 20px;
                 page-break-inside: avoid;
             }
             

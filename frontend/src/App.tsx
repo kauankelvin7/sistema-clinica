@@ -121,10 +121,10 @@ function App() {
       link.remove()
       window.URL.revokeObjectURL(url)
 
-      setMessage({ type: 'success', text: 'Documento Word gerado com sucesso! Download iniciado.' })
+      setMessage({ type: 'success', text: 'Documento gerado com sucesso! O download foi iniciado.' })
     } catch (error) {
       console.error('Erro ao gerar documento:', error)
-      setMessage({ type: 'error', text: 'Erro ao gerar documento. Verifique se o backend está rodando.' })
+      setMessage({ type: 'error', text: 'Não foi possível gerar o documento. Por favor, tente novamente.' })
     } finally {
       setLoading(false)
     }
@@ -174,7 +174,7 @@ function App() {
       })
 
       if (!response.ok) {
-        throw new Error('Erro ao gerar documento')
+        throw new Error('Falha na geração do documento')
       }
 
       // Pegar HTML como texto
@@ -187,10 +187,10 @@ function App() {
         newWindow.document.close()
       }
 
-      setMessage({ type: 'success', text: 'Documento gerado com sucesso!' })
+      setMessage({ type: 'success', text: 'Documento aberto em uma nova aba com sucesso!' })
     } catch (error) {
       console.error('Erro ao gerar documento:', error)
-      setMessage({ type: 'error', text: 'Erro ao gerar documento.' })
+      setMessage({ type: 'error', text: 'Não foi possível gerar o documento. Por favor, tente novamente.' })
     } finally {
       setLoading(false)
     }
@@ -200,7 +200,7 @@ function App() {
     const defaultData = getDefaultFormData()
     setFormData(defaultData)
     localStorage.removeItem('sistema_clinica_data')
-    setMessage({ type: 'success', text: 'Formulário limpo com sucesso!' })
+    setMessage({ type: 'success', text: 'Todos os campos foram limpos com sucesso!' })
   }
 
   return (

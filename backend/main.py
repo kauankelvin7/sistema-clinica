@@ -409,7 +409,7 @@ async def generate_document_endpoint(data: DocumentoRequest):
         caminho_documento = generate_document(documento_data)
         
         if not caminho_documento or not os.path.exists(caminho_documento):
-            raise HTTPException(status_code=500, detail="Erro ao gerar documento")
+            raise HTTPException(status_code=500, detail="Não foi possível gerar o documento. Por favor, tente novamente.")
         
         logger.info(f"Documento gerado: {caminho_documento}")
         
@@ -422,7 +422,7 @@ async def generate_document_endpoint(data: DocumentoRequest):
         
     except Exception as e:
         logger.error(f"Erro ao gerar documento: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Erro ao gerar documento: {str(e)}")
+        raise HTTPException(status_code=500, detail="Não foi possível gerar o documento. Por favor, tente novamente.")
 
 @app.post("/api/generate-html")
 async def generate_html_endpoint(data: DocumentoRequest):
@@ -535,7 +535,7 @@ async def generate_html_endpoint(data: DocumentoRequest):
         caminho_html = resultado.get('html')
         
         if not caminho_html or not os.path.exists(caminho_html):
-            raise HTTPException(status_code=500, detail="Erro ao gerar HTML")
+            raise HTTPException(status_code=500, detail="Não foi possível gerar o documento. Por favor, tente novamente.")
         
         logger.info(f"HTML gerado: {caminho_html}")
         
@@ -548,7 +548,7 @@ async def generate_html_endpoint(data: DocumentoRequest):
         
     except Exception as e:
         logger.error(f"Erro ao gerar HTML: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Erro ao gerar HTML: {str(e)}")
+        raise HTTPException(status_code=500, detail="Não foi possível gerar o documento. Por favor, tente novamente.")
 
 @app.post("/api/generate-pdf")
 async def generate_pdf_endpoint(data: DocumentoRequest):
@@ -741,14 +741,14 @@ async def generate_pdf_endpoint(data: DocumentoRequest):
             logger.error(f"Erro ao gerar PDF: {e}")
             raise HTTPException(
                 status_code=500, 
-                detail=f"Erro ao gerar PDF: {str(e)}"
+                detail="Não foi possível gerar o documento PDF. Por favor, tente novamente."
             )
         
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Erro ao gerar PDF: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Erro ao gerar PDF: {str(e)}")
+        raise HTTPException(status_code=500, detail="Não foi possível gerar o documento PDF. Por favor, tente novamente.")
 
 @app.get("/api/patients")
 async def get_patients(search: Optional[str] = None):

@@ -50,6 +50,8 @@ export default function PatientsListModal({ isOpen, onClose }: Props) {
         })
         .catch(err => {
           console.error('Erro ao carregar pacientes:', err)
+          setPacientes([])
+          setFilteredPacientes([])
           setLoading(false)
         })
     }
