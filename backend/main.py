@@ -1,75 +1,153 @@
 """
-Backend FastAPI - Sistema de Homologação
-API REST para integração com frontend React
+═══════════════════════════════════════════════════════════════════════════════
+Sistema de Homologação de Atestados Médicos - Backend API
+═══════════════════════════════════════════════════════════════════════════════
+
+Descrição:
+    API REST desenvolvida com FastAPI para geração automatizada de atestados 
+    médicos, com gerenciamento de pacientes e médicos em banco de dados.
+
 Autor: Kauan Kelvin
 Versão: 2.0.0
+Data: Novembro 2025
+
+Tecnologias:
+    - FastAPI: Framework web assíncrono de alta performance
+    - PostgreSQL/SQLite: Banco de dados relacional
+    - Python-docx: Geração de documentos Word
+    - ReportLab: Geração de documentos PDF
+    
+Endpoints Principais:
+    GET  /                          - Status da API
+    GET  /api/health                - Verificação de saúde do sistema
+    GET  /api/patients              - Listagem de pacientes
+    GET  /api/doctors               - Listagem de médicos
+    POST /api/generate-document     - Geração de atestado em Word
+    POST /api/generate-pdf          - Geração de atestado em PDF
+
+Deploy:
+    - Produção: Koyeb (https://loose-catriona-clinica-medica-seven-71f0d13c.koyeb.app)
+    - Banco de Dados: Supabase PostgreSQL
+    - Frontend: Vercel (https://sistema-clinica-seven.vercel.app)
+
+═══════════════════════════════════════════════════════════════════════════════
 """
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# IMPORTAÇÕES E DEPENDÊNCIAS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Framework Web
 from fastapi import FastAPI, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
+
+# Bibliotecas Padrão Python
 from typing import Optional, List
+from datetime import datetime
 import sys
 import os
-from datetime import datetime
 import logging
 
-# Adicionar diretório raiz ao path para importar módulos
+# Adicionar diretório raiz ao path para importar módulos customizados
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Módulos Internos do Sistema
 from core.db_manager import get_db_connection, create_tables
 from core.database import sanitizar_entrada
 from core.document_generator import generate_document
 from core.pdf_generator import generate_pdf_direct, PDFGenerationError
 
-# Configurar logging
-logging.basicConfig(level=logging.INFO)
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONFIGURAÇÃO DE LOGGING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
-# Criar aplicação FastAPI
+# ═══════════════════════════════════════════════════════════════════════════════
+# INICIALIZAÇÃO DA APLICAÇÃO FASTAPI
+# ═══════════════════════════════════════════════════════════════════════════════
+
 app = FastAPI(
-    title="Sistema de Homologação API",
-    description="API REST para geração de atestados médicos",
-    version="2.0.0"
+    title="Sistema de Homologação de Atestados Médicos",
+    description="API REST para geração automatizada de atestados médicos com gerenciamento de pacientes e médicos",
+    version="2.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
 )
 
-# Configurar CORS para permitir requisições do frontend
-# Adicionar URL do frontend em produção
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONFIGURAÇÃO DE CORS (Cross-Origin Resource Sharing)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# URL do frontend em produção (variável de ambiente)
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3001')
 
+# Lista de origens permitidas para requisições CORS
 allowed_origins = [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://localhost:5173",  # Vite padrão
-    "https://sistema-clinica-seven.vercel.app",  # Vercel produção principal
+    "http://localhost:3000",      # React dev server (porta alternativa)
+    "http://localhost:3001",      # React dev server (porta padrão)
+    "http://localhost:5173",      # Vite dev server
+    "https://sistema-clinica-seven.vercel.app",  # Frontend em produção
 ]
 
-# Adicionar URL de produção se configurada
+# Adicionar URL de produção dinamicamente se configurada
 if FRONTEND_URL and FRONTEND_URL not in allowed_origins:
     allowed_origins.append(FRONTEND_URL)
 
+# Configurar middleware CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_origin_regex=r"https://.*\.vercel\.app",  # Permite qualquer subdomínio Vercel
+    allow_origin_regex=r"https://.*\.vercel\.app",  # Permite todos os subdomínios Vercel
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Permite todos os métodos HTTP
+    allow_headers=["*"],  # Permite todos os headers
 )
 
-# Criar tabelas no startup
+# ═══════════════════════════════════════════════════════════════════════════════
+# EVENTOS DO CICLO DE VIDA DA APLICAÇÃO
+# ═══════════════════════════════════════════════════════════════════════════════
+
 @app.on_event("startup")
 async def startup_event():
-    """Inicializa o banco de dados ao iniciar a aplicação"""
+    """
+    Evento executado na inicialização da aplicação.
+    
+    Responsabilidades:
+        - Criar tabelas no banco de dados se não existirem
+        - Verificar conectividade com o banco
+        - Inicializar recursos necessários
+    
+    Raises:
+        Exception: Se houver erro na inicialização do banco de dados
+    """
     try:
         create_tables()
         logger.info("✅ Banco de dados inicializado com sucesso")
     except Exception as e:
-        logger.error(f"❌ Erro ao inicializar banco: {e}")
+        logger.error(f"❌ Erro ao inicializar banco de dados: {e}")
 
-# Modelos Pydantic para validação de dados
+# ═══════════════════════════════════════════════════════════════════════════════
+# MODELOS PYDANTIC (Validação de Dados)
+# ═══════════════════════════════════════════════════════════════════════════════
+
 class PacienteData(BaseModel):
+    """
+    Modelo de dados para informações do paciente.
+    
+    Attributes:
+        nome: Nome completo do paciente
+        tipo_documento: Tipo de documento (CPF, RG, etc.)
+        numero_documento: Número do documento de identificação
+        cargo: Cargo/função do paciente
+        empresa: Nome da empresa onde trabalha
+    """
     nome: str
     tipo_documento: str
     numero_documento: str
@@ -77,48 +155,72 @@ class PacienteData(BaseModel):
     empresa: str
 
 class AtestadoData(BaseModel):
+    """
+    Modelo de dados para informações do atestado médico.
+    
+    Attributes:
+        data_atestado: Data de emissão do atestado (formato: DD/MM/AAAA)
+        dias_afastamento: Número de dias de afastamento
+        cid: Código CID (Classificação Internacional de Doenças)
+        cid_nao_informado: Flag indicando se CID não deve ser informado
+    """
     data_atestado: str
     dias_afastamento: int
     cid: str
     cid_nao_informado: bool = False
 
 class MedicoData(BaseModel):
+    """
+    Modelo de dados para informações do médico.
+    
+    Attributes:
+        nome: Nome completo do médico
+        tipo_registro: Tipo de registro profissional (CRM, CRO, etc.)
+        numero_registro: Número do registro profissional
+        uf_registro: UF (estado) do registro profissional
+    """
     nome: str
     tipo_registro: str
     numero_registro: str
     uf_registro: str
 
 class DocumentoRequest(BaseModel):
+    """
+    Modelo de requisição completa para geração de documento.
+    
+    Agrupa todos os dados necessários para gerar um atestado:
+        - Dados do paciente
+        - Dados do atestado
+        - Dados do médico responsável
+    """
     paciente: PacienteData
     atestado: AtestadoData
     medico: MedicoData
 
-class PacienteResponse(BaseModel):
-    id: int
-    nome: str
-    tipo_documento: str
-    numero_documento: str
-    cargo: str
-    empresa: str
+# ═══════════════════════════════════════════════════════════════════════════════
+# ENDPOINTS DA API
+# ═══════════════════════════════════════════════════════════════════════════════
 
-class MedicoResponse(BaseModel):
-    id: int
-    nome: str
-    tipo_registro: str
-    numero_registro: str
-    uf_registro: str
-
-
-# ===== ENDPOINTS =====
-
-@app.get("/")
+@app.get("/", tags=["Status"])
 async def root():
-    """Endpoint raiz - Status da API"""
+    """
+    Endpoint raiz da API - Retorna informações básicas do sistema.
+    
+    Returns:
+        dict: Informações sobre status, versão e documentação da API
+    """
     return {
         "status": "online",
-        "message": "Sistema de Homologação API v2.0",
+        "message": "Sistema de Homologação de Atestados Médicos API v2.0",
         "author": "Kauan Kelvin",
-        "docs": "/docs"
+        "docs": "/docs",
+        "endpoints": {
+            "health": "/api/health",
+            "patients": "/api/patients",
+            "doctors": "/api/doctors",
+            "generate_word": "/api/generate-document",
+            "generate_pdf": "/api/generate-pdf"
+        }
     }
 
 @app.post("/api/generate-document")
