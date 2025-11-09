@@ -7,6 +7,7 @@ import DoctorForm from './components/DoctorForm'
 import ActionButtons from './components/ActionButtons'
 import { ValidationModal } from './components/ValidationModal'
 import { generateDocument } from './services/api'
+import api from './config/api'
 import type { FormData } from './types'
 
 function App() {
