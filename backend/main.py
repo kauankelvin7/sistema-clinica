@@ -94,6 +94,7 @@ allowed_origins = [
     "http://localhost:3001",      # React dev server (porta padrão)
     "http://localhost:5173",      # Vite dev server
     "https://sistema-clinica-seven.vercel.app",  # Frontend em produção
+    "https://loose-catriona-clinica-medica-seven-71f0d13c.koyeb.app",  # Backend Koyeb (para CORS interno)
 ]
 
 # Adicionar URL de produção dinamicamente se configurada
