@@ -180,9 +180,9 @@ def get_html_template() -> str:
         .page {
             width: 100%;
             max-width: 210mm;
-            min-height: 26cm; /* Reduzido para caber melhor */
-            margin: 0 auto 20px auto; /* Restaura margin-bottom */
-            padding: 15px 20px 15px 20px; /* Padding reduzido para aproveitar mais espaço */
+            min-height: 26cm;
+            margin: 0 auto 20px auto;
+            padding: 15px 12px 15px 12px; /* Margens laterais reduzidas de 20px para 12px */
             background: white;
             position: relative;
             border: 3px double #000;
@@ -289,7 +289,7 @@ def get_html_template() -> str:
             width: 100%;
             border: 3px double #000;
             border-collapse: collapse;
-            margin-bottom: 10px; /* Reduzido de 15px */
+            margin-bottom: 20px; /* Aumentado de 10px para 20px - mais espaço após título */
         }
         
         .title-table td {
@@ -305,9 +305,9 @@ def get_html_template() -> str:
         .main-text {
             text-align: justify;
             font-size: 12pt;
-            margin-bottom: 15px; /* Reduzido de 20px */
-            line-height: 1.6; /* Reduzido de 1.7 */
-            padding: 0; /* Remover padding interno */
+            margin-bottom: 20px; /* Aumentado de 15px para 20px - mais espaço após texto */
+            line-height: 1.6;
+            padding: 0;
             background: #ffffff;
             font-family: 'Times New Roman', Times, serif;
         }
@@ -317,7 +317,7 @@ def get_html_template() -> str:
             width: 100%;
             border: 2px solid #000;
             border-collapse: collapse;
-            margin: 10px 0; /* Reduzido de 15px */
+            margin: 15px 0; /* Aumentado de 10px para 15px - mais espaço ao redor */
             background: #fff;
             color: #000;
         }
@@ -366,7 +366,7 @@ def get_html_template() -> str:
             border: 3px double #000;
             border-collapse: collapse;
             margin-top: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 20px; /* Aumentado de 10px para 20px - mais espaço após título */
         }
         
         .prontuario-title td {
@@ -383,7 +383,7 @@ def get_html_template() -> str:
             width: 100%;
             border: 2px solid #000;
             border-collapse: collapse;
-            margin-bottom: 10px;
+            margin-bottom: 20px; /* Aumentado de 10px para 20px - espaço para anotações médicas */
             background: #fff;
             color: #000;
         }
@@ -399,6 +399,36 @@ def get_html_template() -> str:
         .patient-table strong {
             color: #000;
             font-family: 'Times New Roman', Times, serif;
+        }
+        
+        /* ========== ÁREA DE OBSERVAÇÕES MÉDICAS ========== */
+        .observacoes-medicas {
+            width: 100%;
+            border: 2px solid #000;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            background: #fff;
+            min-height: 80px; /* Espaço mínimo para anotações */
+        }
+        
+        .observacoes-medicas td {
+            padding: 12px;
+            border: 1px solid #000;
+            font-family: 'Times New Roman', Times, serif;
+            vertical-align: top;
+        }
+        
+        .observacoes-title {
+            font-weight: bold;
+            font-size: 11pt;
+            margin-bottom: 8px;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        
+        .observacoes-content {
+            min-height: 60px; /* Espaço para médico escrever */
+            border-top: 1px dotted #ccc;
+            padding-top: 10px;
         }
         
         /* ========== ASSINATURA ========== */
@@ -554,9 +584,9 @@ def get_html_template() -> str:
             .page {
                 width: 100%;
                 max-width: 21cm;
-                min-height: 26cm; /* Reduzido para evitar espaços em branco */
+                min-height: 26cm;
                 margin: 0;
-                padding: 12mm 15mm 10mm 15mm; /* Padding otimizado para aproveitar melhor o espaço */
+                padding: 12mm 10mm 10mm 10mm; /* Margens laterais reduzidas de 15mm para 10mm */
                 border: 3px double #000;
                 box-shadow: none;
                 box-sizing: border-box;
@@ -761,6 +791,18 @@ def get_html_template() -> str:
                 <td>
                     <strong>IDENTIFICAÇÃO DO PROFISSIONAL DE SAÚDE QUE FORNECEU O ATESTADO:</strong><br>
                     Dr. (a) {nome_medico} {crm_medico}-{uf_crm_medico}
+                </td>
+            </tr>
+        </table>
+        
+        <!-- Área de Observações Médicas -->
+        <table class="observacoes-medicas">
+            <tr>
+                <td>
+                    <div class="observacoes-title">OBSERVAÇÕES / ANOTAÇÕES DO MÉDICO EXAMINADOR:</div>
+                    <div class="observacoes-content">
+                        <!-- Espaço em branco para o médico escrever -->
+                    </div>
                 </td>
             </tr>
         </table>
