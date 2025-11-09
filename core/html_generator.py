@@ -181,14 +181,12 @@ def get_html_template() -> str:
             width: 100%;
             max-width: 210mm;
             margin: 0 auto 20px auto;
-            padding: 15px 20px 60px 20px; /* Aumentar padding inferior para o rodapé */
+            padding: 15px 20px 80px 20px; /* Padding inferior maior para o rodapé */
             background: white;
             position: relative;
             border: 3px double #000;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             box-sizing: border-box;
-            page-break-inside: avoid;
-            min-height: 280mm; /* Garantir altura mínima para A4 */
         }
         
         /* ========== CABEÇALHO RESPONSIVO ========== */
@@ -532,15 +530,13 @@ def get_html_template() -> str:
             .page {
                 width: 100%;
                 max-width: 21cm;
-                height: 29.7cm;
                 margin: 0;
-                padding: 15px 20px 60px 20px;
+                padding: 15px 20px 80px 20px;
                 border: 3px double #000;
                 box-shadow: none;
                 box-sizing: border-box;
-                page-break-inside: avoid;
-                page-break-after: always;
                 position: relative;
+                page-break-after: always;
             }
             
             .page:last-child {
@@ -555,13 +551,21 @@ def get_html_template() -> str:
                 page-break-inside: avoid;
             }
             
-            .header, .title-table, .decision-box, .signature {
+            .header, .title-table, .decision-box, .signature, .signature-section {
+                page-break-inside: avoid;
+            }
+            
+            .main-text {
                 page-break-inside: avoid;
             }
             
             .page-break {
                 page-break-after: always;
                 break-after: page;
+                display: block;
+                height: 0;
+                margin: 0;
+                padding: 0;
             }
         }
     </style>
