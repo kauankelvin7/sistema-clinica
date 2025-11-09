@@ -512,7 +512,7 @@ async def generate_html_endpoint(data: DocumentoRequest):
         except Exception as db_error:
             logger.warning(f"Erro ao salvar no banco (continuando): {str(db_error)}")
         
-        # Preparar dados para o gerador (formato esperado pelo html_generator)
+        # Preparar dados para geração do documento
         documento_data = {
             "nome_paciente": data.paciente.nome,
             "tipo_doc_paciente": data.paciente.tipo_documento,
@@ -521,7 +521,7 @@ async def generate_html_endpoint(data: DocumentoRequest):
             "empresa_paciente": data.paciente.empresa,
             "data_atestado": data.atestado.data_atestado,
             "qtd_dias_atestado": data.atestado.dias_afastamento,
-            "codigo_cid": data.atestado.cid,
+            "codigo_cid": "NÃO INFORMADO" if data.atestado.cid_nao_informado else data.atestado.cid,
             "cid_nao_informado": data.atestado.cid_nao_informado,
             "nome_medico": data.medico.nome,
             "tipo_registro_medico": data.medico.tipo_registro,
