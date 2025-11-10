@@ -116,8 +116,6 @@ app = FastAPI(
 
 
 # ═════════════════════════════════════════════════════════════════════════════=
-                "crm_medico": data.medico.numero_registro,
-                "uf_crm_medico": data.medico.uf_registro,
 # que o endpoint seja registrado em uma instância sobrescrita (causando 404).
 # ═════════════════════════════════════════════════════════════════════════════=
 
