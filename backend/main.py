@@ -432,7 +432,7 @@ async def generate_document_endpoint(data: DocumentoRequest):
             "empresa_paciente": data.paciente.empresa,
             # Atestado
             "data_atestado": data.atestado.data_atestado,
-            "data_atual": datetime.now().strftime("%Y-%m-%d"),
+            "data_atual": datetime.now().strftime("%d/%m/%Y"),
             "qtd_dias_atestado": str(data.atestado.dias_afastamento),
             "codigo_cid": data.atestado.cid if not data.atestado.cid_nao_informado else "Não Informado",
             # Médico
@@ -558,7 +558,7 @@ async def generate_html_endpoint(data: DocumentoRequest):
             "cargo_paciente": data.paciente.cargo,
             "empresa_paciente": data.paciente.empresa,
             "data_atestado": data.atestado.data_atestado,
-            "data_atual": datetime.now().strftime("%Y-%m-%d"),
+            "data_atual": datetime.now().strftime("%d/%m/%Y"),
             "qtd_dias_atestado": data.atestado.dias_afastamento,
             "codigo_cid": "NÃO INFORMADO" if data.atestado.cid_nao_informado else data.atestado.cid,
             "cid_nao_informado": data.atestado.cid_nao_informado,
@@ -755,7 +755,7 @@ async def generate_pdf_endpoint(data: DocumentoRequest):
             "cargo_paciente": data.paciente.cargo,
             "empresa_paciente": data.paciente.empresa,
             "data_atestado": data.atestado.data_atestado,
-            "data_atual": datetime.now().strftime("%Y-%m-%d"),
+            "data_atual": datetime.now().strftime("%d/%m/%Y"),
             "qtd_dias_atestado": str(data.atestado.dias_afastamento),
             "codigo_cid": data.atestado.cid if not data.atestado.cid_nao_informado else "Não Informado",
             "nome_medico": data.medico.nome,
