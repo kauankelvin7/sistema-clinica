@@ -1,4 +1,4 @@
-from fastapi import Query
+from fastapi import FastAPI, Query
 # ═══════════════════════════════════════════════════════════════════════════════
 # ENDPOINT DE CONSULTA DE PROFISSIONAIS (CRM, CRO, RMs)
 # ═══════════════════════════════════════════════════════════════════════════════
