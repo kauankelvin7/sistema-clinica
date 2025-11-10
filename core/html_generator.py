@@ -542,7 +542,7 @@ def get_html_template() -> str:
             <div class="signature-line">
                 <div class="signature-label">Médico do trabalho / Examinador</div>
             </div>
-            <div class="signature-date">Brasília, {data_atestado}</div>
+            <div class="signature-date">Brasília, {data_atual}</div>
         </div>
         
         <!-- RODAPÉ -->
@@ -606,6 +606,7 @@ def generate_html(data: Dict[str, Any], logo_left: Optional[str] = None,
             '{nome_paciente}': str(data.get('nome_paciente', '')).strip(),
             '{documento_paciente_formatado}': f"{data.get('tipo_doc_paciente', '').upper()} nº: {data.get('numero_doc_paciente', '')}",
             '{data_atestado}': _format_date_brazil(data.get('data_atestado', '')),
+            '{data_atual}': _format_date_brazil(data.get('data_atual', datetime.now().strftime('%Y-%m-%d'))),
             '{qtd_dias_atestado}': str(data.get('qtd_dias_atestado', '')),
             '{codigo_cid}': str(data.get('codigo_cid', '')).strip(),
             '{cargo_paciente}': str(data.get('cargo_paciente', '')).strip(),
