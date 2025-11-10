@@ -470,7 +470,7 @@ async def generate_document_endpoint(data: DocumentoRequest):
             # Médico
             "nome_medico": data.medico.nome,
             "tipo_registro_medico": data.medico.tipo_registro,
-            "crm__medico": data.medico.numero_registro,
+            "crm_medico": data.medico.numero_registro,
             "uf_crm_medico": data.medico.uf_registro,
         }
         
@@ -792,7 +792,7 @@ async def generate_pdf_endpoint(data: DocumentoRequest):
             "codigo_cid": data.atestado.cid if not data.atestado.cid_nao_informado else "Não Informado",
             "nome_medico": data.medico.nome,
             "tipo_registro_medico": data.medico.tipo_registro,
-            "crm__medico": data.medico.numero_registro,
+            "crm_medico": data.medico.numero_registro,
             "uf_crm_medico": data.medico.uf_registro,
         }
         
