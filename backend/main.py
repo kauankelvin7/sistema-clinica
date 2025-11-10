@@ -1,42 +1,36 @@
-from fastapi import FastAPI, Query
-app = FastAPI()
-# ═══════════════════════════════════════════════════════════════════════════════
-# ENDPOINT DE CONSULTA DE PROFISSIONAIS (CRM, CRO, RMs)
-# ═══════════════════════════════════════════════════════════════════════════════
+"""
+Sistema de Homologação de Atestados Médicos - Backend API
+══════════════════════════════════════════════════════════════════════════════
 
-@app.get("/api/consultar-profissional")
-async def consultar_profissional(
-    tipo_registro: str = Query(..., description="Tipo de registro profissional (CRM, CRO, RMS)"),
-    numero_registro: str = Query(..., description="Número do registro profissional"),
-    uf_registro: str = Query(..., description="UF do registro profissional")
-):
-    """
-    Retorna a URL de consulta do profissional conforme tipo, número e UF.
-    """
-    tipo_registro = tipo_registro.strip().upper()
-    numero_registro = numero_registro.strip()
-    uf_registro = uf_registro.strip().upper()
+Descrição:
+    API REST desenvolvida com FastAPI para geração automatizada de atestados 
+    médicos, com gerenciamento de pacientes e médicos em banco de dados.
 
-    if tipo_registro == "CRM":
-        url = "https://portal.cfm.org.br/busca-medicos/"
-        info = "A consulta CRM requer preenchimento manual e reCAPTCHA no site oficial."
-    elif tipo_registro == "CRO":
-        url = f"https://website.cfo.org.br/busca-profissionais/"
-        info = "A consulta CRO pode ser feita diretamente pelo link gerado."
-    elif tipo_registro in ["RMS", "RMS"]:
-        url = f"https://www.google.com/search?q=consulta+registro+profissional+saude+{tipo_registro}+{numero_registro}+{uf_registro}"
-        info = "A consulta RMs é feita via busca no Google."
-    else:
-        url = None
-        info = "Tipo de registro não reconhecido."
+Autor: Kauan Kelvin
+Versão: 2.0.0
+Data: Novembro 2025
 
-    return {
-        "tipo_registro": tipo_registro,
-        "numero_registro": numero_registro,
-        "uf_registro": uf_registro,
-        "consulta_url": url,
-        "info": info
-    }
+Tecnologias:
+    - FastAPI: Framework web assíncrono de alta performance
+    - PostgreSQL/SQLite: Banco de dados relacional
+    - Python-docx: Geração de documentos Word
+    - ReportLab: Geração de documentos PDF
+    
+Endpoints Principais:
+    GET  /                          - Status da API
+    GET  /api/health                - Verificação de saúde do sistema
+    GET  /api/patients              - Listagem de pacientes
+    GET  /api/doctors               - Listagem de médicos
+    POST /api/generate-document     - Geração de atestado em Word
+    POST /api/generate-pdf          - Geração de atestado em PDF
+
+Deploy:
+    - Produção: Koyeb (https://loose-catriona-clinica-medica-seven-71f0d13c.koyeb.app)
+    - Banco de Dados: Supabase PostgreSQL
+    - Frontend: Vercel (https://sistema-clinica-seven.vercel.app)
+
+══════════════════════════════════════════════════════════════════════════════
+"""
 """
 ═══════════════════════════════════════════════════════════════════════════════
 Sistema de Homologação de Atestados Médicos - Backend API
@@ -77,7 +71,7 @@ Deploy:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # Framework Web
-from fastapi import FastAPI, HTTPException, File, UploadFile
+from fastapi import FastAPI, HTTPException, File, UploadFile, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -119,6 +113,45 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+
+# ═════════════════════════════════════════════════════════════════════════════=
+# ENDPOINT DE CONSULTA DE PROFISSIONAIS (CRM, CRO, RMS)
+# Esta rota foi movida para o único app FastAPI utilizado no módulo para evitar
+# que o endpoint seja registrado em uma instância sobrescrita (causando 404).
+# ═════════════════════════════════════════════════════════════════════════════=
+
+@app.get("/api/consultar-profissional")
+async def consultar_profissional(
+    tipo_registro: str = Query(..., description="Tipo de registro profissional (CRM, CRO, RMS)"),
+    numero_registro: str = Query(..., description="Número do registro profissional"),
+    uf_registro: str = Query(..., description="UF do registro profissional")
+):
+    """
+    Retorna a URL de consulta do profissional conforme tipo, número e UF.
+    """
+    tipo_registro = tipo_registro.strip().upper()
+    numero_registro = numero_registro.strip()
+    uf_registro = uf_registro.strip().upper()
+
+    if tipo_registro == "CRM":
+        url = "https://portal.cfm.org.br/busca-medicos/"
+        info = "A consulta CRM requer preenchimento manual e reCAPTCHA no site oficial."
+    elif tipo_registro == "CRO":
+        url = f"https://website.cfo.org.br/busca-profissionais/"
+        info = "A consulta CRO pode ser feita diretamente pelo link gerado."
+    else:
+        # Para registros não padronizados (RMS etc.), sugerimos uma busca genérica
+        url = f"https://www.google.com/search?q=consulta+registro+profissional+{tipo_registro}+{numero_registro}+{uf_registro}"
+        info = "A consulta pode ser feita via busca genérica (quando não há um serviço oficial)."
+
+    return {
+        "tipo_registro": tipo_registro,
+        "numero_registro": numero_registro,
+        "uf_registro": uf_registro,
+        "consulta_url": url,
+        "info": info
+    }
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CONFIGURAÇÃO DE CORS (Cross-Origin Resource Sharing)
