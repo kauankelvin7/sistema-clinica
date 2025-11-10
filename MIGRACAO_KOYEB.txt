@@ -1,0 +1,193 @@
+# MIGRACAO PARA KOYEB (SEM CARTAO!)
+# 100% Gratuito - Nao pede cartao nunca
+
+# ========================================
+# VANTAGENS KOYEB:
+# ========================================
+# - NAO PEDE CARTAO DE CREDITO
+# - Cold start: 3-8 segundos (vs 30s Render)
+# - 2 apps gratis para sempre
+# - 512MB RAM (melhor que Fly.io free)
+# - Deploy automatico do GitHub
+# - Sem limite de horas
+
+# ========================================
+# PASSO 1: CRIAR CONTA KOYEB
+# ========================================
+# 1. Acesse: https://app.koyeb.com/auth/signup
+# 2. Clique em "Sign up with GitHub" (recomendado)
+# 3. Autorize o Koyeb no GitHub
+# 4. Pronto! Sem cartao, sem problema!
+
+# ========================================
+# PASSO 2: CRIAR BANCO NO SUPABASE (GRATIS)
+# ========================================
+# Koyeb nao tem PostgreSQL incluso, mas Supabase tem de graca!
+
+# 1. Acesse: https://supabase.com
+# 2. Sign up with GitHub
+# 3. "New Project"
+#    - Name: sistema-clinica-db
+#    - Database Password: [CRIE UMA SENHA FORTE]
+#    - Region: South America (sao-paulo)
+# 4. Aguarde 2 minutos (criando banco)
+
+# 5. Copie a CONNECTION STRING:
+#    - Settings > Database
+#    - Connection String > URI
+#    - Copie algo como:
+#      postgresql://postgres.[ref]:[senha]@aws-0-sa-east-1.pooler.supabase.com:6543/postgres
+
+# ========================================
+# PASSO 3: IMPORTAR BACKUP NO SUPABASE
+# ========================================
+# Opcao A - Via Interface Web (MAIS FACIL):
+# 1. No Supabase, va em "SQL Editor"
+# 2. Clique em "New Query"
+# 3. Abra o arquivo: backups/backup_render_20251107_142703.sql
+# 4. Copie TODO o conteudo
+# 5. Cole no SQL Editor
+# 6. Clique em "Run" (ou F5)
+# 7. Aguarde terminar (30 segundos)
+
+# Opcao B - Via psql:
+cd C:\Users\Kauan\Desktop\sistema_clinica_homologacao\backups
+psql "postgresql://postgres.[ref]:[senha]@aws-0-sa-east-1.pooler.supabase.com:6543/postgres" < backup_render_20251107_142703.sql
+
+# Verificar se importou:
+# No Supabase: Table Editor > pacientes (deve mostrar 64)
+# No Supabase: Table Editor > medicos (deve mostrar 61)
+
+# ========================================
+# PASSO 4: CRIAR APP NO KOYEB
+# ========================================
+# 1. No Koyeb Dashboard, clique "Create Web Service"
+# 2. Escolha "GitHub" como source
+# 3. Conecte sua conta GitHub
+# 4. Selecione repositorio: kauankelvin7/sistema-clinica
+# 5. Branch: main
+
+# 6. Configure BUILD:
+#    - Builder: Buildpack
+#    - Build command: (deixe vazio, detecta automatico)
+#    - Run command: uvicorn main:app --host 0.0.0.0 --port $PORT
+
+# 7. Configure ENVIRONMENT:
+#    Root directory: backend
+
+# 8. Configure PORT:
+#    Exposed port: 8000
+
+# 9. ENVIRONMENT VARIABLES (Muito importante!):
+#    Clique em "Add Variable":
+    
+#    Nome: DATABASE_URL
+#    Valor: [COLE A URL DO SUPABASE AQUI]
+    
+#    Nome: FRONTEND_URL
+#    Valor: https://sistema-clinica-seven.vercel.app
+    
+#    Nome: RENDER
+#    Valor: true
+
+# 10. Instance Type:
+#     - Selecione: Free (512 MB)
+
+# 11. Regions:
+#     - Selecione: Washington, D.C. (mais proximo Brasil)
+
+# 12. Clique em "Deploy"
+
+# ========================================
+# PASSO 5: AGUARDAR DEPLOY (2-3 minutos)
+# ========================================
+# Koyeb vai:
+# - Clonar seu repositorio
+# - Instalar Python 3.11
+# - Instalar dependencias (pip install -r requirements.txt)
+# - Iniciar o servidor
+# - Criar URL publica
+
+# Sua API estara em:
+# https://sistema-clinica-api-[seu-id].koyeb.app
+
+# ========================================
+# PASSO 6: TESTAR API
+# ========================================
+# 1. No Koyeb, clique no seu service
+# 2. Copie a URL publica
+# 3. Acesse no navegador:
+#    https://sua-app.koyeb.app/api/health
+
+# Deve retornar:
+# {
+#   "status": "healthy",
+#   "database": "connected",
+#   "pacientes": 64,
+#   "medicos": 61
+# }
+
+# ========================================
+# PASSO 7: ATUALIZAR VERCEL
+# ========================================
+# 1. Acesse: https://vercel.com
+# 2. Selecione projeto: sistema-clinica-seven
+# 3. Settings > Environment Variables
+# 4. Edite VITE_API_URL:
+#    ANTES: https://sistema-clinica-api.onrender.com
+#    AGORA: https://sua-app.koyeb.app
+# 5. Deployments > ... > Redeploy
+
+# ========================================
+# PASSO 8: TESTAR SISTEMA COMPLETO
+# ========================================
+# 1. Acesse seu frontend: https://sistema-clinica-seven.vercel.app
+# 2. Abra DevTools (F12) > Network
+# 3. Tente gerar um atestado
+# 4. Verifique se requisicao vai para koyeb.app
+# 5. Confirme que pacientes/medicos aparecem
+
+# ========================================
+# COMPARACAO: KOYEB VS FLY.IO
+# ========================================
+# KOYEB:
+#   + NAO PEDE CARTAO ✅
+#   + 512MB RAM (melhor que Fly.io free)
+#   + Deploy automatico do GitHub
+#   + Interface mais simples
+#   - Precisa Supabase separado para banco
+#   - Cold start 3-8s (Fly.io = 2-5s)
+
+# FLY.IO:
+#   - PEDE CARTAO (mas nao cobra) ❌
+#   + PostgreSQL 10GB incluso
+#   + Cold start 2-5s (mais rapido)
+#   + Regiao Brasil (gru)
+#   - Configuracao mais complexa
+
+# ========================================
+# PRONTO! MIGRACAO KOYEB COMPLETA
+# ========================================
+# Resultado:
+# - Cold start: 30s -> 3-8s (10x mais rapido!)
+# - Sem limite de horas
+# - Sem cartao de credito
+# - Todos os 64 pacientes + 61 medicos migrados!
+
+# ========================================
+# COMANDOS UTEIS KOYEB
+# ========================================
+# Ver logs:        Koyeb Dashboard > Service > Logs
+# Redeploy:        Koyeb Dashboard > Service > Redeploy
+# Ver metricas:    Koyeb Dashboard > Service > Metrics
+# Pausar app:      Koyeb Dashboard > Service > Pause
+# Deletar app:     Koyeb Dashboard > Service > Settings > Delete
+
+# ========================================
+# SE DER ERRO
+# ========================================
+# 1. Verifique DATABASE_URL no Koyeb (Settings > Environment)
+# 2. Verifique se Supabase esta ativo
+# 3. Teste conexao: psql "sua_database_url"
+# 4. Veja logs no Koyeb Dashboard
+# 5. Me chame se precisar ajuda! 🚀
