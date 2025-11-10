@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Query
+app = FastAPI()
 # ═══════════════════════════════════════════════════════════════════════════════
 # ENDPOINT DE CONSULTA DE PROFISSIONAIS (CRM, CRO, RMs)
 # ═══════════════════════════════════════════════════════════════════════════════
