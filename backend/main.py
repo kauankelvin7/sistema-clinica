@@ -31,40 +31,6 @@ Deploy:
 
 ══════════════════════════════════════════════════════════════════════════════
 """
-"""
-═══════════════════════════════════════════════════════════════════════════════
-Sistema de Homologação de Atestados Médicos - Backend API
-═══════════════════════════════════════════════════════════════════════════════
-
-Descrição:
-    API REST desenvolvida com FastAPI para geração automatizada de atestados 
-    médicos, com gerenciamento de pacientes e médicos em banco de dados.
-
-Autor: Kauan Kelvin
-Versão: 2.0.0
-Data: Novembro 2025
-
-Tecnologias:
-    - FastAPI: Framework web assíncrono de alta performance
-    - PostgreSQL/SQLite: Banco de dados relacional
-    - Python-docx: Geração de documentos Word
-    - ReportLab: Geração de documentos PDF
-    
-Endpoints Principais:
-    GET  /                          - Status da API
-    GET  /api/health                - Verificação de saúde do sistema
-    GET  /api/patients              - Listagem de pacientes
-    GET  /api/doctors               - Listagem de médicos
-    POST /api/generate-document     - Geração de atestado em Word
-    POST /api/generate-pdf          - Geração de atestado em PDF
-
-Deploy:
-    - Produção: Koyeb (https://loose-catriona-clinica-medica-seven-71f0d13c.koyeb.app)
-    - Banco de Dados: Supabase PostgreSQL
-    - Frontend: Vercel (https://sistema-clinica-seven.vercel.app)
-
-═══════════════════════════════════════════════════════════════════════════════
-"""
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # IMPORTAÇÕES E DEPENDÊNCIAS
@@ -73,7 +39,7 @@ Deploy:
 # Framework Web
 from fastapi import FastAPI, HTTPException, File, UploadFile, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel
 
 # Bibliotecas Padrão Python
@@ -113,43 +79,6 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
-
-
-# ═════════════════════════════════════════════════════════════════════════════=
-# que o endpoint seja registrado em uma instância sobrescrita (causando 404).
-# ═════════════════════════════════════════════════════════════════════════════=
-
-@app.get("/api/consultar-profissional")
-async def consultar_profissional(
-    tipo_registro: str = Query(..., description="Tipo de registro profissional (CRM, CRO, RMS)"),
-    numero_registro: str = Query(..., description="Número do registro profissional"),
-    uf_registro: str = Query(..., description="UF do registro profissional")
-):
-    """
-    Retorna a URL de consulta do profissional conforme tipo, número e UF.
-    """
-    tipo_registro = tipo_registro.strip().upper()
-    numero_registro = numero_registro.strip()
-    uf_registro = uf_registro.strip().upper()
-
-    if tipo_registro == "CRM":
-        url = "https://portal.cfm.org.br/busca-medicos/"
-        info = "A consulta CRM requer preenchimento manual e reCAPTCHA no site oficial."
-    elif tipo_registro == "CRO":
-        url = f"https://website.cfo.org.br/busca-profissionais/"
-        info = "A consulta CRO pode ser feita diretamente pelo link gerado."
-    else:
-        # Para registros não padronizados (RMS etc.), sugerimos uma busca genérica
-        url = f"https://www.google.com/search?q=consulta+registro+profissional+{tipo_registro}+{numero_registro}+{uf_registro}"
-        info = "A consulta pode ser feita via busca genérica (quando não há um serviço oficial)."
-
-    return {
-        "tipo_registro": tipo_registro,
-        "numero_registro": numero_registro,
-        "uf_registro": uf_registro,
-        "consulta_url": url,
-        "info": info
-    }
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CONFIGURAÇÃO DE CORS (Cross-Origin Resource Sharing)
@@ -293,6 +222,38 @@ async def root():
             "generate_html": "/api/generate-html",
             "generate_pdf": "/api/generate-pdf"
         }
+    }
+
+@app.get("/api/consultar-profissional")
+async def consultar_profissional(
+    tipo_registro: str = Query(..., description="Tipo de registro profissional (CRM, CRO, RMS)"),
+    numero_registro: str = Query(..., description="Número do registro profissional"),
+    uf_registro: str = Query(..., description="UF do registro profissional")
+):
+    """
+    Retorna a URL de consulta do profissional conforme tipo, número e UF.
+    """
+    tipo_registro = tipo_registro.strip().upper()
+    numero_registro = numero_registro.strip()
+    uf_registro = uf_registro.strip().upper()
+
+    if tipo_registro == "CRM":
+        url = "https://portal.cfm.org.br/busca-medicos/"
+        info = "A consulta CRM requer preenchimento manual e reCAPTCHA no site oficial."
+    elif tipo_registro == "CRO":
+        url = f"https://website.cfo.org.br/busca-profissionais/"
+        info = "A consulta CRO pode ser feita diretamente pelo link gerado."
+    else:
+        # Para registros não padronizados (RMS etc.), sugerimos uma busca genérica
+        url = f"https://www.google.com/search?q=consulta+registro+profissional+{tipo_registro}+{numero_registro}+{uf_registro}"
+        info = "A consulta pode ser feita via busca genérica (quando não há um serviço oficial)."
+
+    return {
+        "tipo_registro": tipo_registro,
+        "numero_registro": numero_registro,
+        "uf_registro": uf_registro,
+        "consulta_url": url,
+        "info": info
     }
 
 @app.post("/api/generate-document")
@@ -448,8 +409,6 @@ async def generate_document_endpoint(data: DocumentoRequest):
                         logger.info(f"Médico atualizado: {data.medico.nome}")
                     
                     conn.commit()
-                
-                conn.commit()
             
         except Exception as e:
             logger.warning(f"Erro ao salvar no banco (continuando): {str(e)}")
@@ -504,87 +463,158 @@ async def generate_html_endpoint(data: DocumentoRequest):
         # Importar gerador unificado
         from core.unified_generator import generate_document_unified
         
-        # SALVA PACIENTE E MÉDICO NO BANCO DE DADOS (código compartilhado com endpoint Word)
+        # SALVA PACIENTE E MÉDICO NO BANCO DE DADOS
         try:
             is_postgres = os.getenv('RENDER') or os.getenv('RAILWAY_ENVIRONMENT')
             
             with get_db_connection() as conn:
                 if is_postgres:
-                    logger.info("Recebendo requisição para gerar HTML")
-                    # Importar gerador unificado
-                    from core.unified_generator import generate_document_unified
-                    # SALVA PACIENTE E MÉDICO NO BANCO DE DADOS (código compartilhado com endpoint Word)
-                    try:
-                        is_postgres = os.getenv('RENDER') or os.getenv('RAILWAY_ENVIRONMENT')
-                        with get_db_connection() as conn:
-                            if is_postgres:
-                                from sqlalchemy import text
-                                # Verificar paciente
-                                result = conn.execute(text("""
-                                    SELECT id FROM pacientes WHERE numero_doc = :numero_doc
-                                """), {"numero_doc": sanitizar_entrada(data.paciente.numero_documento)})
-                                paciente_existente = result.fetchone()
-                                if not paciente_existente:
-                                    conn.execute(text("""
-                                        INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, cargo, empresa)
-                                        VALUES (:nome, :tipo_doc, :numero_doc, :cargo, :empresa)
-                                    """), {
-                                        "nome": sanitizar_entrada(data.paciente.nome),
-                                        "tipo_doc": sanitizar_entrada(data.paciente.tipo_documento),
-                                        "numero_doc": sanitizar_entrada(data.paciente.numero_documento),
-                                        "cargo": sanitizar_entrada(data.paciente.cargo),
-                                        "empresa": sanitizar_entrada(data.paciente.empresa)
-                                    })
-                                    logger.info(f"Paciente salvo: {data.paciente.nome}")
-                                else:
-                                    conn.execute(text("""
-                                        UPDATE pacientes 
-                                        SET nome_completo = :nome, tipo_doc = :tipo_doc, cargo = :cargo, empresa = :empresa
-                                        WHERE numero_doc = :numero_doc
-                                    """), {
-                                        "nome": sanitizar_entrada(data.paciente.nome),
-                                        "tipo_doc": sanitizar_entrada(data.paciente.tipo_documento),
-                                        "cargo": sanitizar_entrada(data.paciente.cargo),
-                                        "empresa": sanitizar_entrada(data.paciente.empresa),
-                                        "numero_doc": sanitizar_entrada(data.paciente.numero_documento)
-                                    })
-                                    logger.info(f"Paciente atualizado: {data.paciente.nome}")
-                                # Salvar médico (mesmo processo)
-                                result = conn.execute(text("""
-                                    SELECT id FROM medicos WHERE numero_registro = :numero_registro AND uf = :uf
-                                """), {
-                                    "numero_registro": sanitizar_entrada(data.medico.numero_registro),
-                                    "uf": sanitizar_entrada(data.medico.uf_registro)
-                                })
-                                medico_existente = result.fetchone()
-                                if not medico_existente:
-                                    conn.execute(text("""
-                                        INSERT INTO medicos (nome_completo, tipo_registro, numero_registro, uf)
-                                        VALUES (:nome, :tipo_registro, :numero_registro, :uf)
-                                    """), {
-                                        "nome": sanitizar_entrada(data.medico.nome),
-                                        "tipo_registro": sanitizar_entrada(data.medico.tipo_registro),
-                                        "numero_registro": sanitizar_entrada(data.medico.numero_registro),
-                                        "uf": sanitizar_entrada(data.medico.uf_registro)
-                                    })
-                                    logger.info(f"Médico salvo: {data.medico.nome}")
-                                else:
-                                    conn.execute(text("""
-                                        UPDATE medicos 
-                                        SET nome_completo = :nome, tipo_registro = :tipo_registro
-                                        WHERE numero_registro = :numero_registro AND uf = :uf
-                                    """), {
-                                        "nome": sanitizar_entrada(data.medico.nome),
-                                        "tipo_registro": sanitizar_entrada(data.medico.tipo_registro),
-                                        "numero_registro": sanitizar_entrada(data.medico.numero_registro),
-                                        "uf": sanitizar_entrada(data.medico.uf_registro)
-                                    })
-                                    logger.info(f"Médico atualizado: {data.medico.nome}")
-                                conn.commit()
-                    except Exception as db_error:
-                        logger.warning(f"Erro ao salvar no banco (continuando): {str(db_error)}")
-                    # Preparar dados para geração do documento
-                    documento_data = {
+                    from sqlalchemy import text
+                    
+                    # Verificar paciente
+                    result = conn.execute(text("""
+                        SELECT id FROM pacientes WHERE numero_doc = :numero_doc
+                    """), {"numero_doc": sanitizar_entrada(data.paciente.numero_documento)})
+                    paciente_existente = result.fetchone()
+                    
+                    if not paciente_existente:
+                        conn.execute(text("""
+                            INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, cargo, empresa)
+                            VALUES (:nome, :tipo_doc, :numero_doc, :cargo, :empresa)
+                        """), {
+                            "nome": sanitizar_entrada(data.paciente.nome),
+                            "tipo_doc": sanitizar_entrada(data.paciente.tipo_documento),
+                            "numero_doc": sanitizar_entrada(data.paciente.numero_documento),
+                            "cargo": sanitizar_entrada(data.paciente.cargo),
+                            "empresa": sanitizar_entrada(data.paciente.empresa)
+                        })
+                        logger.info(f"Paciente salvo: {data.paciente.nome}")
+                    else:
+                        conn.execute(text("""
+                            UPDATE pacientes 
+                            SET nome_completo = :nome, tipo_doc = :tipo_doc, cargo = :cargo, empresa = :empresa
+                            WHERE numero_doc = :numero_doc
+                        """), {
+                            "nome": sanitizar_entrada(data.paciente.nome),
+                            "tipo_doc": sanitizar_entrada(data.paciente.tipo_documento),
+                            "cargo": sanitizar_entrada(data.paciente.cargo),
+                            "empresa": sanitizar_entrada(data.paciente.empresa),
+                            "numero_doc": sanitizar_entrada(data.paciente.numero_documento)
+                        })
+                        logger.info(f"Paciente atualizado: {data.paciente.nome}")
+                    
+                    # Salvar médico
+                    result = conn.execute(text("""
+                        SELECT id FROM medicos WHERE crm = :crm AND tipo_crm = :tipo_crm
+                    """), {
+                        "crm": sanitizar_entrada(data.medico.numero_registro),
+                        "tipo_crm": sanitizar_entrada(data.medico.tipo_registro)
+                    })
+                    medico_existente = result.fetchone()
+                    
+                    if not medico_existente:
+                        conn.execute(text("""
+                            INSERT INTO medicos (nome_completo, tipo_crm, crm, uf_crm)
+                            VALUES (:nome, :tipo_crm, :crm, :uf_crm)
+                        """), {
+                            "nome": sanitizar_entrada(data.medico.nome),
+                            "tipo_crm": sanitizar_entrada(data.medico.tipo_registro),
+                            "crm": sanitizar_entrada(data.medico.numero_registro),
+                            "uf_crm": sanitizar_entrada(data.medico.uf_registro)
+                        })
+                        logger.info(f"Médico salvo: {data.medico.nome}")
+                    else:
+                        conn.execute(text("""
+                            UPDATE medicos 
+                            SET nome_completo = :nome, uf_crm = :uf_crm
+                            WHERE crm = :crm AND tipo_crm = :tipo_crm
+                        """), {
+                            "nome": sanitizar_entrada(data.medico.nome),
+                            "uf_crm": sanitizar_entrada(data.medico.uf_registro),
+                            "crm": sanitizar_entrada(data.medico.numero_registro),
+                            "tipo_crm": sanitizar_entrada(data.medico.tipo_registro)
+                        })
+                        logger.info(f"Médico atualizado: {data.medico.nome}")
+                    
+                    conn.commit()
+                    
+                else:
+                    # SQLite
+                    cursor = conn.cursor()
+                    
+                    # Verificar paciente
+                    cursor.execute(
+                        "SELECT id FROM pacientes WHERE numero_doc = ?",
+                        (sanitizar_entrada(data.paciente.numero_documento),)
+                    )
+                    paciente_existente = cursor.fetchone()
+                    
+                    if not paciente_existente:
+                        cursor.execute("""
+                            INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, cargo, empresa)
+                            VALUES (?, ?, ?, ?, ?)
+                        """, (
+                            sanitizar_entrada(data.paciente.nome),
+                            sanitizar_entrada(data.paciente.tipo_documento),
+                            sanitizar_entrada(data.paciente.numero_documento),
+                            sanitizar_entrada(data.paciente.cargo),
+                            sanitizar_entrada(data.paciente.empresa)
+                        ))
+                        logger.info(f"Paciente salvo: {data.paciente.nome}")
+                    else:
+                        cursor.execute("""
+                            UPDATE pacientes 
+                            SET nome_completo = ?, tipo_doc = ?, cargo = ?, empresa = ?
+                            WHERE numero_doc = ?
+                        """, (
+                            sanitizar_entrada(data.paciente.nome),
+                            sanitizar_entrada(data.paciente.tipo_documento),
+                            sanitizar_entrada(data.paciente.cargo),
+                            sanitizar_entrada(data.paciente.empresa),
+                            sanitizar_entrada(data.paciente.numero_documento)
+                        ))
+                        logger.info(f"Paciente atualizado: {data.paciente.nome}")
+                    
+                    # Verificar médico
+                    cursor.execute(
+                        "SELECT id FROM medicos WHERE crm = ? AND tipo_crm = ?",
+                        (sanitizar_entrada(data.medico.numero_registro), sanitizar_entrada(data.medico.tipo_registro))
+                    )
+                    medico_existente = cursor.fetchone()
+                    
+                    if not medico_existente:
+                        cursor.execute("""
+                            INSERT INTO medicos (nome_completo, tipo_crm, crm, uf_crm)
+                            VALUES (?, ?, ?, ?)
+                        """, (
+                            sanitizar_entrada(data.medico.nome),
+                            sanitizar_entrada(data.medico.tipo_registro),
+                            sanitizar_entrada(data.medico.numero_registro),
+                            sanitizar_entrada(data.medico.uf_registro)
+                        ))
+                        logger.info(f"Médico salvo: {data.medico.nome}")
+                    else:
+                        cursor.execute("""
+                            UPDATE medicos 
+                            SET nome_completo = ?, uf_crm = ?
+                            WHERE crm = ? AND tipo_crm = ?
+                        """, (
+                            sanitizar_entrada(data.medico.nome),
+                            sanitizar_entrada(data.medico.uf_registro),
+                            sanitizar_entrada(data.medico.numero_registro),
+                            sanitizar_entrada(data.medico.tipo_registro)
+                        ))
+                        logger.info(f"Médico atualizado: {data.medico.nome}")
+                    
+                    conn.commit()
+                    
+        except Exception as db_error:
+            logger.warning(f"Erro ao salvar no banco (continuando): {str(db_error)}")
+        
+        # Preparar dados para geração do documento
+        documento_data = {
+            "nome_paciente": data.paciente.nome,
+            "tipo_doc_paciente": data.paciente.tipo_documento,
             "numero_doc_paciente": data.paciente.numero_documento,
             "cargo_paciente": data.paciente.cargo,
             "empresa_paciente": data.paciente.empresa,
@@ -599,23 +629,38 @@ async def generate_html_endpoint(data: DocumentoRequest):
             "uf_crm_medico": data.medico.uf_registro,
         }
         
-    # Log dos dados enviados ao gerador HTML
-    logger.info(f"Dados enviados ao gerador HTML: {documento_data}")
-    # Gerar HTML
-    try:
-        resultado = generate_document_unified(documento_data, output_format='html')
-        caminho_html = resultado.get('html')
-        if not caminho_html or not os.path.exists(caminho_html):
-            raise HTTPException(status_code=500, detail="Não foi possível gerar o documento. Por favor, tente novamente.")
-        logger.info(f"HTML gerado: {caminho_html}")
-        # Ler conteúdo do HTML e retornar como resposta HTML (abre em nova aba)
-        with open(caminho_html, 'r', encoding='utf-8') as f:
-            html_content = f.read()
-        from fastapi.responses import HTMLResponse
-        return HTMLResponse(content=html_content, status_code=200)
+        # Log dos dados enviados ao gerador HTML
+        logger.info(f"🔍 Dados enviados ao gerador HTML:")
+        logger.info(f"  - nome_medico: '{documento_data['nome_medico']}'")
+        logger.info(f"  - tipo_registro_medico: '{documento_data['tipo_registro_medico']}'")
+        logger.info(f"  - crm_medico: '{documento_data['crm_medico']}'")
+        logger.info(f"  - uf_crm_medico: '{documento_data['uf_crm_medico']}'")
+        
+        # Gerar HTML
+        try:
+            resultado = generate_document_unified(documento_data, output_format='html')
+            caminho_html = resultado.get('html')
+            
+            if not caminho_html or not os.path.exists(caminho_html):
+                raise HTTPException(status_code=500, detail="Não foi possível gerar o documento HTML. Por favor, tente novamente.")
+            
+            logger.info(f"✅ HTML gerado: {caminho_html}")
+            
+            # Ler conteúdo do HTML e retornar como resposta HTML (abre em nova aba)
+            with open(caminho_html, 'r', encoding='utf-8') as f:
+                html_content = f.read()
+            
+            return HTMLResponse(content=html_content, status_code=200)
+            
+        except Exception as e:
+            logger.error(f"❌ Erro ao gerar HTML: {str(e)}")
+            raise HTTPException(status_code=500, detail="Não foi possível gerar o documento HTML. Por favor, tente novamente.")
+    
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Erro ao gerar HTML: {str(e)}")
-        raise HTTPException(status_code=500, detail="Não foi possível gerar o documento. Por favor, tente novamente.")
+        logger.error(f"❌ Erro geral ao gerar HTML: {str(e)}")
+        raise HTTPException(status_code=500, detail="Não foi possível gerar o documento HTML. Por favor, tente novamente.")
 
 @app.post("/api/generate-pdf")
 async def generate_pdf_endpoint(data: DocumentoRequest):
@@ -624,9 +669,6 @@ async def generate_pdf_endpoint(data: DocumentoRequest):
     """
     try:
         logger.info("Recebendo requisição para gerar PDF")
-        
-        # Primeiro, gerar o documento Word usando a mesma lógica
-        # (Reutilizar código de salvar no banco)
         
         # SALVAR PACIENTE NO BANCO DE DADOS
         try:
