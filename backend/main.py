@@ -506,7 +506,7 @@ async def generate_html_endpoint(data: DocumentoRequest):
         # Importar gerador unificado
         from core.unified_generator import generate_document_unified
         
-        # SALVAR PACIENTE NO BANCO DE DADOS (mesmo código do endpoint Word)
+        # SALVA PACIENTE E MÉDICO NO BANCO DE DADOS (código compartilhado com endpoint Word)
         try:
             is_postgres = os.getenv('RENDER') or os.getenv('RAILWAY_ENVIRONMENT')
             
