@@ -598,8 +598,8 @@ async def generate_html_endpoint(data: DocumentoRequest):
             "cid_nao_informado": data.atestado.cid_nao_informado,
             "nome_medico": data.medico.nome,
             "tipo_registro_medico": data.medico.tipo_registro,
-            "crm__medico": data.medico.numero_registro,
-            "uf_crm_medico": data.medico.uf_registro
+            "numero_registro": data.medico.numero_registro,
+            "uf_registro": data.medico.uf_registro,
         }
         
         # Gerar HTML
