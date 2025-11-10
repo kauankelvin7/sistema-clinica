@@ -116,8 +116,8 @@ app = FastAPI(
 
 
 # ═════════════════════════════════════════════════════════════════════════════=
-# ENDPOINT DE CONSULTA DE PROFISSIONAIS (CRM, CRO, RMS)
-# Esta rota foi movida para o único app FastAPI utilizado no módulo para evitar
+                "crm_medico": data.medico.numero_registro,
+                "uf_crm_medico": data.medico.uf_registro,
 # que o endpoint seja registrado em uma instância sobrescrita (causando 404).
 # ═════════════════════════════════════════════════════════════════════════════=
 
