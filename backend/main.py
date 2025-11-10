@@ -510,82 +510,81 @@ async def generate_html_endpoint(data: DocumentoRequest):
             
             with get_db_connection() as conn:
                 if is_postgres:
-                    from sqlalchemy import text
-                    
-                    # Verificar paciente
-                    result = conn.execute(text("""
-                        SELECT id FROM pacientes WHERE numero_doc = :numero_doc
-                    """), {"numero_doc": sanitizar_entrada(data.paciente.numero_documento)})
-                    paciente_existente = result.fetchone()
-                    
-                    if not paciente_existente:
-                        conn.execute(text("""
-                            INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, cargo, empresa)
-                            VALUES (:nome, :tipo_doc, :numero_doc, :cargo, :empresa)
-                        """), {
-                            "nome": sanitizar_entrada(data.paciente.nome),
-                            "tipo_doc": sanitizar_entrada(data.paciente.tipo_documento),
-                            "numero_doc": sanitizar_entrada(data.paciente.numero_documento),
-                            "cargo": sanitizar_entrada(data.paciente.cargo),
-                            "empresa": sanitizar_entrada(data.paciente.empresa)
-                        })
-                        logger.info(f"Paciente salvo: {data.paciente.nome}")
-                    else:
-                        conn.execute(text("""
-                            UPDATE pacientes 
-                            SET nome_completo = :nome, tipo_doc = :tipo_doc, cargo = :cargo, empresa = :empresa
-                            WHERE numero_doc = :numero_doc
-                        """), {
-                            "nome": sanitizar_entrada(data.paciente.nome),
-                            "tipo_doc": sanitizar_entrada(data.paciente.tipo_documento),
-                            "cargo": sanitizar_entrada(data.paciente.cargo),
-                            "empresa": sanitizar_entrada(data.paciente.empresa),
-                            "numero_doc": sanitizar_entrada(data.paciente.numero_documento)
-                        })
-                        logger.info(f"Paciente atualizado: {data.paciente.nome}")
-                        
-                    # Salvar médico (mesmo processo)
-                    result = conn.execute(text("""
-                        SELECT id FROM medicos WHERE numero_registro = :numero_registro AND uf = :uf
-                    """), {
-                        "numero_registro": sanitizar_entrada(data.medico.numero_registro),
-                        "uf": sanitizar_entrada(data.medico.uf_registro)
-                    })
-                    medico_existente = result.fetchone()
-                    
-                    if not medico_existente:
-                        conn.execute(text("""
-                            INSERT INTO medicos (nome_completo, tipo_registro, numero_registro, uf)
-                            VALUES (:nome, :tipo_registro, :numero_registro, :uf)
-                        """), {
-                            "nome": sanitizar_entrada(data.medico.nome),
-                            "tipo_registro": sanitizar_entrada(data.medico.tipo_registro),
-                            "numero_registro": sanitizar_entrada(data.medico.numero_registro),
-                            "uf": sanitizar_entrada(data.medico.uf_registro)
-                        })
-                        logger.info(f"Médico salvo: {data.medico.nome}")
-                    else:
-                        conn.execute(text("""
-                            UPDATE medicos 
-                            SET nome_completo = :nome, tipo_registro = :tipo_registro
-                            WHERE numero_registro = :numero_registro AND uf = :uf
-                        """), {
-                            "nome": sanitizar_entrada(data.medico.nome),
-                            "tipo_registro": sanitizar_entrada(data.medico.tipo_registro),
-                            "numero_registro": sanitizar_entrada(data.medico.numero_registro),
-                            "uf": sanitizar_entrada(data.medico.uf_registro)
-                        })
-                        logger.info(f"Médico atualizado: {data.medico.nome}")
-                    
-                    conn.commit()
-                    
-        except Exception as db_error:
-            logger.warning(f"Erro ao salvar no banco (continuando): {str(db_error)}")
-        
-    # Preparar dados para geração do documento
-    documento_data = {
-            "nome_paciente": data.paciente.nome,
-            "tipo_doc_paciente": data.paciente.tipo_documento,
+                    logger.info("Recebendo requisição para gerar HTML")
+                    # Importar gerador unificado
+                    from core.unified_generator import generate_document_unified
+                    # SALVA PACIENTE E MÉDICO NO BANCO DE DADOS (código compartilhado com endpoint Word)
+                    try:
+                        is_postgres = os.getenv('RENDER') or os.getenv('RAILWAY_ENVIRONMENT')
+                        with get_db_connection() as conn:
+                            if is_postgres:
+                                from sqlalchemy import text
+                                # Verificar paciente
+                                result = conn.execute(text("""
+                                    SELECT id FROM pacientes WHERE numero_doc = :numero_doc
+                                """), {"numero_doc": sanitizar_entrada(data.paciente.numero_documento)})
+                                paciente_existente = result.fetchone()
+                                if not paciente_existente:
+                                    conn.execute(text("""
+                                        INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, cargo, empresa)
+                                        VALUES (:nome, :tipo_doc, :numero_doc, :cargo, :empresa)
+                                    """), {
+                                        "nome": sanitizar_entrada(data.paciente.nome),
+                                        "tipo_doc": sanitizar_entrada(data.paciente.tipo_documento),
+                                        "numero_doc": sanitizar_entrada(data.paciente.numero_documento),
+                                        "cargo": sanitizar_entrada(data.paciente.cargo),
+                                        "empresa": sanitizar_entrada(data.paciente.empresa)
+                                    })
+                                    logger.info(f"Paciente salvo: {data.paciente.nome}")
+                                else:
+                                    conn.execute(text("""
+                                        UPDATE pacientes 
+                                        SET nome_completo = :nome, tipo_doc = :tipo_doc, cargo = :cargo, empresa = :empresa
+                                        WHERE numero_doc = :numero_doc
+                                    """), {
+                                        "nome": sanitizar_entrada(data.paciente.nome),
+                                        "tipo_doc": sanitizar_entrada(data.paciente.tipo_documento),
+                                        "cargo": sanitizar_entrada(data.paciente.cargo),
+                                        "empresa": sanitizar_entrada(data.paciente.empresa),
+                                        "numero_doc": sanitizar_entrada(data.paciente.numero_documento)
+                                    })
+                                    logger.info(f"Paciente atualizado: {data.paciente.nome}")
+                                # Salvar médico (mesmo processo)
+                                result = conn.execute(text("""
+                                    SELECT id FROM medicos WHERE numero_registro = :numero_registro AND uf = :uf
+                                """), {
+                                    "numero_registro": sanitizar_entrada(data.medico.numero_registro),
+                                    "uf": sanitizar_entrada(data.medico.uf_registro)
+                                })
+                                medico_existente = result.fetchone()
+                                if not medico_existente:
+                                    conn.execute(text("""
+                                        INSERT INTO medicos (nome_completo, tipo_registro, numero_registro, uf)
+                                        VALUES (:nome, :tipo_registro, :numero_registro, :uf)
+                                    """), {
+                                        "nome": sanitizar_entrada(data.medico.nome),
+                                        "tipo_registro": sanitizar_entrada(data.medico.tipo_registro),
+                                        "numero_registro": sanitizar_entrada(data.medico.numero_registro),
+                                        "uf": sanitizar_entrada(data.medico.uf_registro)
+                                    })
+                                    logger.info(f"Médico salvo: {data.medico.nome}")
+                                else:
+                                    conn.execute(text("""
+                                        UPDATE medicos 
+                                        SET nome_completo = :nome, tipo_registro = :tipo_registro
+                                        WHERE numero_registro = :numero_registro AND uf = :uf
+                                    """), {
+                                        "nome": sanitizar_entrada(data.medico.nome),
+                                        "tipo_registro": sanitizar_entrada(data.medico.tipo_registro),
+                                        "numero_registro": sanitizar_entrada(data.medico.numero_registro),
+                                        "uf": sanitizar_entrada(data.medico.uf_registro)
+                                    })
+                                    logger.info(f"Médico atualizado: {data.medico.nome}")
+                                conn.commit()
+                    except Exception as db_error:
+                        logger.warning(f"Erro ao salvar no banco (continuando): {str(db_error)}")
+                    # Preparar dados para geração do documento
+                    documento_data = {
             "numero_doc_paciente": data.paciente.numero_documento,
             "cargo_paciente": data.paciente.cargo,
             "empresa_paciente": data.paciente.empresa,
@@ -603,21 +602,17 @@ async def generate_html_endpoint(data: DocumentoRequest):
     # Log dos dados enviados ao gerador HTML
     logger.info(f"Dados enviados ao gerador HTML: {documento_data}")
     # Gerar HTML
-    resultado = generate_document_unified(documento_data, output_format='html')
+    try:
+        resultado = generate_document_unified(documento_data, output_format='html')
         caminho_html = resultado.get('html')
-        
         if not caminho_html or not os.path.exists(caminho_html):
             raise HTTPException(status_code=500, detail="Não foi possível gerar o documento. Por favor, tente novamente.")
-        
         logger.info(f"HTML gerado: {caminho_html}")
-        
         # Ler conteúdo do HTML e retornar como resposta HTML (abre em nova aba)
         with open(caminho_html, 'r', encoding='utf-8') as f:
             html_content = f.read()
-        
         from fastapi.responses import HTMLResponse
         return HTMLResponse(content=html_content, status_code=200)
-        
     except Exception as e:
         logger.error(f"Erro ao gerar HTML: {str(e)}")
         raise HTTPException(status_code=500, detail="Não foi possível gerar o documento. Por favor, tente novamente.")
