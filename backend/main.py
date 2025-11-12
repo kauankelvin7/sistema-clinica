@@ -918,7 +918,7 @@ async def get_patients(
                     query = text("""
                         SELECT id, nome_completo, tipo_doc, numero_doc, cargo, empresa
                         FROM pacientes 
-                        ORDER BY id DESC
+                        ORDER BY data_criacao DESC
                         LIMIT :limit OFFSET :offset
                     """)
                     result = conn.execute(query, {"limit": page_size, "offset": offset})
@@ -947,7 +947,7 @@ async def get_patients(
                     query = """
                         SELECT id, nome_completo, tipo_doc, numero_doc, cargo, empresa
                         FROM pacientes 
-                        ORDER BY id DESC
+                        ORDER BY data_criacao DESC
                         LIMIT ? OFFSET ?
                     """
                     cursor.execute(query, (page_size, offset))
@@ -1032,7 +1032,7 @@ async def get_doctors(
                     query = text("""
                         SELECT id, nome_completo, tipo_crm, crm, uf_crm
                         FROM medicos 
-                        ORDER BY id DESC
+                        ORDER BY data_criacao DESC
                         LIMIT :limit OFFSET :offset
                     """)
                     result = conn.execute(query, {"limit": page_size, "offset": offset})
@@ -1060,7 +1060,7 @@ async def get_doctors(
                     query = """
                         SELECT id, nome_completo, tipo_crm, crm, uf_crm
                         FROM medicos 
-                        ORDER BY id DESC
+                        ORDER BY data_criacao DESC
                         LIMIT ? OFFSET ?
                     """
                     cursor.execute(query, (page_size, offset))
