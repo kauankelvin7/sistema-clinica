@@ -860,50 +860,18 @@ async def generate_pdf_endpoint(data: DocumentoRequest):
         logger.error(f"Erro ao gerar PDF: {str(e)}")
         raise HTTPException(status_code=500, detail="Não foi possível gerar o documento PDF. Por favor, tente novamente.")
 
-
 @app.get("/api/patients")
-async def get_patients(
-    search: Optional[str] = None,
-    page: int = Query(1, ge=1, description="Número da página"),
-    page_size: Optional[int] = Query(None, ge=1, le=100, description="Tamanho da página")
-):
+async def get_patients(search: Optional[str] = None):
     """
-    Busca pacientes no banco de dados com paginação inteligente
+    Busca pacientes no banco de dados
     """
     try:
+        # Detectar se está usando PostgreSQL
         is_postgres = os.getenv('RENDER') or os.getenv('RAILWAY_ENVIRONMENT')
+        
         with get_db_connection() as conn:
-            # Buscar total de pacientes
             if is_postgres:
-                from sqlalchemy import text
-                count_query = text("SELECT COUNT(*) FROM pacientes")
-                if search:
-                    count_query = text("""
-                        SELECT COUNT(*) FROM pacientes WHERE nome_completo ILIKE :search OR numero_doc LIKE :search
-                    """)
-                    count_result = conn.execute(count_query, {"search": f"%{search}%"})
-                else:
-                    count_result = conn.execute(count_query)
-                total = count_result.fetchone()[0]
-            else:
-                cursor = conn.cursor()
-                if search:
-                    cursor.execute("SELECT COUNT(*) FROM pacientes WHERE nome_completo LIKE ? OR numero_doc LIKE ?", (f"%{search}%", f"%{search}%"))
-                else:
-                    cursor.execute("SELECT COUNT(*) FROM pacientes")
-                total = cursor.fetchone()[0]
-
-            # Cálculo inteligente do tamanho da página
-            if page_size is None:
-                if total > 40:
-                    page_size = 20
-                else:
-                    page_size = 10
-
-            offset = (page - 1) * page_size
-
-            # Buscar pacientes paginados
-            if is_postgres:
+                # PostgreSQL - usar named parameters
                 from sqlalchemy import text
                 if search:
                     query = text("""
@@ -911,17 +879,16 @@ async def get_patients(
                         FROM pacientes 
                         WHERE nome_completo ILIKE :search OR numero_doc LIKE :search
                         ORDER BY nome_completo
-                        LIMIT :limit OFFSET :offset
                     """)
-                    result = conn.execute(query, {"search": f"%{search}%", "limit": page_size, "offset": offset})
+                    result = conn.execute(query, {"search": f"%{search}%"})
                 else:
                     query = text("""
                         SELECT id, nome_completo, tipo_doc, numero_doc, cargo, empresa
                         FROM pacientes 
                         ORDER BY data_criacao DESC
-                        LIMIT :limit OFFSET :offset
                     """)
-                    result = conn.execute(query, {"limit": page_size, "offset": offset})
+                    result = conn.execute(query)
+                
                 pacientes = []
                 for row in result:
                     pacientes.append({
@@ -933,6 +900,7 @@ async def get_patients(
                         "empresa": row[5] or ""
                     })
             else:
+                # SQLite - usar ? placeholders
                 cursor = conn.cursor()
                 if search:
                     query = """
@@ -940,17 +908,16 @@ async def get_patients(
                         FROM pacientes 
                         WHERE nome_completo LIKE ? OR numero_doc LIKE ?
                         ORDER BY nome_completo
-                        LIMIT ? OFFSET ?
                     """
-                    cursor.execute(query, (f"%{search}%", f"%{search}%", page_size, offset))
+                    cursor.execute(query, (f"%{search}%", f"%{search}%"))
                 else:
                     query = """
                         SELECT id, nome_completo, tipo_doc, numero_doc, cargo, empresa
                         FROM pacientes 
                         ORDER BY data_criacao DESC
-                        LIMIT ? OFFSET ?
                     """
-                    cursor.execute(query, (page_size, offset))
+                    cursor.execute(query)
+                
                 pacientes = []
                 for row in cursor.fetchall():
                     pacientes.append({
@@ -961,63 +928,25 @@ async def get_patients(
                         "cargo": row[4] or "",
                         "empresa": row[5] or ""
                     })
-
-        total_pages = max(1, (total + page_size - 1) // page_size)
-        return {
-            "results": pacientes,
-            "total": total,
-            "page": page,
-            "page_size": page_size,
-            "total_pages": total_pages
-        }
+        
+        return pacientes
+        
     except Exception as e:
         logger.error(f"Erro ao buscar pacientes: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erro ao buscar pacientes: {str(e)}")
 
-
 @app.get("/api/doctors")
-async def get_doctors(
-    search: Optional[str] = None,
-    page: int = Query(1, ge=1, description="Número da página"),
-    page_size: Optional[int] = Query(None, ge=1, le=100, description="Tamanho da página")
-):
+async def get_doctors(search: Optional[str] = None):
     """
-    Busca médicos no banco de dados com paginação inteligente
+    Busca médicos no banco de dados
     """
     try:
+        # Detectar se está usando PostgreSQL
         is_postgres = os.getenv('RENDER') or os.getenv('RAILWAY_ENVIRONMENT')
+        
         with get_db_connection() as conn:
-            # Buscar total de médicos
             if is_postgres:
-                from sqlalchemy import text
-                count_query = text("SELECT COUNT(*) FROM medicos")
-                if search:
-                    count_query = text("""
-                        SELECT COUNT(*) FROM medicos WHERE nome_completo ILIKE :search OR crm LIKE :search
-                    """)
-                    count_result = conn.execute(count_query, {"search": f"%{search}%"})
-                else:
-                    count_result = conn.execute(count_query)
-                total = count_result.fetchone()[0]
-            else:
-                cursor = conn.cursor()
-                if search:
-                    cursor.execute("SELECT COUNT(*) FROM medicos WHERE nome_completo LIKE ? OR crm LIKE ?", (f"%{search}%", f"%{search}%"))
-                else:
-                    cursor.execute("SELECT COUNT(*) FROM medicos")
-                total = cursor.fetchone()[0]
-
-            # Cálculo inteligente do tamanho da página
-            if page_size is None:
-                if total > 40:
-                    page_size = 20
-                else:
-                    page_size = 10
-
-            offset = (page - 1) * page_size
-
-            # Buscar médicos paginados
-            if is_postgres:
+                # PostgreSQL - usar named parameters
                 from sqlalchemy import text
                 if search:
                     query = text("""
@@ -1025,17 +954,16 @@ async def get_doctors(
                         FROM medicos 
                         WHERE nome_completo ILIKE :search OR crm LIKE :search
                         ORDER BY nome_completo
-                        LIMIT :limit OFFSET :offset
                     """)
-                    result = conn.execute(query, {"search": f"%{search}%", "limit": page_size, "offset": offset})
+                    result = conn.execute(query, {"search": f"%{search}%"})
                 else:
                     query = text("""
                         SELECT id, nome_completo, tipo_crm, crm, uf_crm
                         FROM medicos 
                         ORDER BY data_criacao DESC
-                        LIMIT :limit OFFSET :offset
                     """)
-                    result = conn.execute(query, {"limit": page_size, "offset": offset})
+                    result = conn.execute(query)
+                
                 medicos = []
                 for row in result:
                     medicos.append({
@@ -1046,6 +974,7 @@ async def get_doctors(
                         "uf_crm": row[4]
                     })
             else:
+                # SQLite - usar ? placeholders
                 cursor = conn.cursor()
                 if search:
                     query = """
@@ -1053,17 +982,16 @@ async def get_doctors(
                         FROM medicos 
                         WHERE nome_completo LIKE ? OR crm LIKE ?
                         ORDER BY nome_completo
-                        LIMIT ? OFFSET ?
                     """
-                    cursor.execute(query, (f"%{search}%", f"%{search}%", page_size, offset))
+                    cursor.execute(query, (f"%{search}%", f"%{search}%"))
                 else:
                     query = """
                         SELECT id, nome_completo, tipo_crm, crm, uf_crm
                         FROM medicos 
                         ORDER BY data_criacao DESC
-                        LIMIT ? OFFSET ?
                     """
-                    cursor.execute(query, (page_size, offset))
+                    cursor.execute(query)
+                
                 medicos = []
                 for row in cursor.fetchall():
                     medicos.append({
@@ -1073,15 +1001,9 @@ async def get_doctors(
                         "crm": row[3],
                         "uf_crm": row[4]
                     })
-
-        total_pages = max(1, (total + page_size - 1) // page_size)
-        return {
-            "results": medicos,
-            "total": total,
-            "page": page,
-            "page_size": page_size,
-            "total_pages": total_pages
-        }
+        
+        return medicos
+        
     except Exception as e:
         logger.error(f"Erro ao buscar médicos: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erro ao buscar médicos: {str(e)}")
