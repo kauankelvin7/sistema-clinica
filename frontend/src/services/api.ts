@@ -83,11 +83,22 @@ export const searchPatients = async (search?: string): Promise<Paciente[]> => {
 }
 
 // Buscar médicos
-export const searchDoctors = async (search?: string): Promise<Medico[]> => {
+export interface PaginatedDoctors {
+  total: number;
+  page: number;
+  page_size: number;
+  doctors: Medico[];
+}
+
+export const searchDoctors = async (
+  search?: string,
+  page: number = 1,
+  page_size?: number
+): Promise<PaginatedDoctors> => {
   const response = await api.get('/api/doctors', {
-    params: { search },
-  })
-  return response.data
+    params: { search, page, page_size },
+  });
+  return response.data;
 }
 
 // Health check

@@ -30,7 +30,7 @@ export default function DoctorSearch({ onSelect }: DoctorSearchProps) {
     try {
       setLoading(true)
       const results = await searchDoctors(search)
-      setDoctors(results)
+      setDoctors(results.doctors)
       setShowResults(true)
     } catch (error) {
       console.error('Erro ao buscar médicos:', error)
