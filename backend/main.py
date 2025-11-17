@@ -39,6 +39,7 @@ Deploy:
 # Framework Web
 from fastapi import FastAPI, HTTPException, File, UploadFile, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel
 
@@ -80,6 +81,14 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+# Adiciona CORS para Vercel, localhost e qualquer origem
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://sistema-clinica-seven.vercel.app", "http://localhost:3000", "*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # ═══════════════════════════════════════════════════════════════════════════════
 # CONFIGURAÇÃO DE CORS (Cross-Origin Resource Sharing)
 # ═══════════════════════════════════════════════════════════════════════════════
