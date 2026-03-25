@@ -686,8 +686,384 @@ def generate_and_save_html(data: Dict[str, Any], logo_left: Optional[str] = None
     return save_html(html_content, output_path)
 
 
+def _get_base_styles() -> str:
+    """CSS base compartilhado entre todos os templates de atestado"""
+    return """
+        @page { size: A4; margin: 10mm 10mm 2mm 10mm; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 11pt; line-height: 1.4; color: #000;
+            background: #f5f5f5; padding: 20px;
+        }
+        .page {
+            width: 210mm; min-height: 297mm; height: 297mm;
+            margin: 0 auto 20px auto; background: white;
+            border: 2px solid #000; padding: 0;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative; display: flex; flex-direction: column;
+        }
+        .header {
+            display: flex; align-items: center;
+            padding: 15px 20px; gap: 15px;
+            border-bottom: 2px solid #000;
+        }
+        .header-logo { width: 80px; height: 80px; flex-shrink: 0; margin-left: 70px; }
+        .header-text { flex: 1; text-align: center; }
+        .header-title { font-size: 16pt; font-weight: bold; color: #000; margin-bottom: 2px; }
+        .header-subtitle { font-size: 12pt; color: #000; }
+        .doc-title {
+            text-align: center; font-size: 18pt; font-weight: bold;
+            padding: 15px; border-bottom: 2px solid #000; background: white;
+        }
+        .main-content { padding: 20px 25px; flex: 1 0 auto; }
+        .main-text { text-align: justify; font-size: 13pt; line-height: 1.8; margin-bottom: 25px; }
+        .info-table { border: 2px solid #000; margin: 15px 0; width: 100%; }
+        .info-row {
+            padding: 8px 15px; border-bottom: 1px solid #000;
+            font-size: 12pt; line-height: 1.3;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-row strong { font-weight: bold; }
+        .signature-section {
+            margin-top: 60px; margin-bottom: 80px;
+            text-align: center; padding: 0 25px;
+        }
+        .signature-line {
+            width: 450px; margin: 0 auto;
+            border-top: 1px solid #000; padding-top: 8px;
+        }
+        .signature-label { font-size: 12pt; font-weight: normal; margin-top: 5px; }
+        .signature-date { margin-top: 25px; font-size: 13pt; font-weight: bold; }
+        .footer {
+            text-align: center; padding: 0; background: white;
+            min-height: 35px; display: flex; flex-direction: column;
+            justify-content: center;
+        }
+        .footer-line1 { font-size: 11pt; font-weight: bold; color: #000; margin-bottom: 3px; }
+        .footer-line2 { font-size: 10pt; color: #000; }
+        .checkbox {
+            width: 14px; height: 14px; border: 2px solid #000;
+            background: white; flex-shrink: 0; display: inline-block;
+            vertical-align: middle; margin-right: 8px;
+        }
+        @media print {
+            body { background: white; padding: 0; }
+            .page {
+                margin: 0; box-shadow: none;
+                page-break-after: always !important;
+                min-height: 297mm; height: 297mm;
+            }
+            .page:last-child { page-break-after: auto; }
+            @page { size: A4; margin: 10mm; }
+        }
+    """
+
+
+def get_vigilante_template() -> str:
+    """Template HTML para Atestado Vigilante"""
+    return f"""<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atestado de Capacidade - Vigilante</title>
+    <style>{_get_base_styles()}</style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <img src="{{logo_base64}}" class="header-logo" alt="Logo NOVA" />
+            <div class="header-text">
+                <div class="header-title">NOVA | Medicina e Segurança do Trabalho.</div>
+                <div class="header-subtitle">Exames: Admissionais, Demissionais, Periódicos e Outros.</div>
+            </div>
+        </div>
+        
+        <div class="doc-title">ATESTADO DE SAÚDE - VIGILANTE</div>
+        
+        <div class="main-content">
+            <div class="main-text">
+                Declaro para os devidos fins que o(a) Sr(a). <strong>{{nome_paciente}}</strong>,
+                portador(a) do <strong>{{documento_paciente_formatado}}</strong>,
+                ocupante do cargo de <strong>{{cargo_paciente}}</strong> na empresa
+                <strong>{{empresa_paciente}}</strong>, foi submetido(a) a exame médico
+                em <strong>{{data_atestado}}</strong> e encontra-se em condições de saúde
+                física e mental compatíveis com o exercício da atividade de
+                <strong>VIGILANTE</strong>, conforme exigido pela Lei nº 7.102/83
+                e Portaria nº 3.233/2012-DG/DPF.
+            </div>
+            
+            <div class="info-table">
+                <div class="info-row"><strong>NOME:</strong> {{nome_paciente}}</div>
+                <div class="info-row"><strong>DOCUMENTO:</strong> {{documento_paciente_formatado}}</div>
+                <div class="info-row"><strong>EMPRESA:</strong> {{empresa_paciente}}</div>
+                <div class="info-row"><strong>CARGO:</strong> {{cargo_paciente}}</div>
+                <div class="info-row"><strong>CNV:</strong> {{cnv_registro}}</div>
+                <div class="info-row"><strong>VALIDADE CNV:</strong> {{validade_cnv}}</div>
+                <div class="info-row"><strong>DATA DO EXAME:</strong> {{data_atestado}}</div>
+            </div>
+            
+            <div class="main-text" style="margin-top: 20px;">
+                O(A) profissional acima identificado(a) apresenta aptidão para o exercício
+                da atividade de vigilância, não possuindo impedimentos de saúde que contraindiquem
+                o desempenho das funções inerentes ao cargo.
+            </div>
+            
+            <div class="signature-section">
+                <div class="signature-line">
+                    <div class="signature-label">Médico do Trabalho / Examinador</div>
+                </div>
+                <div style="margin-top: 10px; font-size: 12pt;">
+                    Dr(a). {{nome_medico}} — {{crm_medico}}-{{uf_crm_medico}}
+                </div>
+                <div class="signature-date">Brasília, {{data_atual}}</div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-line1">NOVA MEDICINA E SEGURANÇA DO TRABALHO LTDA.</div>
+            <div class="footer-line2">SDS, Bloco D, Ed. Eldorado, Entrada B, 1.º Subsolo - Sala 01 CEP 70.392.901 Brasília–DF.</div>
+        </div>
+    </div>
+</body>
+</html>"""
+
+
+def get_saude_template() -> str:
+    """Template HTML para Atestado de Saúde Ocupacional (ASO)"""
+    return f"""<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atestado de Saúde Ocupacional</title>
+    <style>{_get_base_styles()}</style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <img src="{{logo_base64}}" class="header-logo" alt="Logo NOVA" />
+            <div class="header-text">
+                <div class="header-title">NOVA | Medicina e Segurança do Trabalho.</div>
+                <div class="header-subtitle">Exames: Admissionais, Demissionais, Periódicos e Outros.</div>
+            </div>
+        </div>
+        
+        <div class="doc-title">ATESTADO DE SAÚDE OCUPACIONAL – ASO</div>
+        
+        <div class="main-content">
+            <div class="info-table">
+                <div class="info-row"><strong>NOME DO TRABALHADOR:</strong> {{nome_paciente}}</div>
+                <div class="info-row"><strong>DOCUMENTO:</strong> {{documento_paciente_formatado}}</div>
+                <div class="info-row"><strong>EMPRESA:</strong> {{empresa_paciente}}</div>
+                <div class="info-row"><strong>CARGO / FUNÇÃO:</strong> {{cargo_paciente}}</div>
+                <div class="info-row"><strong>TIPO DE EXAME:</strong> {{tipo_exame}}</div>
+                <div class="info-row"><strong>RISCO OCUPACIONAL:</strong> {{risco_ocupacional}}</div>
+                <div class="info-row"><strong>DATA DO EXAME:</strong> {{data_atestado}}</div>
+            </div>
+            
+            <div style="border: 2px solid #000; margin: 20px 0; padding: 15px;">
+                <div style="font-weight: bold; font-size: 14pt; text-align: center; margin-bottom: 15px;">
+                    RESULTADO DA AVALIAÇÃO CLÍNICA
+                </div>
+                <div style="font-size: 13pt; display: flex; flex-direction: column; gap: 10px;">
+                    <div><span class="checkbox"></span> APTO para exercer a função</div>
+                    <div><span class="checkbox"></span> INAPTO para exercer a função</div>
+                    <div><span class="checkbox"></span> APTO COM RESTRIÇÕES (ver observações)</div>
+                </div>
+                <div style="margin-top: 15px; font-size: 12pt; font-weight: bold;">
+                    Parecer: <span style="font-weight: normal;">{{aptidao}}</span>
+                </div>
+            </div>
+            
+            <div class="main-text">
+                Atesto para os devidos fins que o(a) trabalhador(a) acima identificado(a)
+                foi submetido(a) a exame médico de <strong>{{tipo_exame}}</strong>,
+                conforme disposto na NR-7 (PCMSO), sendo considerado(a)
+                <strong>{{aptidao}}</strong> para o exercício de suas funções.
+            </div>
+            
+            <div class="signature-section">
+                <div class="signature-line">
+                    <div class="signature-label">Médico do Trabalho / Examinador</div>
+                </div>
+                <div style="margin-top: 10px; font-size: 12pt;">
+                    Dr(a). {{nome_medico}} — {{crm_medico}}-{{uf_crm_medico}}
+                </div>
+                <div class="signature-date">Brasília, {{data_atual}}</div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-line1">NOVA MEDICINA E SEGURANÇA DO TRABALHO LTDA.</div>
+            <div class="footer-line2">SDS, Bloco D, Ed. Eldorado, Entrada B, 1.º Subsolo - Sala 01 CEP 70.392.901 Brasília–DF.</div>
+        </div>
+    </div>
+</body>
+</html>"""
+
+
+def get_atividades_fisicas_template() -> str:
+    """Template HTML para Atestado de Aptidão para Atividades Físicas"""
+    return f"""<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atestado para Atividades Físicas</title>
+    <style>{_get_base_styles()}</style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <img src="{{logo_base64}}" class="header-logo" alt="Logo NOVA" />
+            <div class="header-text">
+                <div class="header-title">NOVA | Medicina e Segurança do Trabalho.</div>
+                <div class="header-subtitle">Exames: Admissionais, Demissionais, Periódicos e Outros.</div>
+            </div>
+        </div>
+        
+        <div class="doc-title">ATESTADO MÉDICO PARA ATIVIDADE FÍSICA</div>
+        
+        <div class="main-content">
+            <div class="main-text">
+                Atesto para os devidos fins que o(a) Sr(a). <strong>{{nome_paciente}}</strong>,
+                portador(a) do <strong>{{documento_paciente_formatado}}</strong>,
+                após avaliação clínica realizada em <strong>{{data_atestado}}</strong>,
+                encontra-se em condições de saúde compatíveis com a prática de
+                <strong>ATIVIDADES FÍSICAS</strong>.
+            </div>
+            
+            <div class="info-table">
+                <div class="info-row"><strong>NOME:</strong> {{nome_paciente}}</div>
+                <div class="info-row"><strong>DOCUMENTO:</strong> {{documento_paciente_formatado}}</div>
+                <div class="info-row"><strong>EMPRESA:</strong> {{empresa_paciente}}</div>
+                <div class="info-row"><strong>CARGO:</strong> {{cargo_paciente}}</div>
+                <div class="info-row"><strong>DATA DO EXAME:</strong> {{data_atestado}}</div>
+                <div class="info-row"><strong>ATIVIDADE FÍSICA:</strong> {{tipo_atividade}}</div>
+                <div class="info-row"><strong>VALIDADE:</strong> {{validade_atestado}}</div>
+            </div>
+            
+            <div style="border: 2px solid #000; margin: 20px 0;">
+                <div style="padding: 10px 15px; border-bottom: 2px solid #000; font-weight: bold; font-size: 12pt;">
+                    RESTRIÇÕES / OBSERVAÇÕES MÉDICAS:
+                </div>
+                <div style="padding: 15px; min-height: 100px; font-size: 12pt;">
+                    {{restricoes}}
+                </div>
+            </div>
+            
+            <div class="main-text">
+                Este atestado é emitido com base em avaliação clínica e não substitui
+                avaliação de aptidão cardiológica específica, quando recomendada.
+                O(A) paciente está liberado(a) para a prática da modalidade indicada,
+                respeitadas as restrições acima mencionadas, se houver.
+            </div>
+            
+            <div class="signature-section">
+                <div class="signature-line">
+                    <div class="signature-label">Médico do Trabalho / Examinador</div>
+                </div>
+                <div style="margin-top: 10px; font-size: 12pt;">
+                    Dr(a). {{nome_medico}} — {{crm_medico}}-{{uf_crm_medico}}
+                </div>
+                <div class="signature-date">Brasília, {{data_atual}}</div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-line1">NOVA MEDICINA E SEGURANÇA DO TRABALHO LTDA.</div>
+            <div class="footer-line2">SDS, Bloco D, Ed. Eldorado, Entrada B, 1.º Subsolo - Sala 01 CEP 70.392.901 Brasília–DF.</div>
+        </div>
+    </div>
+</body>
+</html>"""
+
+
+def _apply_replacements(template: str, data: Dict[str, Any], extra_replacements: Optional[Dict[str, str]] = None) -> str:
+    """Aplica substituições comuns a qualquer template"""
+    logo_base64 = get_logo_base64()
+    nome_medico = str(data.get('nome_medico', '')).strip()
+    tipo_registro = str(data.get('tipo_registro_medico', '')).strip()
+    crm_numero = str(data.get('crm_medico', '')).strip()
+    uf_crm = str(data.get('uf_crm_medico', '')).strip()
+    crm_formatado = f"{tipo_registro} {crm_numero}" if tipo_registro else crm_numero
+    data_atual_sistema = datetime.now()
+
+    replacements = {
+        '{logo_base64}': logo_base64,
+        '{nome_paciente}': str(data.get('nome_paciente', '')).strip(),
+        '{documento_paciente_formatado}': f"{data.get('tipo_doc_paciente', '').upper()} nº: {data.get('numero_doc_paciente', '')}",
+        '{data_atestado}': _format_date_brazil(data.get('data_atestado', '')),
+        '{data_atual}': _format_date_brazil(data_atual_sistema),
+        '{cargo_paciente}': str(data.get('cargo_paciente', '')).strip(),
+        '{empresa_paciente}': str(data.get('empresa_paciente', '')).strip(),
+        '{nome_medico}': nome_medico,
+        '{crm_medico}': crm_formatado,
+        '{uf_crm_medico}': uf_crm,
+    }
+
+    if extra_replacements:
+        replacements.update(extra_replacements)
+
+    html = template
+    for key, value in replacements.items():
+        html = html.replace(key, value)
+    return html
+
+
+def generate_vigilante_html(data: Dict[str, Any]) -> str:
+    """Gera HTML do Atestado Vigilante"""
+    try:
+        logger.info("📄 Gerando Atestado Vigilante HTML...")
+        template = get_vigilante_template()
+        html = _apply_replacements(template, data, {
+            '{cnv_registro}': str(data.get('cnv_registro', '')).strip(),
+            '{validade_cnv}': _format_date_brazil(data.get('validade_cnv', '')),
+        })
+        logger.info("✅ Atestado Vigilante HTML gerado!")
+        return html
+    except Exception as e:
+        logger.error(f"❌ Erro ao gerar Atestado Vigilante: {e}", exc_info=True)
+        raise HTMLGenerationError(f"Erro ao gerar Atestado Vigilante: {e}")
+
+
+def generate_saude_html(data: Dict[str, Any]) -> str:
+    """Gera HTML do Atestado de Saúde (ASO)"""
+    try:
+        logger.info("📄 Gerando ASO HTML...")
+        template = get_saude_template()
+        html = _apply_replacements(template, data, {
+            '{tipo_exame}': str(data.get('tipo_exame', 'Admissional')).strip(),
+            '{risco_ocupacional}': str(data.get('risco_ocupacional', '')).strip() or 'Não especificado',
+            '{aptidao}': str(data.get('aptidao', 'Apto')).strip(),
+        })
+        logger.info("✅ ASO HTML gerado!")
+        return html
+    except Exception as e:
+        logger.error(f"❌ Erro ao gerar ASO: {e}", exc_info=True)
+        raise HTMLGenerationError(f"Erro ao gerar ASO: {e}")
+
+
+def generate_atividades_html(data: Dict[str, Any]) -> str:
+    """Gera HTML do Atestado para Atividades Físicas"""
+    try:
+        logger.info("📄 Gerando Atestado Atividades Físicas HTML...")
+        template = get_atividades_fisicas_template()
+        html = _apply_replacements(template, data, {
+            '{tipo_atividade}': str(data.get('tipo_atividade', '')).strip() or 'Atividades físicas em geral',
+            '{restricoes}': str(data.get('restricoes', '')).strip() or 'Nenhuma restrição relatada.',
+            '{validade_atestado}': _format_date_brazil(data.get('validade', '')) or '1 ano a partir da data do exame',
+        })
+        logger.info("✅ Atestado Atividades Físicas HTML gerado!")
+        return html
+    except Exception as e:
+        logger.error(f"❌ Erro ao gerar Atestado Atividades Físicas: {e}", exc_info=True)
+        raise HTMLGenerationError(f"Erro ao gerar Atestado Atividades Físicas: {e}")
+
+
 if __name__ == '__main__':
-    # Teste de geração de HTML
     print("🧪 Testando geração de HTML...")
     
     test_data = {

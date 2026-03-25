@@ -58,6 +58,11 @@ from core.db_manager import get_db_connection, create_tables
 from core.database import sanitizar_entrada
 from core.document_generator import generate_document
 from core.pdf_generator import generate_pdf_direct, PDFGenerationError
+from core.html_generator import (
+    generate_vigilante_html,
+    generate_saude_html,
+    generate_atividades_html,
+)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CONFIGURAÇÃO DE LOGGING
@@ -205,6 +210,60 @@ class DocumentoRequest(BaseModel):
     paciente: PacienteData
     atestado: AtestadoData
     medico: MedicoData
+
+class VigilanteData(BaseModel):
+    """Dados extras para atestado de vigilante"""
+    cnv_registro: str = ''
+    validade_cnv: str = ''
+
+class SaudeData(BaseModel):
+    """Dados extras para ASO"""
+    tipo_exame: str = 'Admissional'
+    risco_ocupacional: str = ''
+    aptidao: str = 'Apto'
+
+class AtividadesData(BaseModel):
+    """Dados extras para atestado de atividades físicas"""
+    tipo_atividade: str = ''
+    restricoes: str = ''
+    validade: str = ''
+
+class VigilanteRequest(BaseModel):
+    paciente: PacienteData
+    atestado: AtestadoData
+    medico: MedicoData
+    vigilante: VigilanteData = VigilanteData()
+
+class SaudeRequest(BaseModel):
+    paciente: PacienteData
+    atestado: AtestadoData
+    medico: MedicoData
+    saude: SaudeData = SaudeData()
+
+class AtividadesRequest(BaseModel):
+    paciente: PacienteData
+    atestado: AtestadoData
+    medico: MedicoData
+    atividades: AtividadesData = AtividadesData()
+
+
+def _prepare_documento_data(data) -> dict:
+    """Helper to prepare common document data dict from any request."""
+    return {
+        "nome_paciente": data.paciente.nome,
+        "tipo_doc_paciente": data.paciente.tipo_documento,
+        "numero_doc_paciente": data.paciente.numero_documento,
+        "cargo_paciente": data.paciente.cargo,
+        "empresa_paciente": data.paciente.empresa,
+        "data_atestado": data.atestado.data_atestado,
+        "data_atual": datetime.now().strftime("%d/%m/%Y"),
+        "qtd_dias_atestado": str(data.atestado.dias_afastamento),
+        "codigo_cid": "NÃO INFORMADO" if data.atestado.cid_nao_informado else data.atestado.cid,
+        "nome_medico": data.medico.nome,
+        "tipo_registro_medico": data.medico.tipo_registro,
+        "crm_medico": data.medico.numero_registro,
+        "uf_crm_medico": data.medico.uf_registro,
+    }
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ENDPOINTS DA API
@@ -670,6 +729,67 @@ async def generate_html_endpoint(data: DocumentoRequest):
     except Exception as e:
         logger.error(f"❌ Erro geral ao gerar HTML: {str(e)}")
         raise HTTPException(status_code=500, detail="Não foi possível gerar o documento HTML. Por favor, tente novamente.")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ENDPOINTS - NOVOS TIPOS DE ATESTADOS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@app.post("/api/generate-vigilante-html")
+async def generate_vigilante_html_endpoint(data: VigilanteRequest):
+    """
+    Gera atestado de capacidade para vigilante em HTML
+    """
+    try:
+        logger.info("Recebendo requisição para gerar Atestado Vigilante HTML")
+        documento_data = _prepare_documento_data(data)
+        documento_data['cnv_registro'] = data.vigilante.cnv_registro
+        documento_data['validade_cnv'] = data.vigilante.validade_cnv
+
+        html_content = generate_vigilante_html(documento_data)
+        return HTMLResponse(content=html_content, status_code=200)
+    except Exception as e:
+        logger.error(f"Erro ao gerar Atestado Vigilante: {str(e)}")
+        raise HTTPException(status_code=500, detail="Não foi possível gerar o Atestado Vigilante.")
+
+
+@app.post("/api/generate-saude-html")
+async def generate_saude_html_endpoint(data: SaudeRequest):
+    """
+    Gera Atestado de Saúde Ocupacional (ASO) em HTML
+    """
+    try:
+        logger.info("Recebendo requisição para gerar ASO HTML")
+        documento_data = _prepare_documento_data(data)
+        documento_data['tipo_exame'] = data.saude.tipo_exame
+        documento_data['risco_ocupacional'] = data.saude.risco_ocupacional
+        documento_data['aptidao'] = data.saude.aptidao
+
+        html_content = generate_saude_html(documento_data)
+        return HTMLResponse(content=html_content, status_code=200)
+    except Exception as e:
+        logger.error(f"Erro ao gerar ASO: {str(e)}")
+        raise HTTPException(status_code=500, detail="Não foi possível gerar o Atestado de Saúde.")
+
+
+@app.post("/api/generate-atividades-html")
+async def generate_atividades_html_endpoint(data: AtividadesRequest):
+    """
+    Gera atestado de aptidão para atividades físicas em HTML
+    """
+    try:
+        logger.info("Recebendo requisição para gerar Atestado Atividades Físicas HTML")
+        documento_data = _prepare_documento_data(data)
+        documento_data['tipo_atividade'] = data.atividades.tipo_atividade
+        documento_data['restricoes'] = data.atividades.restricoes
+        documento_data['validade'] = data.atividades.validade
+
+        html_content = generate_atividades_html(documento_data)
+        return HTMLResponse(content=html_content, status_code=200)
+    except Exception as e:
+        logger.error(f"Erro ao gerar Atestado Atividades Físicas: {str(e)}")
+        raise HTTPException(status_code=500, detail="Não foi possível gerar o Atestado de Atividades Físicas.")
+
 
 @app.post("/api/generate-pdf")
 async def generate_pdf_endpoint(data: DocumentoRequest):
