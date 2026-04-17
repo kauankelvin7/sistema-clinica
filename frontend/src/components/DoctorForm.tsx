@@ -14,7 +14,7 @@ const UFS = [
 export default function DoctorForm({ formData, updateFormData }: DoctorFormProps) {
   const [totalMedicos, setTotalMedicos] = useState<number>(0)
   const [showListModal, setShowListModal] = useState(false)
-  const [medicosOptions, setMedicosOptions] = useState<Array<{label: string, value: string}>>([])
+  const [medicosOptions, setMedicosOptions] = useState<Array<{label: string, value: string, data: any}>>([])
 
   useEffect(() => {
     // Buscar total de médicos salvos e criar options para autocomplete
@@ -41,7 +41,7 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
         numero_registro: formData.numeroRegistro,
         uf_registro: formData.ufRegistro
       })
-  const response = await fetch(`${api.baseURL}/api/consultar-profissional?${params.toString()}`)
+      const response = await fetch(`${api.baseURL}/api/consultar-profissional?${params.toString()}`)
       const data = await response.json()
       if (data.consulta_url) {
         window.open(data.consulta_url, '_blank')
@@ -58,27 +58,31 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
       {/* Modal de Listagem */}
       <DoctorsListModal isOpen={showListModal} onClose={() => setShowListModal(false)} />
 
-      {/* Contador de Médicos Salvos - Clicável */}
+      {/* Contador de Médicos Salvos - Clicável (Atualizado para o tema Zinc/Laranja) */}
       <button
         type="button"
         onClick={() => setShowListModal(true)}
-        className="w-full bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border-2 border-emerald-200 dark:border-emerald-700 rounded-xl p-4 hover:shadow-lg hover:scale-[1.02] transition-all"
+        className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-5 hover:shadow-[0_0_30px_-5px_rgba(249,115,22,0.15)] hover:border-orange-500/30 group transition-all duration-300"
       >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center">
-            <Stethoscope className="w-5 h-5 text-white" />
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:scale-105 transition-transform duration-300">
+            <Stethoscope className="w-6 h-6 text-white" />
           </div>
           <div className="text-left flex-1">
-            <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Médicos Cadastrados</p>
-            <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{totalMedicos}</p>
+            <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+              Médicos Cadastrados
+            </p>
+            <p className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-50 tracking-tight group-hover:text-orange-500 transition-colors">
+              {totalMedicos}
+            </p>
           </div>
-          <Eye className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          <Eye className="w-6 h-6 text-zinc-400 group-hover:text-orange-500 transition-colors duration-300" />
         </div>
       </button>
 
       {/* Nome Completo com Autocomplete */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+        <label className="block text-sm font-extrabold tracking-tight text-zinc-800 dark:text-zinc-200 mb-2">
           Nome Completo do Médico
         </label>
         <AutocompleteInput
@@ -100,7 +104,7 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
 
       {/* Registro Profissional */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+        <label className="block text-sm font-extrabold tracking-tight text-zinc-800 dark:text-zinc-200 mb-2">
           Registro Profissional
         </label>
         <div className="grid grid-cols-1 gap-4">
@@ -108,7 +112,7 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
           <div className="flex gap-4">
             {/* Tipo */}
             <select
-              className="input-field w-28"
+              className="input-field w-28 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2371717a%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-[length:1.2em_1.2em] bg-no-repeat bg-[right_0.8rem_center] pr-10 cursor-pointer"
               value={formData.tipoRegistro}
               onChange={(e) => updateFormData('tipoRegistro', e.target.value)}
             >
@@ -128,7 +132,7 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
 
             {/* UF */}
             <select
-              className="input-field w-24"
+              className="input-field w-24 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2371717a%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-[length:1.2em_1.2em] bg-no-repeat bg-[right_0.8rem_center] pr-10 cursor-pointer"
               value={formData.ufRegistro}
               onChange={(e) => updateFormData('ufRegistro', e.target.value)}
             >
@@ -138,14 +142,14 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
             </select>
           </div>
 
-          {/* Linha 2: Botão Consultar */}
+          {/* Linha 2: Botão Consultar (Atualizado para o tema escuro/laranja) */}
           <button
             type="button"
             onClick={handleConsultar}
-            className="w-full px-6 py-4 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-bold text-base rounded-xl shadow-lg flex items-center justify-center gap-2"
+            className="w-full px-6 py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-extrabold tracking-tight text-base rounded-2xl shadow-md border border-transparent hover:border-orange-500/50 hover:shadow-orange-500/20 flex items-center justify-center gap-3 transition-all duration-300 group"
           >
             <span>Consultar Registro Online</span>
-            <ExternalLink className="w-5 h-5" />
+            <ExternalLink className="w-5 h-5 group-hover:text-orange-500 transition-colors" />
           </button>
         </div>
       </div>
