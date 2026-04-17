@@ -11,6 +11,8 @@ import api from './config/api'
 import type { FormData } from './types'
 
 function App() {
+  // --- 1. LÓGICA DE NEGÓCIO INTACTA ---
+
   // Estado do layout (vertical = mobile, horizontal = desktop)
   const [layoutMode, setLayoutMode] = useState<'vertical' | 'horizontal'>(() => {
     const saved = localStorage.getItem('layout_mode')
@@ -21,19 +23,6 @@ function App() {
   useEffect(() => {
     localStorage.setItem('layout_mode', layoutMode)
   }, [layoutMode])
-
-  // Carregar dados salvos do localStorage
-  const loadSavedData = (): FormData => {
-    const saved = localStorage.getItem('sistema_clinica_data')
-    if (saved) {
-      try {
-        return JSON.parse(saved)
-      } catch {
-        return getDefaultFormData()
-      }
-    }
-    return getDefaultFormData()
-  }
 
   const getDefaultFormData = (): FormData => ({
     // Paciente
@@ -55,6 +44,19 @@ function App() {
     numeroRegistro: '',
     ufRegistro: 'DF',
   })
+
+  // Carregar dados salvos do localStorage
+  const loadSavedData = (): FormData => {
+    const saved = localStorage.getItem('sistema_clinica_data')
+    if (saved) {
+      try {
+        return JSON.parse(saved)
+      } catch {
+        return getDefaultFormData()
+      }
+    }
+    return getDefaultFormData()
+  }
 
   const [formData, setFormData] = useState<FormData>(loadSavedData())
   const [loading, setLoading] = useState<'word' | 'html' | false>(false)
@@ -96,7 +98,6 @@ function App() {
   }
 
   const handleGenerateWord = async () => {
-    // Validar campos obrigatórios
     const missing = validateFormData()
     
     if (missing.length > 0) {
@@ -111,7 +112,6 @@ function App() {
     try {
       const blob = await generateDocument(formData, 'word')
       
-      // Criar download do arquivo
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
@@ -131,7 +131,6 @@ function App() {
   }
 
   const handleGenerateHTML = async () => {
-    // Validar campos obrigatórios
     const missing = validateFormData()
     
     if (missing.length > 0) {
@@ -144,7 +143,6 @@ function App() {
     setMessage(null)
 
     try {
-      // Fazer requisição para gerar HTML
       const response = await fetch(`${api.baseURL}/api/generate-html`, {
         method: 'POST',
         headers: {
@@ -177,15 +175,12 @@ function App() {
         throw new Error('Falha na geração do documento')
       }
 
-      // Pegar HTML como texto
       const htmlContent = await response.text()
       
-      // Abrir HTML em nova aba e disparar impressão
       const newWindow = window.open('', '_blank')
       if (newWindow) {
         newWindow.document.write(htmlContent)
         newWindow.document.close()
-        // Aguarda o carregamento do DOM antes de disparar o print
         newWindow.onload = function() {
           newWindow.focus()
           newWindow.print()
@@ -208,90 +203,98 @@ function App() {
     setMessage({ type: 'success', text: 'Todos os campos foram limpos com sucesso!' })
   }
 
+  // --- 2. NOVO DESIGN SYSTEM E SEMÂNTICA ---
   return (
-    <div className="min-h-screen py-8 px-4 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-gray-900 dark:to-emerald-950">
+    <main className="min-h-screen py-8 px-4 bg-zinc-50 dark:bg-zinc-950 transition-colors duration-300">
       <div className="max-w-[1800px] mx-auto space-y-8">
-        {/* Header */}
+        
         <Header />
 
-        {/* Botão de Alternância de Layout */}
+        {/* Botão de Alternância de Layout (Restaurado com novo estilo) */}
         <div className="flex justify-end">
           <button
             onClick={() => setLayoutMode(prev => prev === 'horizontal' ? 'vertical' : 'horizontal')}
-            className="group flex items-center gap-3 px-6 py-3 bg-white dark:bg-gray-800 border-2 border-emerald-200 dark:border-emerald-700 rounded-xl shadow-md hover:shadow-lg hover:border-emerald-400 dark:hover:border-emerald-500 transition-all duration-300"
+            className="group flex items-center gap-3 px-6 py-3 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-md hover:shadow-orange-500/20 hover:border-orange-400/50 dark:hover:border-orange-500/50 transition-all duration-300"
           >
             {layoutMode === 'horizontal' ? (
-              <Smartphone className="w-5 h-5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+              <Smartphone className="w-5 h-5 text-orange-500 dark:text-orange-400 group-hover:scale-110 transition-transform" />
             ) : (
-              <Monitor className="w-5 h-5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+              <Monitor className="w-5 h-5 text-orange-500 dark:text-orange-400 group-hover:scale-110 transition-transform" />
             )}
           </button>
         </div>
 
-        {/* Mensagem de Status */}
+        {/* Mensagem de Status flutuante (Toast) */}
         {message && (
-          <div className={`rounded-xl p-5 flex items-center gap-4 shadow-lg border-2
+          <div className={`fixed top-6 right-6 z-50 rounded-2xl p-5 flex items-center gap-4 shadow-2xl transition-all animate-in fade-in slide-in-from-top-5 duration-300 backdrop-blur-sm border
             ${message.type === 'success'
-              ? 'bg-emerald-50 border-emerald-300 text-emerald-900 dark:bg-emerald-900/80 dark:border-emerald-600 dark:text-emerald-100'
-              : 'bg-rose-50 border-rose-300 text-rose-900 dark:bg-rose-900/80 dark:border-rose-600 dark:text-rose-100'}
+              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 shadow-emerald-500/10'
+              : 'bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300 shadow-rose-500/10'}
           `}>
             {message.type === 'success' ? (
-              <CheckCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-300 flex-shrink-0" />
+              <CheckCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
             ) : (
-              <XCircle className="w-6 h-6 text-rose-600 dark:text-rose-300 flex-shrink-0" />
+              <XCircle className="w-6 h-6 text-rose-600 dark:text-rose-400 flex-shrink-0" />
             )}
-            <p className="font-semibold text-base">
-              {message.text}
-            </p>
+            <p className="font-semibold text-base">{message.text}</p>
+            <button onClick={() => setMessage(null)} className="ml-4 text-zinc-400 hover:text-zinc-900 dark:hover:text-white font-bold transition-colors">✕</button>
           </div>
         )}
 
-        {/* Container Principal */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-2 border-gray-100 dark:border-gray-700">
-          <div className="p-12">
-            <div className={`grid gap-10 ${layoutMode === 'horizontal' ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}>
-              {/* Seção: Dados do Paciente */}
-              <div className="card dark:bg-gray-800 dark:border-gray-700 dark:shadow-none min-w-[300px] flex-1">
-                <div className="flex items-center gap-4 mb-5">
-                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center shadow-md dark:shadow-emerald-900/30">
-                    <User className="w-6 h-6 text-white" />
-                  </div>
-                  <h2 className="text-gray-800 dark:text-gray-100 text-lg md:text-xl font-bold">Dados do Paciente</h2>
+        {/* Container Principal com efeito Glow */}
+        <section className="bg-white dark:bg-zinc-900 rounded-3xl p-8 lg:p-12 
+                            border border-zinc-100 dark:border-zinc-800
+                            shadow-[0_0_60px_-15px_rgba(249,115,22,0.08)] 
+                            dark:shadow-[0_0_60px_-15px_rgba(249,115,22,0.12)]
+                            transition-all duration-300">
+          
+          <div className={`grid gap-12 items-start relative ${layoutMode === 'horizontal' ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}>
+            
+            {/* Seção: Dados do Paciente */}
+            <article className="card-orange group min-w-[300px] flex-1">
+              <header className="flex items-center gap-4 mb-6">
+                <div className="w-14 h-14 bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:scale-105 transition-transform duration-300">
+                  <User className="w-7 h-7 text-white" />
                 </div>
-                <PatientForm formData={formData} updateFormData={updateFormData} />
-              </div>
-              {/* Seção: Dados do Atestado */}
-              <div className="card dark:bg-gray-800 dark:border-gray-700 dark:shadow-none min-w-[300px] flex-1">
-                <div className="flex items-center gap-4 mb-5">
-                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center shadow-md dark:shadow-emerald-900/30">
-                    <FileText className="w-6 h-6 text-white" />
-                  </div>
-                  <h2 className="text-gray-800 dark:text-gray-100 text-lg md:text-xl font-bold">Dados do Atestado</h2>
+                <h2 className="text-zinc-900 dark:text-zinc-50 text-xl font-extrabold tracking-tight">Dados do Paciente</h2>
+              </header>
+              <PatientForm formData={formData} updateFormData={updateFormData} />
+            </article>
+
+            {/* Seção: Dados do Atestado */}
+            <article className="card-orange group min-w-[300px] flex-1">
+              <header className="flex items-center gap-4 mb-6">
+                <div className="w-14 h-14 bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:scale-105 transition-transform duration-300">
+                  <FileText className="w-7 h-7 text-white" />
                 </div>
-                <CertificateForm formData={formData} updateFormData={updateFormData} />
-              </div>
-              {/* Seção: Dados do Médico */}
-              <div className="card dark:bg-gray-800 dark:border-gray-700 dark:shadow-none min-w-[300px] flex-1">
-                <div className="flex items-center gap-4 mb-5">
-                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center shadow-md dark:shadow-emerald-900/30">
-                    <Stethoscope className="w-6 h-6 text-white" />
-                  </div>
-                  <h2 className="text-gray-800 dark:text-gray-100 text-lg md:text-xl font-bold">Dados do Médico</h2>
+                <h2 className="text-zinc-900 dark:text-zinc-50 text-xl font-extrabold tracking-tight">Dados do Atestado</h2>
+              </header>
+              <CertificateForm formData={formData} updateFormData={updateFormData} />
+            </article>
+
+            {/* Seção: Dados do Médico */}
+            <article className="card-orange group min-w-[300px] flex-1">
+              <header className="flex items-center gap-4 mb-6">
+                <div className="w-14 h-14 bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:scale-105 transition-transform duration-300">
+                  <Stethoscope className="w-7 h-7 text-white" />
                 </div>
-                <DoctorForm formData={formData} updateFormData={updateFormData} />
-              </div>
-            </div>
-            {/* Botões de Ação */}
-            <div className="mt-10 pt-10 border-t-2 border-gray-100 dark:border-gray-700">
-              <ActionButtons 
-                onGenerateWord={handleGenerateWord}
-                onGenerateHTML={handleGenerateHTML}
-                onClear={handleClear}
-                loading={loading}
-              />
-            </div>
+                <h2 className="text-zinc-900 dark:text-zinc-50 text-xl font-extrabold tracking-tight">Dados do Médico</h2>
+              </header>
+              <DoctorForm formData={formData} updateFormData={updateFormData} />
+            </article>
+
           </div>
-        </div>
+
+          {/* Botões de Ação */}
+          <footer className="mt-12 pt-10 border-t border-zinc-100 dark:border-zinc-800">
+            <ActionButtons 
+              onGenerateWord={handleGenerateWord}
+              onGenerateHTML={handleGenerateHTML}
+              onClear={handleClear}
+              loading={loading}
+            />
+          </footer>
+        </section>
 
         {/* Modal de Validação */}
         <ValidationModal 
@@ -301,15 +304,16 @@ function App() {
         />
 
         {/* Footer */}
-        <div className="text-center">
-          <div className="inline-block bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl px-8 py-4 shadow-md">
-            <p className="text-gray-700 dark:text-gray-300 text-sm font-semibold">
-              Sistema de Homologação v2.0 • Desenvolvido por <span className="text-emerald-600 dark:text-emerald-400 font-bold">Kauan Kelvin</span>
+        <footer className="text-center pb-4">
+          <div className="inline-block bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-full px-8 py-3 shadow-md">
+            <p className="text-zinc-600 dark:text-zinc-400 text-sm font-medium">
+              Sistema de Homologação v2.0 • Desenvolvido por <span className="text-orange-600 dark:text-orange-400 font-bold hover:underline cursor-pointer">Kauan Kelvin</span>
             </p>
           </div>
-        </div>
+        </footer>
+
       </div>
-    </div>
+    </main>
   )
 }
 
