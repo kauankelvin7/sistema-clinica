@@ -326,7 +326,7 @@ function App() {
                 <Github className="w-5 h-5 group-hover:scale-110 transition-transform" />
               </a>
               <a 
-                href="https://www.linkedin.com/in/kauankelvin/" 
+                href="https://www.linkedin.com/in/kauan-kelvin/" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="text-zinc-400 hover:text-orange-500 transition-colors duration-300 group"
