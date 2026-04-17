@@ -4,6 +4,8 @@ import type { DoctorFormProps } from '../types'
 import api from '../config/api'
 import DoctorsListModal from './DoctorsListModal'
 import AutocompleteInput from './AutocompleteInput'
+// Importação do novo Modal
+import ConsultaOnlineModal from './ConsultaOnlineModal' 
 
 const UFS = [
   'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
@@ -15,6 +17,9 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
   const [totalMedicos, setTotalMedicos] = useState<number>(0)
   const [showListModal, setShowListModal] = useState(false)
   const [medicosOptions, setMedicosOptions] = useState<Array<{label: string, value: string, data: any}>>([])
+  
+  // Estado para controlar o Modal de Consulta Externa
+  const [isConsultaModalOpen, setIsConsultaModalOpen] = useState(false)
 
   useEffect(() => {
     // Buscar total de médicos salvos e criar options para autocomplete
@@ -34,31 +39,29 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
       .catch(() => setTotalMedicos(0))
   }, [])
 
-  const handleConsultar = async () => {
-    try {
-      const params = new URLSearchParams({
-        tipo_registro: formData.tipoRegistro,
-        numero_registro: formData.numeroRegistro,
-        uf_registro: formData.ufRegistro
-      })
-      const response = await fetch(`${api.baseURL}/api/consultar-profissional?${params.toString()}`)
-      const data = await response.json()
-      if (data.consulta_url) {
-        window.open(data.consulta_url, '_blank')
-      } else {
-        alert('Tipo de registro não reconhecido ou dados insuficientes.')
-      }
-    } catch (err) {
-      alert('Erro ao consultar registro online.')
+  const handleConsultar = () => {
+    // Em vez de fazer fetch estático ou alert, abre o modal direto com o tipo atual
+    if (formData.tipoRegistro) {
+      setIsConsultaModalOpen(true)
+    } else {
+      alert('Selecione um tipo de registro antes de consultar.')
     }
   }
 
   return (
-    <div className="space-y-6">
-      {/* Modal de Listagem */}
+    <div className="space-y-6 relative">
+      {/* Modal de Listagem Interna */}
       <DoctorsListModal isOpen={showListModal} onClose={() => setShowListModal(false)} />
 
-      {/* Contador de Médicos Salvos - Clicável (Atualizado para o tema Zinc/Laranja) */}
+      {/* Modal de Consulta Externa (CFM/CRO/RMS) */}
+      <ConsultaOnlineModal 
+        isOpen={isConsultaModalOpen} 
+        onClose={() => setIsConsultaModalOpen(false)} 
+        // Força a tipagem esperada pelo modal
+        tipoRegistro={formData.tipoRegistro as 'CRM' | 'CRO' | 'RMS'} 
+      />
+
+      {/* Contador de Médicos Salvos - Clicável */}
       <button
         type="button"
         onClick={() => setShowListModal(true)}
@@ -142,13 +145,13 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
             </select>
           </div>
 
-          {/* Linha 2: Botão Consultar (Atualizado para o tema escuro/laranja) */}
+          {/* Linha 2: Botão Consultar */}
           <button
             type="button"
             onClick={handleConsultar}
             className="w-full px-6 py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-extrabold tracking-tight text-base rounded-2xl shadow-md border border-transparent hover:border-orange-500/50 hover:shadow-orange-500/20 flex items-center justify-center gap-3 transition-all duration-300 group"
           >
-            <span>Consultar Registro Online</span>
+            <span>Consultar {formData.tipoRegistro} Online</span>
             <ExternalLink className="w-5 h-5 group-hover:text-orange-500 transition-colors" />
           </button>
         </div>
