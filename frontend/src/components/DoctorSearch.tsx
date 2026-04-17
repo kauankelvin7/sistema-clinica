@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Search, Stethoscope } from 'lucide-react'
+import { Search, Stethoscope, ExternalLink } from 'lucide-react'
 import { searchDoctors } from '../services/api'
 import type { Medico } from '../types'
+import ConsultaOnlineModal from './ConsultaOnlineModal'
 
 interface DoctorSearchProps {
   onSelect: (doctor: Medico) => void
@@ -12,6 +13,9 @@ export default function DoctorSearch({ onSelect }: DoctorSearchProps) {
   const [doctors, setDoctors] = useState<Medico[]>([])
   const [showResults, setShowResults] = useState(false)
   const [loading, setLoading] = useState(false)
+  
+  // Estado para controlar o Modal de Consulta Externa
+  const [modalRegistro, setModalRegistro] = useState<'CRM' | 'CRO' | 'RMS' | null>(null)
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -48,46 +52,95 @@ export default function DoctorSearch({ onSelect }: DoctorSearchProps) {
 
   return (
     <div className="relative">
-      <div className="flex items-center gap-2">
-        <Search className="w-4 h-4 text-black-400" />
+      {/* Input de Busca (Tema Zinc/Orange) */}
+      <div className="relative group">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
         <input
           type="text"
-          className="input-field flex-1 text-black dark:text-black border-2 border-primary-300 bg-gradient-to-br from-primary-50 to-secondary-50 focus:border-primary-500 focus:ring-4 focus:ring-primary-400/20 shadow-lg transition-all duration-200 placeholder:text-gray-500 dark:placeholder:text-slate-400"
-          placeholder="Buscar médico cadastrado..."
+          className="w-full pl-12 pr-4 py-3.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all shadow-sm"
+          placeholder="Buscar médico cadastrado ou CRM..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onFocus={() => search.length >= 2 && setShowResults(true)}
-          onBlur={() => setTimeout(() => setShowResults(false), 200)}
+          // Atraso aumentado para dar tempo de clicar no botão "Consultar Online" sem fechar a lista
+          onBlur={() => setTimeout(() => setShowResults(false), 250)}
         />
       </div>
 
-      {showResults && doctors.length > 0 && (
-        <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-          {doctors.map((doctor) => (
-            <button
-              key={doctor.id}
-              onClick={() => handleSelect(doctor)}
-              className="w-full p-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-0"
-            >
-              <div className="flex items-center gap-2">
-                <Stethoscope className="w-4 h-4 text-primary-500" />
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-gray-900">{doctor.nome_completo}</p>
-                  <p className="text-xs text-gray-500">
-                    {doctor.tipo_crm}: {doctor.crm} - {doctor.uf_crm}
-                  </p>
-                </div>
+      {/* Dropdown de Resultados */}
+      {showResults && search.length >= 2 && (
+        <div className="absolute z-50 mt-2 w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2">
+          
+          {/* Lista Interna */}
+          {doctors.length > 0 ? (
+            <div className="max-h-60 overflow-y-auto">
+              {doctors.map((doctor) => (
+                <button
+                  key={doctor.id}
+                  onClick={() => handleSelect(doctor)}
+                  className="w-full p-4 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800 last:border-0 transition-colors group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-zinc-100 dark:bg-zinc-800 rounded-xl flex items-center justify-center group-hover:bg-orange-50 dark:group-hover:bg-orange-500/10 transition-colors">
+                      <Stethoscope className="w-5 h-5 text-zinc-400 group-hover:text-orange-500" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-zinc-900 dark:text-white">{doctor.nome_completo}</p>
+                      <p className="text-xs font-medium text-zinc-500 mt-0.5">
+                        {doctor.tipo_crm}: {doctor.crm} - {doctor.uf_crm}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            // Empty State quando não acha internamente
+            !loading && (
+              <div className="p-6 text-center">
+                <p className="text-sm text-zinc-500 font-medium">Nenhum médico encontrado no sistema.</p>
               </div>
-            </button>
-          ))}
+            )
+          )}
+
+          {/* Rodapé Dinâmico: Consultar em Base Nacional (Sempre visível ao buscar) */}
+          <div className="bg-zinc-50 dark:bg-zinc-950 p-4 border-t border-zinc-200 dark:border-zinc-800">
+            <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3 text-center">
+              Consultar Base Nacional
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              <button 
+                onClick={() => setModalRegistro('CRM')}
+                className="flex flex-col items-center justify-center gap-1 p-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-orange-500 hover:text-orange-500 transition-all text-zinc-600 dark:text-zinc-400"
+              >
+                <ExternalLink className="w-4 h-4" />
+                <span className="text-xs font-bold">CRM</span>
+              </button>
+              <button 
+                onClick={() => setModalRegistro('CRO')}
+                className="flex flex-col items-center justify-center gap-1 p-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-orange-500 hover:text-orange-500 transition-all text-zinc-600 dark:text-zinc-400"
+              >
+                <ExternalLink className="w-4 h-4" />
+                <span className="text-xs font-bold">Dentista</span>
+              </button>
+              <button 
+                onClick={() => setModalRegistro('RMS')}
+                className="flex flex-col items-center justify-center gap-1 p-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:border-orange-500 hover:text-orange-500 transition-all text-zinc-600 dark:text-zinc-400"
+              >
+                <ExternalLink className="w-4 h-4" />
+                <span className="text-xs font-bold">RMS</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
-      {showResults && search.length >= 2 && doctors.length === 0 && !loading && (
-        <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg p-3">
-          <p className="text-xs text-gray-500 text-center">Nenhum médico encontrado</p>
-        </div>
-      )}
+      {/* Renderiza o Modal se acionado */}
+      <ConsultaOnlineModal 
+        isOpen={!!modalRegistro} 
+        onClose={() => setModalRegistro(null)} 
+        tipoRegistro={modalRegistro}
+      />
     </div>
   )
 }
