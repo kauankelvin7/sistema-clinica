@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { FileText, User, Stethoscope, CheckCircle, XCircle, Smartphone, Monitor } from 'lucide-react'
+// 1. IMPORTAÇÕES ATUALIZADAS: Adicionados Github e Linkedin
+import { FileText, User, Stethoscope, CheckCircle, XCircle, Smartphone, Monitor, Github, Linkedin } from 'lucide-react'
 import Header from './components/Header'
 import PatientForm from './components/PatientForm'
 import CertificateForm from './components/CertificateForm'
@@ -210,7 +211,7 @@ function App() {
         
         <Header />
 
-        {/* Botão de Alternância de Layout (Restaurado com novo estilo) */}
+        {/* Botão de Alternância de Layout */}
         <div className="flex justify-end">
           <button
             onClick={() => setLayoutMode(prev => prev === 'horizontal' ? 'vertical' : 'horizontal')}
@@ -303,12 +304,37 @@ function App() {
           missingFields={missingFields}
         />
 
-        {/* Footer */}
+        {/* Footer Atualizado com Redes Sociais */}
         <footer className="text-center pb-4">
-          <div className="inline-block bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-full px-8 py-3 shadow-md">
+          <div className="inline-flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-full px-8 py-3 shadow-md transition-all duration-300 hover:shadow-orange-500/10 hover:border-orange-500/20">
             <p className="text-zinc-600 dark:text-zinc-400 text-sm font-medium">
-              Sistema de Homologação v2.0 • Desenvolvido por <span className="text-orange-600 dark:text-orange-400 font-bold hover:underline cursor-pointer">Kauan Kelvin</span>
+              Sistema de Homologação v2.0 • Desenvolvido por <span className="text-orange-600 dark:text-orange-400 font-bold">Kauan Kelvin</span>
             </p>
+            
+            {/* Divisor Vertical (some no mobile) */}
+            <div className="hidden sm:block w-px h-5 bg-zinc-200 dark:bg-zinc-700"></div>
+            
+            {/* Links Sociais */}
+            <div className="flex items-center gap-4">
+              <a 
+                href="https://github.com/kauankelvin7" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-zinc-400 hover:text-orange-500 transition-colors duration-300 group"
+                aria-label="GitHub de Kauan Kelvin"
+              >
+                <Github className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              </a>
+              <a 
+                href="https://www.linkedin.com/in/kauankelvin/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-zinc-400 hover:text-orange-500 transition-colors duration-300 group"
+                aria-label="LinkedIn de Kauan Kelvin"
+              >
+                <Linkedin className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              </a>
+            </div>
           </div>
         </footer>
 
