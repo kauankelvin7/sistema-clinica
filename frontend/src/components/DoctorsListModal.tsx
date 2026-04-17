@@ -93,52 +93,55 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden border-2 border-emerald-200 dark:border-emerald-700">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 p-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-              <Stethoscope className="w-6 h-6 text-white" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/60 dark:bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
+      <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col transform transition-all animate-in zoom-in-95 duration-300">
+        
+        {/* Header Premium Glassmorphism */}
+        <div className="bg-zinc-900 dark:bg-black p-6 sm:p-8 flex items-center justify-between border-b border-zinc-800 relative overflow-hidden">
+          {/* Efeito Glow no fundo do Header */}
+          <div className="absolute top-0 left-0 w-full h-full bg-orange-500/10 blur-2xl"></div>
+          
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="w-14 h-14 bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/20">
+              <Stethoscope className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-white">Médicos Cadastrados</h2>
-              <p className="text-emerald-100 text-sm">
+              <h2 className="text-2xl font-black tracking-tight text-white mb-0.5">Médicos Cadastrados</h2>
+              <p className="text-zinc-400 text-sm font-medium">
                 {filteredMedicos.length} de {medicos.length} registro{medicos.length !== 1 ? 's' : ''}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center transition-colors"
+            className="relative z-10 w-10 h-10 bg-zinc-800/50 hover:bg-orange-500/20 rounded-xl flex items-center justify-center transition-colors border border-zinc-700/50 hover:border-orange-500/50 group"
           >
-            <X className="w-6 h-6 text-white" />
+            <X className="w-5 h-5 text-zinc-400 group-hover:text-orange-500 transition-colors" />
           </button>
         </div>
 
         {/* Filtros */}
-        <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 space-y-3">
+        <div className="bg-zinc-50 dark:bg-zinc-800/30 border-b border-zinc-200 dark:border-zinc-800 p-5 space-y-4 shrink-0">
           {/* Busca por texto */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <div className="relative group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
             <input
               type="text"
               placeholder="Buscar por nome, CRM ou especialidade..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:focus:ring-emerald-900"
+              className="w-full pl-12 pr-4 py-3.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all shadow-sm"
             />
           </div>
 
           {/* Filtros em linha */}
-          <div className="flex flex-wrap gap-3">
-            {/* Filtro Tipo de Registro */}
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-emerald-600" />
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-3 shadow-sm focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/20 transition-all">
+              <Filter className="w-4 h-4 text-orange-500 shrink-0" />
               <select
                 value={filterTipoCRM}
                 onChange={(e) => setFilterTipoCRM(e.target.value as 'TODOS' | 'CRM' | 'CRO' | 'RMS')}
-                className="px-3 py-2 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                className="py-2.5 bg-transparent text-sm font-semibold text-zinc-700 dark:text-zinc-300 focus:outline-none cursor-pointer appearance-none pr-6"
               >
                 <option value="TODOS">Todos Registros</option>
                 <option value="CRM">CRM</option>
@@ -147,12 +150,11 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
               </select>
             </div>
 
-            {/* Filtro UF */}
             {ufs.length > 0 && (
               <select
                 value={filterUF}
                 onChange={(e) => setFilterUF(e.target.value)}
-                className="px-3 py-2 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                className="py-2.5 px-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-semibold text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 shadow-sm cursor-pointer appearance-none pr-8"
               >
                 <option value="TODAS">Todas UFs</option>
                 {ufs.map(uf => (
@@ -165,7 +167,7 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
             {(searchTerm || filterTipoCRM !== 'TODOS' || filterUF !== 'TODAS') && (
               <button
                 onClick={clearFilters}
-                className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-sm font-medium rounded-lg transition-colors"
+                className="px-4 py-2.5 bg-zinc-100 hover:bg-rose-50 dark:bg-zinc-800 dark:hover:bg-rose-500/10 text-zinc-600 hover:text-rose-600 dark:text-zinc-300 dark:hover:text-rose-400 text-sm font-bold rounded-xl transition-colors border border-transparent hover:border-rose-200 dark:hover:border-rose-500/30 ml-auto"
               >
                 Limpar Filtros
               </button>
@@ -173,18 +175,23 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(80vh-280px)]">
+        {/* Content (Listagem) */}
+        <div className="p-6 overflow-y-auto flex-1 bg-zinc-50/50 dark:bg-zinc-950/50">
           {loading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full mx-auto"></div>
-              <p className="text-gray-600 dark:text-gray-400 mt-4">Carregando médicos...</p>
+            <div className="flex flex-col items-center justify-center py-20">
+              <div className="animate-spin w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full mb-4"></div>
+              <p className="text-zinc-500 font-medium">Buscando base de médicos...</p>
             </div>
           ) : filteredMedicos.length === 0 ? (
-            <div className="text-center py-12">
-              <Stethoscope className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600 dark:text-gray-400 text-lg">
-                {medicos.length === 0 ? 'Nenhum médico cadastrado ainda' : 'Nenhum médico encontrado com os filtros aplicados'}
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="w-20 h-20 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-5">
+                <Stethoscope className="w-10 h-10 text-zinc-400" />
+              </div>
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">Nenhum médico encontrado</h3>
+              <p className="text-zinc-500 max-w-md">
+                {medicos.length === 0 
+                  ? 'A base de dados de médicos está vazia no momento.' 
+                  : 'Nenhum médico corresponde aos filtros de busca aplicados.'}
               </p>
             </div>
           ) : (
@@ -192,31 +199,35 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
               {filteredMedicos.map((medico, index) => (
                 <div
                   key={medico.id}
-                  className="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border-2 border-emerald-200 dark:border-emerald-700 rounded-xl p-5 hover:shadow-lg transition-shadow"
+                  className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 hover:shadow-md hover:border-orange-500/30 transition-all duration-300 group"
                 >
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center text-white font-bold shrink-0">
-                      {index + 1}
+                  <div className="flex items-start gap-5">
+                    {/* Número/Avatar Laranja */}
+                    <div className="w-12 h-12 bg-orange-50 dark:bg-orange-500/10 rounded-xl flex items-center justify-center shrink-0 border border-orange-100 dark:border-orange-500/20 group-hover:bg-orange-500 transition-colors duration-300">
+                      <span className="text-orange-600 dark:text-orange-400 font-black text-lg group-hover:text-white transition-colors">
+                        {index + 1}
+                      </span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                    
+                    <div className="flex-1 min-w-0 pt-1">
+                      <h3 className="text-lg font-black tracking-tight text-zinc-900 dark:text-white mb-3 truncate">
                         {medico.nome_completo}
                       </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                          <Award className="w-4 h-4 text-emerald-600" />
-                          <span className="font-semibold">{medico.tipo_crm}:</span>
+                      <div className="flex flex-wrap gap-x-6 gap-y-3">
+                        <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+                          <Award className="w-4 h-4 text-orange-500" />
+                          <span className="font-bold text-zinc-700 dark:text-zinc-300">{medico.tipo_crm}:</span>
                           <span>{medico.crm}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                          <MapPin className="w-4 h-4 text-emerald-600" />
-                          <span className="font-semibold">UF:</span>
+                        <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+                          <MapPin className="w-4 h-4 text-orange-500" />
+                          <span className="font-bold text-zinc-700 dark:text-zinc-300">UF:</span>
                           <span>{medico.uf_crm}</span>
                         </div>
                         {medico.especialidade && (
-                          <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                            <Stethoscope className="w-4 h-4 text-emerald-600" />
-                            <span>{medico.especialidade}</span>
+                          <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+                            <Stethoscope className="w-4 h-4 text-orange-500" />
+                            <span className="font-medium truncate">{medico.especialidade}</span>
                           </div>
                         )}
                       </div>
