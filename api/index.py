@@ -31,7 +31,11 @@ from core.audit import audit_middleware
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Sistema de Homologação de Atestados Médicos", version="2.1.0")
+app = FastAPI(
+    title="Sistema de Homologação de Atestados Médicos", 
+    version="2.1.0",
+    root_path="/api" if os.getenv('VERCEL') else ""
+)
 
 # [CAMADA 6] Middleware de Auditoria
 app.add_middleware(BaseHTTPMiddleware, dispatch=audit_middleware)
