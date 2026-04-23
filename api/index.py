@@ -17,8 +17,9 @@ import os
 import re
 import logging
 
-# Adicionamos a raiz do projeto ao sys.path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Adicionamos a raiz do projeto ao sys.path com prioridade máxima
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR)
 
 from core.db_manager import get_db_connection, create_tables
 from core.database import sanitizar_entrada
