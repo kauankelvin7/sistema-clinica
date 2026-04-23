@@ -1,6 +1,6 @@
 import { X, User, Phone, Mail, Briefcase, Building2, Search, Filter, Hash } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import api from '../config/api'
+import { searchPatients } from '../services/api'
 import { normalizeText } from '../utils/normalize'
 
 interface Paciente {
@@ -34,8 +34,7 @@ export default function PatientsListModal({ isOpen, onClose }: Props) {
   useEffect(() => {
     if (isOpen) {
       setLoading(true)
-      fetch(api.endpoints.pacientes)
-        .then(res => res.json())
+      searchPatients()
         .then(data => {
           setPacientes(data)
           setFilteredPacientes(data)

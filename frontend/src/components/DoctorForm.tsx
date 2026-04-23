@@ -1,7 +1,7 @@
 import { ExternalLink, Stethoscope, Eye } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import type { DoctorFormProps } from '../types'
-import api from '../config/api'
+import { searchDoctors } from '../services/api'
 import DoctorsListModal from './DoctorsListModal'
 import AutocompleteInput from './AutocompleteInput'
 // Importação do novo Modal
@@ -23,13 +23,17 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
 
   useEffect(() => {
     // Buscar total de médicos salvos e criar options para autocomplete
-    fetch(api.endpoints.medicos)
-      .then(res => res.json())
+    searchDoctors()
       .then(data => {
-        setTotalMedicos(data.length)
+        // searchDoctors retorna PaginatedDoctors { total, doctors, ... }
+        // mas aqui parece que o código original esperava um array simples ou algo similar.
+        // Vamos verificar o retorno do searchDoctors.
+        
+        const doctorsList = (data as any).doctors || data;
+        setTotalMedicos(doctorsList.length)
         
         // Criar options para autocomplete
-        const options = data.map((m: any) => ({
+        const options = doctorsList.map((m: any) => ({
           label: `${m.nome_completo} - ${m.tipo_crm} ${m.crm}/${m.uf_crm}`,
           value: m.nome_completo,
           data: m

@@ -1,7 +1,7 @@
 import type { PatientFormProps } from '../types'
 import { useState, useEffect } from 'react'
 import { Users, Eye } from 'lucide-react'
-import api from '../config/api'
+import { searchPatients } from '../services/api'
 import PatientsListModal from './PatientsListModal'
 import AutocompleteInput from './AutocompleteInput'
 
@@ -22,8 +22,7 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
 
   useEffect(() => {
     // Buscar total de pacientes salvos e criar options para autocomplete
-    fetch(api.endpoints.pacientes)
-      .then(res => res.json())
+    searchPatients()
       .then(data => {
         setTotalPacientes(data.length)
         

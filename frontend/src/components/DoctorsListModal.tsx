@@ -1,6 +1,6 @@
 import { X, Stethoscope, MapPin, Award, Search, Filter } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import api from '../config/api'
+import { searchDoctors } from '../services/api'
 import { normalizeText } from '../utils/normalize'
 
 interface Medico {
@@ -34,15 +34,15 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
   useEffect(() => {
     if (isOpen) {
       setLoading(true)
-      fetch(api.endpoints.medicos)
-        .then(res => res.json())
+      searchDoctors()
         .then(data => {
-          setMedicos(data)
-          setFilteredMedicos(data)
+          const doctorsList = (data as any).doctors || data;
+          setMedicos(doctorsList)
+          setFilteredMedicos(doctorsList)
           
           // Extrair lista única de UFs
           const uniqueUFs = Array.from(new Set(
-            data.map((m: Medico) => m.uf_crm)
+            doctorsList.map((m: Medico) => m.uf_crm)
           )) as string[]
           setUfs(uniqueUFs.sort())
           
