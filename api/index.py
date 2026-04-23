@@ -5,7 +5,7 @@ Sistema de Homologação de Atestados Médicos - Backend API (Vercel Serverless)
 [CÓDIGO SEGURO] Adicionadas 6 Camadas de Segurança (Auth, Crypto, Rate Limit, Audit, Sanitização).
 """
 
-from fastapi import FastAPI, HTTPException, Query, Depends
+from fastapi import FastAPI, HTTPException, Query, Depends, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.responses import HTMLResponse
@@ -31,11 +31,10 @@ from core.audit import audit_middleware
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-app = FastAPI(
-    title="Sistema de Homologação de Atestados Médicos", 
-    version="2.1.0",
-    root_path="/api" if os.getenv('VERCEL') else ""
-)
+app = FastAPI(title="Sistema de Homologação de Atestados Médicos", version="2.1.0")
+
+# Criamos um router para as rotas da API
+api_router = APIRouter()
 
 # [CAMADA 6] Middleware de Auditoria
 app.add_middleware(BaseHTTPMiddleware, dispatch=audit_middleware)
@@ -108,7 +107,7 @@ class LoginRequest(BaseModel):
 # ==========================================
 # [CAMADA 3] Rota de Login / Autenticação
 # ==========================================
-@app.post("/auth/token")
+@api_router.post("/auth/token")
 async def login(credentials: LoginRequest, _=Depends(rate_limit)):
     """Rota para o frontend obter o JWT"""
     admin_user = os.getenv("ADMIN_USER", "admin")
@@ -125,11 +124,11 @@ async def login(credentials: LoginRequest, _=Depends(rate_limit)):
 # ==========================================
 # ROTAS PROTEGIDAS
 # ==========================================
-@app.get("/")
+@api_router.get("/")
 async def root():
     return {"status": "online", "message": "API Segura - Vercel Serverless"}
 
-@app.get("/consultar-profissional")
+@api_router.get("/consultar-profissional")
 async def consultar_profissional(
     tipo_registro: str = Query(...), numero_registro: str = Query(...), uf_registro: str = Query(...),
     _=Depends(rate_limit), __=Depends(require_auth)
@@ -150,9 +149,9 @@ async def consultar_profissional(
 
     return { "tipo_registro": tipo_registro, "numero_registro": numero_registro, "uf_registro": uf_registro, "consulta_url": url, "info": info }
 
-@app.post("/generate-document")
-@app.post("/generate-pdf")
-@app.post("/generate-html")
+@api_router.post("/generate-document")
+@api_router.post("/generate-pdf")
+@api_router.post("/generate-html")
 async def generate_html_endpoint(data: DocumentoRequest, _=Depends(rate_limit), __=Depends(require_auth)):
     try:
         is_postgres = bool(os.getenv('DATABASE_URL')) or os.getenv('RENDER') or os.getenv('RAILWAY_ENVIRONMENT') or os.getenv('VERCEL')
@@ -235,7 +234,7 @@ async def generate_html_endpoint(data: DocumentoRequest, _=Depends(rate_limit), 
         logger.error(f"Erro geral ao gerar HTML: {str(e)}")
         raise HTTPException(status_code=500, detail="Não foi possível gerar o documento. Tente novamente.")
 
-@app.get("/patients")
+@api_router.get("/patients")
 async def get_patients(search: Optional[str] = None, _=Depends(rate_limit), __=Depends(require_auth)):
     try:
         is_postgres = bool(os.getenv('DATABASE_URL')) or os.getenv('RENDER') or os.getenv('RAILWAY_ENVIRONMENT') or os.getenv('VERCEL')
@@ -270,7 +269,7 @@ async def get_patients(search: Optional[str] = None, _=Depends(rate_limit), __=D
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/doctors")
+@api_router.get("/doctors")
 async def get_doctors(search: Optional[str] = None, _=Depends(rate_limit), __=Depends(require_auth)):
     try:
         is_postgres = bool(os.getenv('DATABASE_URL')) or os.getenv('RENDER') or os.getenv('RAILWAY_ENVIRONMENT') or os.getenv('VERCEL')
@@ -294,7 +293,7 @@ async def get_doctors(search: Optional[str] = None, _=Depends(rate_limit), __=De
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/health")
+@api_router.get("/health")
 async def health_check():
     try:
         is_postgres = bool(os.getenv('DATABASE_URL')) or os.getenv('VERCEL') or os.getenv('RENDER')
@@ -312,6 +311,12 @@ async def health_check():
         return { "status": "healthy", "pacientes": pacientes_count, "medicos": medicos_count }
     except Exception as e:
         return { "status": "unhealthy", "error": str(e) }
+
+# Incluímos o router duas vezes para garantir compatibilidade
+# 1. Com o prefixo /api (para chamadas diretas ou ambientes que não removem o prefixo)
+# 2. Sem o prefixo (para ambientes como Vercel que podem consumir o /api)
+app.include_router(api_router, prefix="/api")
+app.include_router(api_router)
 
 if __name__ == "__main__":
     import uvicorn
