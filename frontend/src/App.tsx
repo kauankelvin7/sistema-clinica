@@ -1,20 +1,33 @@
 import { useState, useEffect } from 'react'
-// 1. IMPORTAÇÕES ATUALIZADAS: Adicionados Github e Linkedin
-import { FileText, User, Stethoscope, CheckCircle, XCircle, Smartphone, Monitor, Github, Linkedin } from 'lucide-react'
+import { FileText, User, Stethoscope, CheckCircle, XCircle, Smartphone, Monitor, Github, Linkedin, LogOut } from 'lucide-react'
 import Header from './components/Header'
 import PatientForm from './components/PatientForm'
 import CertificateForm from './components/CertificateForm'
 import DoctorForm from './components/DoctorForm'
 import ActionButtons from './components/ActionButtons'
 import { ValidationModal } from './components/ValidationModal'
+import Login from './components/Login'
 import { generateDocument } from './services/api'
 import api from './config/api'
 import type { FormData } from './types'
 
 function App() {
+  // Autenticação
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!localStorage.getItem('auth_token'))
+
+  const handleLoginSuccess = (token: string) => {
+    localStorage.setItem('auth_token', token)
+    setIsAuthenticated(true)
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('auth_token')
+    setIsAuthenticated(false)
+  }
+
   // --- 1. LÓGICA DE NEGÓCIO INTACTA ---
 
-  // Estado do layout (vertical = mobile, horizontal = desktop)
+  // Estado do layout (vertical = horizontal)
   const [layoutMode, setLayoutMode] = useState<'vertical' | 'horizontal'>(() => {
     const saved = localStorage.getItem('layout_mode')
     return (saved as 'vertical' | 'horizontal') || 'horizontal'
@@ -205,23 +218,35 @@ function App() {
   }
 
   // --- 2. NOVO DESIGN SYSTEM E SEMÂNTICA ---
+  if (!isAuthenticated) {
+    return <Login onLoginSuccess={handleLoginSuccess} />
+  }
+
   return (
     <main className="min-h-screen py-8 px-4 bg-zinc-50 dark:bg-zinc-950 transition-colors duration-300">
       <div className="max-w-[1800px] mx-auto space-y-8">
         
         <Header />
 
-        {/* Botão de Alternância de Layout */}
-        <div className="flex justify-end">
+        {/* Botão de Alternância de Layout e Logout */}
+        <div className="flex justify-end gap-4">
           <button
             onClick={() => setLayoutMode(prev => prev === 'horizontal' ? 'vertical' : 'horizontal')}
             className="group flex items-center gap-3 px-6 py-3 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-md hover:shadow-orange-500/20 hover:border-orange-400/50 dark:hover:border-orange-500/50 transition-all duration-300"
+            title="Alternar Layout"
           >
             {layoutMode === 'horizontal' ? (
               <Smartphone className="w-5 h-5 text-orange-500 dark:text-orange-400 group-hover:scale-110 transition-transform" />
             ) : (
               <Monitor className="w-5 h-5 text-orange-500 dark:text-orange-400 group-hover:scale-110 transition-transform" />
             )}
+          </button>
+          <button
+            onClick={handleLogout}
+            className="group flex items-center gap-3 px-6 py-3 bg-rose-50 dark:bg-rose-900/20 backdrop-blur-sm border border-rose-200 dark:border-rose-800 rounded-xl shadow-md hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-all duration-300"
+            title="Sair do Sistema"
+          >
+            <LogOut className="w-5 h-5 text-rose-500 dark:text-rose-400 group-hover:scale-110 transition-transform" />
           </button>
         </div>
 

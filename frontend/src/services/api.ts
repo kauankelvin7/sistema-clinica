@@ -8,9 +8,30 @@ const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true', // Evita aviso do ngrok
   },
 })
+
+// Interceptor para adicionar o token em todas as requisições
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('auth_token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
+// Interceptor para deslogar em caso de 401
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('auth_token')
+      // Pode adicionar window.location.reload() ou disparar evento se preferir
+    }
+    return Promise.reject(error)
+  }
+)
+
 
 export interface DocumentRequest {
   paciente: {
@@ -104,6 +125,12 @@ export const searchDoctors = async (
 // Health check
 export const healthCheck = async () => {
   const response = await api.get('/api/health')
+  return response.data
+}
+
+// Login
+export const loginUser = async (username: string, password: string, rememberMe: boolean = false): Promise<{ access_token: string }> => {
+  const response = await api.post('/api/auth/token', { username, password, remember_me: rememberMe })
   return response.data
 }
 
