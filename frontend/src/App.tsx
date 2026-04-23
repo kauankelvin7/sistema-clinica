@@ -7,8 +7,7 @@ import DoctorForm from './components/DoctorForm'
 import ActionButtons from './components/ActionButtons'
 import { ValidationModal } from './components/ValidationModal'
 import Login from './components/Login'
-import { generateDocument } from './services/api'
-import api from './config/api'
+import api, { generateDocument } from './services/api'
 import type { FormData } from './types'
 
 function App() {
@@ -155,41 +154,30 @@ function App() {
 
     setLoading('html')
     setMessage(null)
-
     try {
-      const response = await fetch(`${api.baseURL}/api/generate-html`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await api.post('/api/generate-html', {
+        paciente: {
+          nome: formData.nomePaciente,
+          tipo_documento: formData.tipoDocumento,
+          numero_documento: formData.numeroDocumento,
+          cargo: formData.cargo,
+          empresa: formData.empresa,
         },
-        body: JSON.stringify({
-          paciente: {
-            nome: formData.nomePaciente,
-            tipo_documento: formData.tipoDocumento,
-            numero_documento: formData.numeroDocumento,
-            cargo: formData.cargo,
-            empresa: formData.empresa,
-          },
-          atestado: {
-            data_atestado: formData.dataAtestado,
-            dias_afastamento: parseInt(formData.diasAfastamento),
-            cid: formData.cid,
-            cid_nao_informado: formData.cidNaoInformado,
-          },
-          medico: {
-            nome: formData.nomeMedico,
-            tipo_registro: formData.tipoRegistro,
-            numero_registro: formData.numeroRegistro,
-            uf_registro: formData.ufRegistro,
-          },
-        }),
+        atestado: {
+          data_atestado: formData.dataAtestado,
+          dias_afastamento: parseInt(formData.diasAfastamento),
+          cid: formData.cid,
+          cid_nao_informado: formData.cidNaoInformado,
+        },
+        medico: {
+          nome: formData.nomeMedico,
+          tipo_registro: formData.tipoRegistro,
+          numero_registro: formData.numeroRegistro,
+          uf_registro: formData.ufRegistro,
+        },
       })
 
-      if (!response.ok) {
-        throw new Error('Falha na geração do documento')
-      }
-
-      const htmlContent = await response.text()
+      const htmlContent = response.data
       
       const newWindow = window.open('', '_blank')
       if (newWindow) {
