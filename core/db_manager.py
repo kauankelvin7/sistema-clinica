@@ -19,15 +19,24 @@ if IS_PRODUCTION:
     from sqlalchemy.pool import NullPool
     
     DATABASE_URL = os.getenv('DATABASE_URL', '')
-    if DATABASE_URL.startswith('postgres://'):
-        DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
     
-    engine = create_engine(
-        DATABASE_URL,
-        poolclass=NullPool,
-        echo=False
-    )
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    # Log de diagnóstico (seguro, não expõe a senha)
+    logger.info(f"DATABASE_URL detectada: {bool(DATABASE_URL)} (Tamanho: {len(DATABASE_URL)})")
+    
+    if DATABASE_URL:
+        if DATABASE_URL.startswith('postgres://'):
+            DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+        
+        engine = create_engine(
+            DATABASE_URL,
+            poolclass=NullPool,
+            echo=False
+        )
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    else:
+        logger.error("ERRO CRÍTICO: DATABASE_URL não configurada no ambiente de produção!")
+        engine = None
+        SessionLocal = None
     
     @contextmanager
     def get_db_connection():
