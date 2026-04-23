@@ -48,9 +48,10 @@ LOGS_DIR = DATA_DIR / 'logs'
 MODELS_DIR = RESOURCES_DIR / 'models'
 ASSETS_DIR = RESOURCES_DIR / 'assets'
 
-# Cria os diretórios necessários se não existirem
-for directory in [DATA_DIR, GENERATED_DOCS_DIR, LOGS_DIR]:
-    directory.mkdir(parents=True, exist_ok=True)
+# Cria os diretórios necessários se não existirem (Apenas se não estiver na Vercel)
+if not os.getenv('VERCEL'):
+    for directory in [DATA_DIR, GENERATED_DOCS_DIR, LOGS_DIR]:
+        directory.mkdir(parents=True, exist_ok=True)
 
 # ===== CONFIGURAÇÕES DO BANCO DE DADOS =====
 DB_FILE = DATA_DIR / 'homologacao.db'
@@ -140,34 +141,36 @@ MSG_CAMPOS_LIMPOS = "Campos limpos. Sistema pronto."
 MSG_SISTEMA_PRONTO = "Sistema pronto para uso."
 
 def configurar_logging():
-    """
-    Configura o sistema de logging da aplicação
-    """
-    # Criar o diretório de logs se não existir
-    LOGS_DIR.mkdir(parents=True, exist_ok=True)
+    # Criar o diretório de logs se não existir (Apenas se não estiver na Vercel)
+    if not os.getenv('VERCEL'):
+        LOGS_DIR.mkdir(parents=True, exist_ok=True)
+        
+        # Configurar logging com rotação de arquivos
+        from logging.handlers import RotatingFileHandler
+        
+        # Configurar handler para arquivo
+        file_handler = RotatingFileHandler(
+            LOG_FILE,
+            maxBytes=LOG_MAX_BYTES,
+            backupCount=LOG_BACKUP_COUNT,
+            encoding='utf-8'
+        )
+        file_handler.setLevel(LOG_LEVEL)
+        file_handler.setFormatter(logging.Formatter(LOG_FORMAT, LOG_DATE_FORMAT))
+        
+        # Configurar logger raiz
+        root_logger = logging.getLogger()
+        root_logger.setLevel(LOG_LEVEL)
+        root_logger.addHandler(file_handler)
+    else:
+        # Na Vercel, usamos apenas o console
+        root_logger = logging.getLogger()
+        root_logger.setLevel(LOG_LEVEL)
     
-    # Configurar logging com rotação de arquivos
-    from logging.handlers import RotatingFileHandler
-    
-    # Configurar handler para arquivo
-    file_handler = RotatingFileHandler(
-        LOG_FILE,
-        maxBytes=LOG_MAX_BYTES,
-        backupCount=LOG_BACKUP_COUNT,
-        encoding='utf-8'
-    )
-    file_handler.setLevel(LOG_LEVEL)
-    file_handler.setFormatter(logging.Formatter(LOG_FORMAT, LOG_DATE_FORMAT))
-    
-    # Configurar handler para console
+    # Configurar handler para console (Sempre)
     console_handler = logging.StreamHandler()
     console_handler.setLevel(LOG_LEVEL)
     console_handler.setFormatter(logging.Formatter(LOG_FORMAT, LOG_DATE_FORMAT))
-    
-    # Configurar logger raiz
-    root_logger = logging.getLogger()
-    root_logger.setLevel(LOG_LEVEL)
-    root_logger.addHandler(file_handler)
     root_logger.addHandler(console_handler)
     
     return root_logger
