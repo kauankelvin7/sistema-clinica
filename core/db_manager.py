@@ -40,17 +40,25 @@ if IS_PRODUCTION:
     
     @contextmanager
     def get_db_connection():
-        """Context manager para PostgreSQL com SQLAlchemy"""
+        """Context manager para PostgreSQL com SQLAlchemy otimizado para Vercel"""
+        if not SessionLocal:
+            logger.error("SessionLocal não inicializada. Verifique a DATABASE_URL.")
+            raise Exception("Erro de configuração do Banco de Dados")
+            
         session = SessionLocal()
         try:
+            # Forçar um check de conexão rápido
+            session.execute(text("SELECT 1"))
             yield session
             session.commit()
         except Exception as e:
             session.rollback()
-            logger.error(f"Erro no banco PostgreSQL: {e}")
+            logger.error(f"Erro na transação PostgreSQL: {e}")
             raise
         finally:
             session.close()
+            # Garante que a conexão seja devolvida ao pool/encerrada imediatamente
+            engine.dispose()
     
     def execute_query(query: str, params: Dict = None):
         """Executa query no PostgreSQL"""
