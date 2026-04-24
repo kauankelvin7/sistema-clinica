@@ -45,9 +45,27 @@ if IS_PRODUCTION:
         elif DATABASE_URL.startswith('postgresql://'):
             DATABASE_URL = DATABASE_URL.replace('postgresql://', 'postgresql+psycopg2://', 1)
         
-        # Tenta forçar IPv4 se não houver parâmetros (truque para alguns provedores)
+        # TRUQUE SUPABASE: Se houver um ponto no usuário (Pooler), precisamos encodá-lo como %2E
+        # Caso contrário, o driver pode cortar o usuário no primeiro ponto.
+        if '@' in DATABASE_URL:
+            prefix, rest = DATABASE_URL.split('@', 1)
+            if ':' in prefix:
+                proto, user_pass = prefix.split('://', 1)
+                if ':' in user_pass:
+                    user, password = user_pass.split(':', 1)
+                    if '.' in user:
+                        new_user = user.replace('.', '%2E')
+                        DATABASE_URL = f"{proto}://{new_user}:{password}@{rest}"
+                        logger.info("Usuário do banco detectado com ponto. Aplicando encoding %2E para compatibilidade.")
+        
+        # Tenta forçar IPv4 se não houver parâmetros
         if '?' not in DATABASE_URL:
             DATABASE_URL += '?sslmode=require'
+        
+        # Forçar parâmetros de sessão para o Supavisor
+        if 'supavisor_session' not in DATABASE_URL:
+            connector = '&' if '?' in DATABASE_URL else '?'
+            DATABASE_URL += f"{connector}supavisor_session=true"
         
         engine = create_engine(
             DATABASE_URL,
