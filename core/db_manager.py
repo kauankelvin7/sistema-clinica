@@ -9,8 +9,23 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-# Detectar se estamos em produção
-IS_PRODUCTION = os.getenv('RAILWAY_ENVIRONMENT') or os.getenv('RENDER') or os.getenv('VERCEL')
+# Detectar se estamos em produção de forma robusta
+# Se houver DATABASE_URL ou variáveis específicas de plataforma, consideramos PRODUÇÃO
+IS_PRODUCTION = bool(
+    os.getenv('DATABASE_URL') or 
+    os.getenv('VERCEL') or 
+    os.getenv('RAILWAY_ENVIRONMENT') or 
+    os.getenv('RENDER') or
+    os.getenv('ENVIRONMENT') == 'production'
+)
+
+# Logs de Diagnóstico Iniciais
+import sys
+logger.info(f"--- DIAGNÓSTICO DE INICIALIZAÇÃO ---")
+logger.info(f"IS_PRODUCTION: {IS_PRODUCTION}")
+logger.info(f"Python Version: {sys.version}")
+logger.info(f"Plataforma: VERCEL={bool(os.getenv('VERCEL'))}, DATABASE_URL={bool(os.getenv('DATABASE_URL'))}")
+logger.info(f"------------------------------------")
 
 if IS_PRODUCTION:
     # Produção: PostgreSQL com SQLAlchemy
