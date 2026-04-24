@@ -30,6 +30,8 @@ if IS_PRODUCTION:
         engine = create_engine(
             DATABASE_URL,
             poolclass=NullPool,
+            pool_pre_ping=True,
+            connect_args={"connect_timeout": 10},
             echo=False
         )
         SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
