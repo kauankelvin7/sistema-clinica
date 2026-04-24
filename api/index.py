@@ -329,6 +329,42 @@ async def check_duplicate(tipo: str, valor: str, empresa: Optional[str] = None, 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/debug-db")
+async def debug_db():
+    try:
+        db_url = os.getenv('DATABASE_URL', 'NÃO DEFINIDA')
+        # Mascarar a senha para segurança
+        masked_url = db_url
+        if '@' in db_url:
+            parts = db_url.split('@')
+            user_part = parts[0].split(':')
+            if len(user_part) > 2:
+                masked_url = f"{user_part[0]}:{user_part[1]}:****@{parts[1]}"
+            else:
+                masked_url = f"{user_part[0]}:****@{parts[1]}"
+        
+        is_postgres = bool(os.getenv('DATABASE_URL')) or os.getenv('VERCEL') or os.getenv('RENDER')
+        
+        diag = {
+            "is_production_detected": bool(os.getenv('VERCEL') or os.getenv('RENDER')),
+            "database_url_masked": masked_url,
+            "url_length": len(db_url),
+            "is_postgres_logic": is_postgres
+        }
+        
+        with get_db_connection() as conn:
+            if is_postgres:
+                from sqlalchemy import text
+                res = conn.execute(text("SELECT current_user, current_database()")).fetchone()
+                diag["db_user"] = res[0]
+                diag["db_name"] = res[1]
+            else:
+                diag["db_type"] = "SQLite"
+                
+        return { "status": "success", "diagnostics": diag }
+    except Exception as e:
+        return { "status": "error", "error_details": str(e), "diagnostics": diag }
+
 @api_router.get("/health")
 async def health_check():
     try:
