@@ -39,14 +39,24 @@ if IS_PRODUCTION:
     logger.info(f"DATABASE_URL detectada: {bool(DATABASE_URL)} (Tamanho: {len(DATABASE_URL)})")
     
     if DATABASE_URL:
+        # Forçar o uso do driver psycopg2 explicitamente
         if DATABASE_URL.startswith('postgres://'):
-            DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+            DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql+psycopg2://', 1)
+        elif DATABASE_URL.startswith('postgresql://'):
+            DATABASE_URL = DATABASE_URL.replace('postgresql://', 'postgresql+psycopg2://', 1)
+        
+        # Tenta forçar IPv4 se não houver parâmetros (truque para alguns provedores)
+        if '?' not in DATABASE_URL:
+            DATABASE_URL += '?sslmode=require'
         
         engine = create_engine(
             DATABASE_URL,
             poolclass=NullPool,
             pool_pre_ping=True,
-            connect_args={"connect_timeout": 10},
+            connect_args={
+                "connect_timeout": 15,  # Aumentado para conexões entre regiões (BR -> EUA)
+                "options": "-c statement_timeout=30000" # 30 segundos de limite para queries
+            },
             echo=False
         )
         SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
