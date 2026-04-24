@@ -20,7 +20,6 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
   const [showListModal, setShowListModal] = useState(false)
   const [pacientesOptions, setPacientesOptions] = useState<Array<{label: string, value: string, data: any}>>([])
   const [isDuplicate, setIsDuplicate] = useState(false)
-  const [checkingDuplicate, setCheckingDuplicate] = useState(false)
 
   useEffect(() => {
     // Buscar total de pacientes salvos e criar options para autocomplete
@@ -39,20 +38,18 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
       .catch(() => setTotalPacientes(0))
   }, [])
 
-  // Verificar duplicatas quando o número do documento muda
+  // Verificar duplicatas quando o número do documento ou empresa muda
   useEffect(() => {
     if (formData.numeroDocumento.length >= 11) {
       const timer = setTimeout(async () => {
-        setCheckingDuplicate(true)
-        const exists = await checkDuplicate('paciente', formData.numeroDocumento)
+        const exists = await checkDuplicate('paciente', formData.numeroDocumento, formData.empresa)
         setIsDuplicate(exists)
-        setCheckingDuplicate(false)
       }, 500)
       return () => clearTimeout(timer)
     } else {
       setIsDuplicate(false)
     }
-  }, [formData.numeroDocumento])
+  }, [formData.numeroDocumento, formData.empresa])
 
   // Atualiza o campo de documento com máscara se for CPF
   const handleDocumentoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,7 +149,7 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
         {isDuplicate && (
           <div className="flex items-center gap-2 mt-2 text-amber-600 dark:text-amber-400 text-xs font-bold animate-pulse">
             <AlertCircle className="w-4 h-4" />
-            <span>Este {formData.tipoDocumento} já está cadastrado no sistema.</span>
+            <span>Este paciente já está cadastrado nesta empresa.</span>
           </div>
         )}
       </div>

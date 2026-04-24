@@ -169,25 +169,23 @@ async def generate_html_endpoint(data: DocumentoRequest, _=Depends(rate_limit), 
             with get_db_connection() as conn:
                 if is_postgres:
                     from sqlalchemy import text
-                    # Busca por HASH (determinístico) em vez de valor criptografado (aleatório)
-                    result = conn.execute(text("SELECT id FROM pacientes WHERE numero_doc_hash = :hash_doc"), {"hash_doc": hash_doc_paciente})
-                    if not result.fetchone():
-                        conn.execute(text("INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, numero_doc_hash, cargo, empresa) VALUES (:nome, :tipo_doc, :numero_doc, :hash_doc, :cargo, :empresa)"), {
-                            "nome": enc_nome_paciente, "tipo_doc": sanitizar_entrada(data.paciente.tipo_documento),
-                            "numero_doc": enc_doc_paciente, "hash_doc": hash_doc_paciente,
-                            "cargo": sanitizar_entrada(data.paciente.cargo), "empresa": sanitizar_entrada(data.paciente.empresa)
-                        })
-                    else:
-                        conn.execute(text("UPDATE pacientes SET nome_completo = :nome, tipo_doc = :tipo_doc, numero_doc = :numero_doc, cargo = :cargo, empresa = :empresa WHERE numero_doc_hash = :hash_doc"), {
-                            "nome": enc_nome_paciente, "tipo_doc": sanitizar_entrada(data.paciente.tipo_documento),
-                            "numero_doc": enc_doc_paciente, "cargo": sanitizar_entrada(data.paciente.cargo),
-                            "empresa": sanitizar_entrada(data.paciente.empresa), "hash_doc": hash_doc_paciente
-                        })
+                    # [UPSERT] Tenta inserir, se houver conflito (CPF + Empresa), não faz nada (mantém original)
+                    insert_query = """
+                        INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, numero_doc_hash, cargo, empresa) 
+                        VALUES (:nome, :tipo_doc, :numero_doc, :hash_doc, :cargo, :empresa)
+                        ON CONFLICT (numero_doc_hash, empresa) DO NOTHING
+                    """
+                    conn.execute(text(insert_query), {
+                        "nome": enc_nome_paciente, "tipo_doc": sanitizar_entrada(data.paciente.tipo_documento),
+                        "numero_doc": enc_doc_paciente, "hash_doc": hash_doc_paciente,
+                        "cargo": sanitizar_entrada(data.paciente.cargo), "empresa": sanitizar_entrada(data.paciente.empresa)
+                    })
                     
-                    result = conn.execute(text("SELECT id FROM medicos WHERE crm_hash = :crm_hash AND tipo_crm = :tipo_crm"), {
+                    # Para médicos, mantemos o comportamento original de atualização se já existir (conflito por CRM)
+                    result_medico = conn.execute(text("SELECT id FROM medicos WHERE crm_hash = :crm_hash AND tipo_crm = :tipo_crm"), {
                         "crm_hash": hash_crm_medico, "tipo_crm": sanitizar_entrada(data.medico.tipo_registro)
                     })
-                    if not result.fetchone():
+                    if not result_medico.fetchone():
                         conn.execute(text("INSERT INTO medicos (nome_completo, tipo_crm, crm, crm_hash, uf_crm) VALUES (:nome, :tipo_crm, :crm, :crm_hash, :uf_crm)"), {
                             "nome": enc_nome_medico, "tipo_crm": sanitizar_entrada(data.medico.tipo_registro),
                             "crm": sanitizar_entrada(data.medico.numero_registro), "crm_hash": hash_crm_medico,
@@ -202,15 +200,13 @@ async def generate_html_endpoint(data: DocumentoRequest, _=Depends(rate_limit), 
                     conn.commit()
                 else:
                     cursor = conn.cursor()
-                    cursor.execute("SELECT id FROM pacientes WHERE numero_doc_hash = ?", (hash_doc_paciente,))
+                    # SQLite fallback para o comportamento original (manual upsert)
+                    cursor.execute("SELECT id FROM pacientes WHERE numero_doc_hash = ? AND empresa = ?", (hash_doc_paciente, sanitizar_entrada(data.paciente.empresa)))
                     if not cursor.fetchone():
                         cursor.execute("INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, numero_doc_hash, cargo, empresa) VALUES (?, ?, ?, ?, ?, ?)", (
                             enc_nome_paciente, sanitizar_entrada(data.paciente.tipo_documento), enc_doc_paciente, hash_doc_paciente, sanitizar_entrada(data.paciente.cargo), sanitizar_entrada(data.paciente.empresa)
                         ))
-                    else:
-                        cursor.execute("UPDATE pacientes SET nome_completo = ?, tipo_doc = ?, numero_doc = ?, cargo = ?, empresa = ? WHERE numero_doc_hash = ?", (
-                            enc_nome_paciente, sanitizar_entrada(data.paciente.tipo_documento), enc_doc_paciente, sanitizar_entrada(data.paciente.cargo), sanitizar_entrada(data.paciente.empresa), hash_doc_paciente
-                        ))
+                    # Note: No SQLite não atualizamos para seguir o padrão "DO NOTHING" pedido para pacientes
                     
                     cursor.execute("SELECT id FROM medicos WHERE crm_hash = ? AND tipo_crm = ?", (hash_crm_medico, sanitizar_entrada(data.medico.tipo_registro)))
                     if not cursor.fetchone():
@@ -303,24 +299,30 @@ async def get_doctors(search: Optional[str] = None, _=Depends(rate_limit), __=De
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/check-duplicate")
-async def check_duplicate(tipo: str, valor: str, _=Depends(rate_limit), __=Depends(require_auth)):
-    """Verifica se um paciente (por CPF) ou médico (por CRM) já existe."""
+async def check_duplicate(tipo: str, valor: str, empresa: Optional[str] = None, _=Depends(rate_limit), __=Depends(require_auth)):
+    """Verifica se um paciente (por CPF + Empresa) ou médico (por CRM) já existe."""
     try:
         h = generate_hash(valor)
         is_postgres = bool(os.getenv('DATABASE_URL')) or os.getenv('RENDER') or os.getenv('RAILWAY_ENVIRONMENT') or os.getenv('VERCEL')
         
         with get_db_connection() as conn:
             if tipo == "paciente":
-                query = "SELECT id FROM pacientes WHERE numero_doc_hash = :h" if is_postgres else "SELECT id FROM pacientes WHERE numero_doc_hash = ?"
+                if empresa:
+                    query = "SELECT id FROM pacientes WHERE numero_doc_hash = :h AND empresa = :e" if is_postgres else "SELECT id FROM pacientes WHERE numero_doc_hash = ? AND empresa = ?"
+                    params = {"h": h, "e": sanitizar_entrada(empresa)} if is_postgres else (h, sanitizar_entrada(empresa))
+                else:
+                    query = "SELECT id FROM pacientes WHERE numero_doc_hash = :h" if is_postgres else "SELECT id FROM pacientes WHERE numero_doc_hash = ?"
+                    params = {"h": h} if is_postgres else (h,)
             else:
                 query = "SELECT id FROM medicos WHERE crm_hash = :h" if is_postgres else "SELECT id FROM medicos WHERE crm_hash = ?"
+                params = {"h": h} if is_postgres else (h,)
             
             if is_postgres:
                 from sqlalchemy import text
-                result = conn.execute(text(query), {"h": h}).fetchone()
+                result = conn.execute(text(query), params).fetchone()
             else:
                 cursor = conn.cursor()
-                cursor.execute(query, (h,))
+                cursor.execute(query, params)
                 result = cursor.fetchone()
                 
             return {"existe": bool(result)}

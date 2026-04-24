@@ -36,7 +36,7 @@
 #    - Settings > Database
 #    - Connection String > URI
 #    - Copie algo como:
-#      postgresql://postgres.[ref]:[senha]@aws-0-sa-east-1.pooler.supabase.com:6543/postgres
+#      postgresql://postgres.gnolsvpefqdkmmaglozw:[senha]@aws-0-sa-east-1.pooler.supabase.co:6543/postgres
 
 # ========================================
 # PASSO 3: IMPORTAR BACKUP NO SUPABASE
@@ -52,7 +52,7 @@
 
 # Opcao B - Via psql:
 cd C:\Users\Kauan\Desktop\sistema_clinica_homologacao\backups
-psql "postgresql://postgres.[ref]:[senha]@aws-0-sa-east-1.pooler.supabase.com:6543/postgres" < backup_render_20251107_142703.sql
+psql "postgresql://postgres.gnolsvpefqdkmmaglozw:novaadmin2026@aws-0-sa-east-1.pooler.supabase.co:6543/postgres" < backup_render_20251107_142703.sql
 
 # Verificar se importou:
 # No Supabase: Table Editor > pacientes (deve mostrar 64)

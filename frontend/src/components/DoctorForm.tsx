@@ -21,16 +21,12 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
   // Estado para controlar o Modal de Consulta Externa
   const [isConsultaModalOpen, setIsConsultaModalOpen] = useState(false)
   const [isDuplicate, setIsDuplicate] = useState(false)
-  const [checkingDuplicate, setCheckingDuplicate] = useState(false)
 
   useEffect(() => {
     // Buscar total de médicos salvos e criar options para autocomplete
     searchDoctors()
       .then(data => {
         // searchDoctors retorna PaginatedDoctors { total, doctors, ... }
-        // mas aqui parece que o código original esperava um array simples ou algo similar.
-        // Vamos verificar o retorno do searchDoctors.
-        
         const doctorsList = (data as any).doctors || data;
         setTotalMedicos(doctorsList.length)
         
@@ -49,10 +45,8 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
   useEffect(() => {
     if (formData.numeroRegistro.length >= 4) {
       const timer = setTimeout(async () => {
-        setCheckingDuplicate(true)
         const exists = await checkDuplicate('medico', formData.numeroRegistro)
         setIsDuplicate(exists)
-        setCheckingDuplicate(false)
       }, 500)
       return () => clearTimeout(timer)
     } else {

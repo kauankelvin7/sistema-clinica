@@ -123,10 +123,10 @@ export const searchDoctors = async (
 }
 
 // Verificar duplicatas
-export const checkDuplicate = async (tipo: 'paciente' | 'medico', valor: string): Promise<boolean> => {
+export const checkDuplicate = async (tipo: 'paciente' | 'medico', valor: string, empresa?: string): Promise<boolean> => {
   try {
     const response = await api.get('/api/check-duplicate', {
-      params: { tipo, valor }
+      params: { tipo, valor, empresa }
     })
     return response.data.existe
   } catch (error) {
