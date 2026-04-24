@@ -122,10 +122,17 @@ export const searchDoctors = async (
   return response.data;
 }
 
-// Health check
-export const healthCheck = async () => {
-  const response = await api.get('/api/health')
-  return response.data
+// Verificar duplicatas
+export const checkDuplicate = async (tipo: 'paciente' | 'medico', valor: string): Promise<boolean> => {
+  try {
+    const response = await api.get('/api/check-duplicate', {
+      params: { tipo, valor }
+    })
+    return response.data.existe
+  } catch (error) {
+    console.error('Erro ao verificar duplicata:', error)
+    return false
+  }
 }
 
 // Login

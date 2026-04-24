@@ -1,7 +1,7 @@
-import { ExternalLink, Stethoscope, Eye } from 'lucide-react'
+import { ExternalLink, Stethoscope, Eye, AlertCircle } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import type { DoctorFormProps } from '../types'
-import { searchDoctors } from '../services/api'
+import { searchDoctors, checkDuplicate } from '../services/api'
 import DoctorsListModal from './DoctorsListModal'
 import AutocompleteInput from './AutocompleteInput'
 // Importação do novo Modal
@@ -20,6 +20,8 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
   
   // Estado para controlar o Modal de Consulta Externa
   const [isConsultaModalOpen, setIsConsultaModalOpen] = useState(false)
+  const [isDuplicate, setIsDuplicate] = useState(false)
+  const [checkingDuplicate, setCheckingDuplicate] = useState(false)
 
   useEffect(() => {
     // Buscar total de médicos salvos e criar options para autocomplete
@@ -42,6 +44,21 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
       })
       .catch(() => setTotalMedicos(0))
   }, [])
+
+  // Verificar duplicatas quando o número do registro muda
+  useEffect(() => {
+    if (formData.numeroRegistro.length >= 4) {
+      const timer = setTimeout(async () => {
+        setCheckingDuplicate(true)
+        const exists = await checkDuplicate('medico', formData.numeroRegistro)
+        setIsDuplicate(exists)
+        setCheckingDuplicate(false)
+      }, 500)
+      return () => clearTimeout(timer)
+    } else {
+      setIsDuplicate(false)
+    }
+  }, [formData.numeroRegistro])
 
   const handleConsultar = () => {
     // Em vez de fazer fetch estático ou alert, abre o modal direto com o tipo atual
@@ -131,7 +148,7 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
             {/* Número */}
             <input
               type="text"
-              className="input-field flex-1"
+              className={`input-field flex-1 ${isDuplicate ? 'border-amber-500 bg-amber-500/5 focus:border-amber-600' : ''}`}
               placeholder="Número do registro"
               value={formData.numeroRegistro}
               onChange={(e) => updateFormData('numeroRegistro', e.target.value)}
@@ -148,6 +165,13 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
               ))}
             </select>
           </div>
+
+          {isDuplicate && (
+            <div className="flex items-center gap-2 mt-2 text-amber-600 dark:text-amber-400 text-xs font-bold animate-pulse">
+              <AlertCircle className="w-4 h-4" />
+              <span>Este {formData.tipoRegistro} já está cadastrado no sistema.</span>
+            </div>
+          )}
 
           {/* Linha 2: Botão Consultar */}
           <button

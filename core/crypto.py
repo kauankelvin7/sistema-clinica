@@ -26,4 +26,14 @@ def decrypt(value: str) -> str:
         return _fernet.decrypt(value.encode()).decode()
     except Exception as e:
         logger.error(f"Erro ao descriptografar valor. O dado original não estava criptografado ou a chave mudou. Retornando valor bruto/vazio. Erro: {e}")
-        return value # Retorna o original caso falhe (fallback para dados legados não expurgados)
+        return value
+
+import hashlib
+
+def generate_hash(value: str) -> str:
+    """Gera um hash determinístico para buscas e deduplicação."""
+    if not value:
+        return ""
+    # Usamos a chave de criptografia como salt para o hash
+    salt = _key.decode()
+    return hashlib.sha256((value + salt).encode()).hexdigest()

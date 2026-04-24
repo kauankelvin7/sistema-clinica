@@ -8,6 +8,7 @@ import ActionButtons from './components/ActionButtons'
 import { ValidationModal } from './components/ValidationModal'
 import Login from './components/Login'
 import api, { generateDocument } from './services/api'
+import { imprimirHTML } from './utils/print'
 import type { FormData } from './types'
 
 function App() {
@@ -179,17 +180,10 @@ function App() {
 
       const htmlContent = response.data
       
-      const newWindow = window.open('', '_blank')
-      if (newWindow) {
-        newWindow.document.write(htmlContent)
-        newWindow.document.close()
-        newWindow.onload = function() {
-          newWindow.focus()
-          newWindow.print()
-        }
-      }
+      // Usa a nova utilidade de impressão que evita about:blank e bloqueios de popup
+      imprimirHTML(htmlContent)
 
-      setMessage({ type: 'success', text: 'Documento aberto em uma nova aba com sucesso!' })
+      setMessage({ type: 'success', text: 'Documento gerado e enviado para impressão!' })
     } catch (error) {
       console.error('Erro ao gerar documento:', error)
       setMessage({ type: 'error', text: 'Não foi possível gerar o documento. Por favor, tente novamente.' })

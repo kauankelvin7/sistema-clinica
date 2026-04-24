@@ -1,7 +1,7 @@
 import type { PatientFormProps } from '../types'
 import { useState, useEffect } from 'react'
-import { Users, Eye } from 'lucide-react'
-import { searchPatients } from '../services/api'
+import { Users, Eye, AlertCircle } from 'lucide-react'
+import { searchPatients, checkDuplicate } from '../services/api'
 import PatientsListModal from './PatientsListModal'
 import AutocompleteInput from './AutocompleteInput'
 
@@ -19,6 +19,8 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
   const [totalPacientes, setTotalPacientes] = useState<number>(0)
   const [showListModal, setShowListModal] = useState(false)
   const [pacientesOptions, setPacientesOptions] = useState<Array<{label: string, value: string, data: any}>>([])
+  const [isDuplicate, setIsDuplicate] = useState(false)
+  const [checkingDuplicate, setCheckingDuplicate] = useState(false)
 
   useEffect(() => {
     // Buscar total de pacientes salvos e criar options para autocomplete
@@ -36,6 +38,21 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
       })
       .catch(() => setTotalPacientes(0))
   }, [])
+
+  // Verificar duplicatas quando o número do documento muda
+  useEffect(() => {
+    if (formData.numeroDocumento.length >= 11) {
+      const timer = setTimeout(async () => {
+        setCheckingDuplicate(true)
+        const exists = await checkDuplicate('paciente', formData.numeroDocumento)
+        setIsDuplicate(exists)
+        setCheckingDuplicate(false)
+      }, 500)
+      return () => clearTimeout(timer)
+    } else {
+      setIsDuplicate(false)
+    }
+  }, [formData.numeroDocumento])
 
   // Atualiza o campo de documento com máscara se for CPF
   const handleDocumentoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,7 +141,7 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
           </select>
           <input
             type="text"
-            className="input-field flex-1"
+            className={`input-field flex-1 ${isDuplicate ? 'border-amber-500 bg-amber-500/5 focus:border-amber-600' : ''}`}
             placeholder={formData.tipoDocumento === 'CPF' ? '000.000.000-00' : 'Digite o RG'}
             value={formData.numeroDocumento}
             onChange={handleDocumentoChange}
@@ -132,6 +149,12 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
             inputMode={formData.tipoDocumento === 'CPF' ? 'numeric' : 'text'}
           />
         </div>
+        {isDuplicate && (
+          <div className="flex items-center gap-2 mt-2 text-amber-600 dark:text-amber-400 text-xs font-bold animate-pulse">
+            <AlertCircle className="w-4 h-4" />
+            <span>Este {formData.tipoDocumento} já está cadastrado no sistema.</span>
+          </div>
+        )}
       </div>
 
       {/* Cargo e Empresa em linha */}

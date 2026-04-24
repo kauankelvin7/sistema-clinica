@@ -123,11 +123,12 @@ def create_tables():
                 nome_completo TEXT NOT NULL,
                 tipo_doc TEXT NOT NULL DEFAULT 'CPF',
                 numero_doc TEXT NOT NULL,
+                numero_doc_hash TEXT UNIQUE,
                 cargo TEXT,
                 empresa TEXT,
                 data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE(tipo_doc, numero_doc)
+                UNIQUE(tipo_doc, numero_doc_hash)
             )
             ''',
             'CREATE INDEX IF NOT EXISTS idx_pacientes_nome ON pacientes(nome_completo)',
@@ -139,10 +140,11 @@ def create_tables():
                 nome_completo TEXT NOT NULL,
                 tipo_crm TEXT NOT NULL DEFAULT 'CRM',
                 crm TEXT NOT NULL,
+                crm_hash TEXT UNIQUE,
                 uf_crm TEXT NOT NULL,
                 data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE(tipo_crm, crm)
+                UNIQUE(tipo_crm, crm_hash)
             )
             ''',
             'CREATE INDEX IF NOT EXISTS idx_medicos_nome ON medicos(nome_completo)',
@@ -183,11 +185,12 @@ def create_tables():
                     nome_completo TEXT NOT NULL,
                     tipo_doc TEXT NOT NULL DEFAULT 'CPF',
                     numero_doc TEXT NOT NULL,
+                    numero_doc_hash TEXT UNIQUE,
                     cargo TEXT,
                     empresa TEXT,
                     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    UNIQUE(tipo_doc, numero_doc)
+                    UNIQUE(tipo_doc, numero_doc_hash)
                 )
             ''')
             
@@ -200,10 +203,11 @@ def create_tables():
                     nome_completo TEXT NOT NULL,
                     tipo_crm TEXT NOT NULL DEFAULT 'CRM',
                     crm TEXT NOT NULL,
+                    crm_hash TEXT UNIQUE,
                     uf_crm TEXT NOT NULL,
                     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    UNIQUE(tipo_crm, crm)
+                    UNIQUE(tipo_crm, crm_hash)
                 )
             ''')
             

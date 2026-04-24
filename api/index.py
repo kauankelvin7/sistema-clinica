@@ -24,7 +24,7 @@ sys.path.insert(0, ROOT_DIR)
 from core.db_manager import get_db_connection, create_tables
 from core.database import sanitizar_entrada
 from core.html_generator import generate_html
-from core.crypto import encrypt, decrypt
+from core.crypto import encrypt, decrypt, generate_hash
 from core.auth import require_auth, create_access_token
 from core.rate_limit import rate_limit
 from core.audit import audit_middleware
@@ -157,61 +157,69 @@ async def generate_html_endpoint(data: DocumentoRequest, _=Depends(rate_limit), 
     try:
         is_postgres = bool(os.getenv('DATABASE_URL')) or os.getenv('RENDER') or os.getenv('RAILWAY_ENVIRONMENT') or os.getenv('VERCEL')
         
-        # [CAMADA 2] Criptografa os dados sensíveis antes de buscar/salvar no BD
+        # [CAMADA 2] Criptografa e gera hashes para os dados sensíveis
         enc_nome_paciente = encrypt(data.paciente.nome)
         enc_doc_paciente = encrypt(data.paciente.numero_documento)
+        hash_doc_paciente = generate_hash(data.paciente.numero_documento)
+        
         enc_nome_medico = encrypt(data.medico.nome)
+        hash_crm_medico = generate_hash(data.medico.numero_registro)
         
         try:
             with get_db_connection() as conn:
                 if is_postgres:
                     from sqlalchemy import text
-                    result = conn.execute(text("SELECT id FROM pacientes WHERE numero_doc = :numero_doc"), {"numero_doc": enc_doc_paciente})
+                    # Busca por HASH (determinístico) em vez de valor criptografado (aleatório)
+                    result = conn.execute(text("SELECT id FROM pacientes WHERE numero_doc_hash = :hash_doc"), {"hash_doc": hash_doc_paciente})
                     if not result.fetchone():
-                        conn.execute(text("INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, cargo, empresa) VALUES (:nome, :tipo_doc, :numero_doc, :cargo, :empresa)"), {
+                        conn.execute(text("INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, numero_doc_hash, cargo, empresa) VALUES (:nome, :tipo_doc, :numero_doc, :hash_doc, :cargo, :empresa)"), {
                             "nome": enc_nome_paciente, "tipo_doc": sanitizar_entrada(data.paciente.tipo_documento),
-                            "numero_doc": enc_doc_paciente, "cargo": sanitizar_entrada(data.paciente.cargo), "empresa": sanitizar_entrada(data.paciente.empresa)
+                            "numero_doc": enc_doc_paciente, "hash_doc": hash_doc_paciente,
+                            "cargo": sanitizar_entrada(data.paciente.cargo), "empresa": sanitizar_entrada(data.paciente.empresa)
                         })
                     else:
-                        conn.execute(text("UPDATE pacientes SET nome_completo = :nome, tipo_doc = :tipo_doc, cargo = :cargo, empresa = :empresa WHERE numero_doc = :numero_doc"), {
+                        conn.execute(text("UPDATE pacientes SET nome_completo = :nome, tipo_doc = :tipo_doc, numero_doc = :numero_doc, cargo = :cargo, empresa = :empresa WHERE numero_doc_hash = :hash_doc"), {
                             "nome": enc_nome_paciente, "tipo_doc": sanitizar_entrada(data.paciente.tipo_documento),
-                            "cargo": sanitizar_entrada(data.paciente.cargo), "empresa": sanitizar_entrada(data.paciente.empresa), "numero_doc": enc_doc_paciente
+                            "numero_doc": enc_doc_paciente, "cargo": sanitizar_entrada(data.paciente.cargo),
+                            "empresa": sanitizar_entrada(data.paciente.empresa), "hash_doc": hash_doc_paciente
                         })
                     
-                    result = conn.execute(text("SELECT id FROM medicos WHERE crm = :crm AND tipo_crm = :tipo_crm"), {
-                        "crm": sanitizar_entrada(data.medico.numero_registro), "tipo_crm": sanitizar_entrada(data.medico.tipo_registro)
+                    result = conn.execute(text("SELECT id FROM medicos WHERE crm_hash = :crm_hash AND tipo_crm = :tipo_crm"), {
+                        "crm_hash": hash_crm_medico, "tipo_crm": sanitizar_entrada(data.medico.tipo_registro)
                     })
                     if not result.fetchone():
-                        conn.execute(text("INSERT INTO medicos (nome_completo, tipo_crm, crm, uf_crm) VALUES (:nome, :tipo_crm, :crm, :uf_crm)"), {
+                        conn.execute(text("INSERT INTO medicos (nome_completo, tipo_crm, crm, crm_hash, uf_crm) VALUES (:nome, :tipo_crm, :crm, :crm_hash, :uf_crm)"), {
                             "nome": enc_nome_medico, "tipo_crm": sanitizar_entrada(data.medico.tipo_registro),
-                            "crm": sanitizar_entrada(data.medico.numero_registro), "uf_crm": sanitizar_entrada(data.medico.uf_registro)
+                            "crm": sanitizar_entrada(data.medico.numero_registro), "crm_hash": hash_crm_medico,
+                            "uf_crm": sanitizar_entrada(data.medico.uf_registro)
                         })
                     else:
-                        conn.execute(text("UPDATE medicos SET nome_completo = :nome, uf_crm = :uf_crm WHERE crm = :crm AND tipo_crm = :tipo_crm"), {
+                        conn.execute(text("UPDATE medicos SET nome_completo = :nome, uf_crm = :uf_crm, crm = :crm WHERE crm_hash = :crm_hash AND tipo_crm = :tipo_crm"), {
                             "nome": enc_nome_medico, "uf_crm": sanitizar_entrada(data.medico.uf_registro),
-                            "crm": sanitizar_entrada(data.medico.numero_registro), "tipo_crm": sanitizar_entrada(data.medico.tipo_registro)
+                            "crm": sanitizar_entrada(data.medico.numero_registro), "crm_hash": hash_crm_medico,
+                            "tipo_crm": sanitizar_entrada(data.medico.tipo_registro)
                         })
                     conn.commit()
                 else:
                     cursor = conn.cursor()
-                    cursor.execute("SELECT id FROM pacientes WHERE numero_doc = ?", (enc_doc_paciente,))
+                    cursor.execute("SELECT id FROM pacientes WHERE numero_doc_hash = ?", (hash_doc_paciente,))
                     if not cursor.fetchone():
-                        cursor.execute("INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, cargo, empresa) VALUES (?, ?, ?, ?, ?)", (
-                            enc_nome_paciente, sanitizar_entrada(data.paciente.tipo_documento), enc_doc_paciente, sanitizar_entrada(data.paciente.cargo), sanitizar_entrada(data.paciente.empresa)
+                        cursor.execute("INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, numero_doc_hash, cargo, empresa) VALUES (?, ?, ?, ?, ?, ?)", (
+                            enc_nome_paciente, sanitizar_entrada(data.paciente.tipo_documento), enc_doc_paciente, hash_doc_paciente, sanitizar_entrada(data.paciente.cargo), sanitizar_entrada(data.paciente.empresa)
                         ))
                     else:
-                        cursor.execute("UPDATE pacientes SET nome_completo = ?, tipo_doc = ?, cargo = ?, empresa = ? WHERE numero_doc = ?", (
-                            enc_nome_paciente, sanitizar_entrada(data.paciente.tipo_documento), sanitizar_entrada(data.paciente.cargo), sanitizar_entrada(data.paciente.empresa), enc_doc_paciente
+                        cursor.execute("UPDATE pacientes SET nome_completo = ?, tipo_doc = ?, numero_doc = ?, cargo = ?, empresa = ? WHERE numero_doc_hash = ?", (
+                            enc_nome_paciente, sanitizar_entrada(data.paciente.tipo_documento), enc_doc_paciente, sanitizar_entrada(data.paciente.cargo), sanitizar_entrada(data.paciente.empresa), hash_doc_paciente
                         ))
                     
-                    cursor.execute("SELECT id FROM medicos WHERE crm = ? AND tipo_crm = ?", (sanitizar_entrada(data.medico.numero_registro), sanitizar_entrada(data.medico.tipo_registro)))
+                    cursor.execute("SELECT id FROM medicos WHERE crm_hash = ? AND tipo_crm = ?", (hash_crm_medico, sanitizar_entrada(data.medico.tipo_registro)))
                     if not cursor.fetchone():
-                        cursor.execute("INSERT INTO medicos (nome_completo, tipo_crm, crm, uf_crm) VALUES (?, ?, ?, ?)", (
-                            enc_nome_medico, sanitizar_entrada(data.medico.tipo_registro), sanitizar_entrada(data.medico.numero_registro), sanitizar_entrada(data.medico.uf_registro)
+                        cursor.execute("INSERT INTO medicos (nome_completo, tipo_crm, crm, crm_hash, uf_crm) VALUES (?, ?, ?, ?, ?)", (
+                            enc_nome_medico, sanitizar_entrada(data.medico.tipo_registro), sanitizar_entrada(data.medico.numero_registro), hash_crm_medico, sanitizar_entrada(data.medico.uf_registro)
                         ))
                     else:
-                        cursor.execute("UPDATE medicos SET nome_completo = ?, uf_crm = ? WHERE crm = ? AND tipo_crm = ?", (
-                            enc_nome_medico, sanitizar_entrada(data.medico.uf_registro), sanitizar_entrada(data.medico.numero_registro), sanitizar_entrada(data.medico.tipo_registro)
+                        cursor.execute("UPDATE medicos SET nome_completo = ?, uf_crm = ?, crm = ? WHERE crm_hash = ? AND tipo_crm = ?", (
+                            enc_nome_medico, sanitizar_entrada(data.medico.uf_registro), sanitizar_entrada(data.medico.numero_registro), hash_crm_medico, sanitizar_entrada(data.medico.tipo_registro)
                         ))
                     conn.commit()
         except Exception as db_error:
@@ -291,6 +299,31 @@ async def get_doctors(search: Optional[str] = None, _=Depends(rate_limit), __=De
                 medicos.append({"id": r[0], "nome_completo": nome, "tipo_crm": r[2], "crm": r[3], "uf_crm": r[4]})
             
             return medicos
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/check-duplicate")
+async def check_duplicate(tipo: str, valor: str, _=Depends(rate_limit), __=Depends(require_auth)):
+    """Verifica se um paciente (por CPF) ou médico (por CRM) já existe."""
+    try:
+        h = generate_hash(valor)
+        is_postgres = bool(os.getenv('DATABASE_URL')) or os.getenv('RENDER') or os.getenv('RAILWAY_ENVIRONMENT') or os.getenv('VERCEL')
+        
+        with get_db_connection() as conn:
+            if tipo == "paciente":
+                query = "SELECT id FROM pacientes WHERE numero_doc_hash = :h" if is_postgres else "SELECT id FROM pacientes WHERE numero_doc_hash = ?"
+            else:
+                query = "SELECT id FROM medicos WHERE crm_hash = :h" if is_postgres else "SELECT id FROM medicos WHERE crm_hash = ?"
+            
+            if is_postgres:
+                from sqlalchemy import text
+                result = conn.execute(text(query), {"h": h}).fetchone()
+            else:
+                cursor = conn.cursor()
+                cursor.execute(query, (h,))
+                result = cursor.fetchone()
+                
+            return {"existe": bool(result)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
