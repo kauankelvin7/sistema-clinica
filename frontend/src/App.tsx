@@ -9,7 +9,7 @@ import { ValidationModal } from './components/ValidationModal'
 import Login from './components/Login'
 import api, { generateDocument } from './services/api'
 import { imprimirHTML } from './utils/print'
-import type { FormData } from './types'
+import type { AppFormData } from './types'
 
 function App() {
   // Autenticação
@@ -38,7 +38,7 @@ function App() {
     localStorage.setItem('layout_mode', layoutMode)
   }, [layoutMode])
 
-  const getDefaultFormData = (): FormData => ({
+  const getDefaultFormData = (): AppFormData => ({
     // Paciente
     nomePaciente: '',
     tipoDocumento: 'CPF',
@@ -51,6 +51,7 @@ function App() {
     diasAfastamento: '',
     cid: '',
     cidNaoInformado: false,
+    tipoAtestado: 'saude',
     
     // Médico
     nomeMedico: '',
@@ -60,7 +61,7 @@ function App() {
   })
 
   // Carregar dados salvos do localStorage
-  const loadSavedData = (): FormData => {
+  const loadSavedData = (): AppFormData => {
     const saved = localStorage.getItem('sistema_clinica_data')
     if (saved) {
       try {
@@ -72,7 +73,7 @@ function App() {
     return getDefaultFormData()
   }
 
-  const [formData, setFormData] = useState<FormData>(loadSavedData())
+  const [formData, setFormData] = useState<AppFormData>(loadSavedData())
   const [loading, setLoading] = useState<'word' | 'html' | false>(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [showValidationModal, setShowValidationModal] = useState(false)
@@ -83,7 +84,7 @@ function App() {
     localStorage.setItem('sistema_clinica_data', JSON.stringify(formData))
   }, [formData])
 
-  const updateFormData = (field: keyof FormData, value: string | boolean) => {
+  const updateFormData = (field: keyof AppFormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     setMessage(null) // Limpar mensagem ao editar
   }
@@ -100,8 +101,10 @@ function App() {
 
     // Validar Atestado
     if (!formData.dataAtestado) missing.push('Data do Atestado')
-    if (!formData.diasAfastamento || parseInt(formData.diasAfastamento) <= 0) missing.push('Dias de Afastamento')
-    if (!formData.cidNaoInformado && !formData.cid.trim()) missing.push('Código CID')
+    if (formData.tipoAtestado !== 'fisico') {
+      if (!formData.diasAfastamento || parseInt(formData.diasAfastamento) <= 0) missing.push('Dias de Afastamento')
+      if (!formData.cidNaoInformado && !formData.cid.trim()) missing.push('Código CID')
+    }
 
     // Validar Médico
     if (!formData.nomeMedico.trim()) missing.push('Nome do Médico')
@@ -166,9 +169,10 @@ function App() {
         },
         atestado: {
           data_atestado: formData.dataAtestado,
-          dias_afastamento: parseInt(formData.diasAfastamento),
-          cid: formData.cid,
-          cid_nao_informado: formData.cidNaoInformado,
+          dias_afastamento: formData.tipoAtestado === 'fisico' ? 0 : (parseInt(formData.diasAfastamento) || 0),
+          cid: formData.tipoAtestado === 'fisico' ? "" : formData.cid,
+          cid_nao_informado: formData.tipoAtestado === 'fisico' ? true : formData.cidNaoInformado,
+          tipo_atestado: formData.tipoAtestado,
         },
         medico: {
           nome: formData.nomeMedico,

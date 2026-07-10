@@ -1,4 +1,4 @@
-export interface FormData {
+export interface AppFormData {
   // Paciente
   nomePaciente: string
   tipoDocumento: 'CPF' | 'RG'
@@ -11,6 +11,7 @@ export interface FormData {
   diasAfastamento: string
   cid: string
   cidNaoInformado: boolean
+  tipoAtestado: 'saude' | 'fisico'
   
   // Médico
   nomeMedico: string
@@ -37,19 +38,19 @@ export interface Medico {
 }
 
 export interface PatientFormProps {
-  formData: FormData
-  updateFormData: (field: keyof FormData, value: string | boolean) => void
+  formData: AppFormData
+  updateFormData: (field: keyof AppFormData, value: string | boolean) => void
   onLoadPatient?: (patient: Paciente) => void
 }
 
 export interface CertificateFormProps {
-  formData: FormData
-  updateFormData: (field: keyof FormData, value: string | boolean) => void
+  formData: AppFormData
+  updateFormData: (field: keyof AppFormData, value: string | boolean) => void
 }
 
 export interface DoctorFormProps {
-  formData: FormData
-  updateFormData: (field: keyof FormData, value: string | boolean) => void
+  formData: AppFormData
+  updateFormData: (field: keyof AppFormData, value: string | boolean) => void
   onLoadDoctor?: (doctor: Medico) => void
 }
 
