@@ -1,5 +1,8 @@
 import axios from 'axios'
-import type { FormData, Paciente, Medico } from '../types'
+// Alias renomeado para evitar colisão com o tipo nativo do browser `window.FormData`.
+// O TypeScript pode resolver `FormData` como a Web API global em vez do nosso tipo
+// customizado, causando erros de propriedade inexistente no build de produção (Vercel).
+import type { FormData as AppFormData, Paciente, Medico } from '../types'
 
 // Detecta ambiente automaticamente
 const API_BASE_URL = import.meta.env.VITE_API_URL || ''
@@ -57,7 +60,7 @@ export interface DocumentRequest {
 }
 
 // Gerar documento
-export const generateDocument = async (formData: FormData, format: 'word' | 'pdf' | 'html' = 'word'): Promise<Blob> => {
+export const generateDocument = async (formData: AppFormData, format: 'word' | 'pdf' | 'html' = 'word'): Promise<Blob> => {
   const request: DocumentRequest = {
     paciente: {
       nome: formData.nomePaciente,
