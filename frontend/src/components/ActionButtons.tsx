@@ -1,5 +1,4 @@
-import { FileText, Trash2, Loader2, ChevronDown } from 'lucide-react'
-import { useState, useRef, useEffect } from 'react'
+import { FileText, Trash2, Loader2 } from 'lucide-react'
 import type { ActionButtonsProps } from '../types'
 
 export default function ActionButtons({ onGenerateHTML, onClear, loading }: ActionButtonsProps) {

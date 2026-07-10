@@ -7,8 +7,7 @@ import DoctorForm from './components/DoctorForm'
 import ActionButtons from './components/ActionButtons'
 import { ValidationModal } from './components/ValidationModal'
 import Login from './components/Login'
-import api, { generateDocument } from './services/api'
-import { imprimirHTML } from './utils/print'
+import api from './services/api'
 import type { AppFormData } from './types'
 
 function App() {
