@@ -402,11 +402,25 @@ def get_html_template() -> str:
                 margin: 10mm;
             }
         }
+        
+        /* Estilos interativos (não aplicados na impressão) */
+        @media screen {
+            [contenteditable="true"]:hover {
+                outline: 2px dashed #a0aec0;
+                outline-offset: 4px;
+                cursor: text;
+                transition: outline 0.2s ease;
+            }
+            [contenteditable="true"]:focus {
+                outline: 2px solid #4a5568;
+                outline-offset: 4px;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- PÁGINA 1 -->
-    <div class="page">
+    <div class="page" contenteditable="true">
         <!-- CABEÇALHO -->
         <div class="header">
             <img src="{logo_base64}" class="header-logo" alt="Logo NOVA" />
@@ -417,16 +431,12 @@ def get_html_template() -> str:
         </div>
         
         <!-- TÍTULO -->
-        <div class="declaration-title">DECLARAÇÃO</div>
+        <div class="declaration-title">{titulo_documento}</div>
         
         <!-- CONTEÚDO PRINCIPAL -->
         <div class="main-content" style="flex: 1 0 auto;">
             <div class="main-text">
-                Declaro que o Sr. (A) <strong>{nome_paciente}</strong> de <strong>{documento_paciente_formatado}</strong>. 
-                Compareceu a esta clínica com objetivo de submeter-se a avaliação médica administrativa em virtude do 
-                atestado médico data do <strong>{data_atestado}</strong> em que foi sugerido afastamento pelo período de 
-                <strong>{qtd_dias_atestado} dia(s)</strong> com CID: <strong>{codigo_cid}</strong> emitido (a) pelo (a) 
-                Dr. (a) <strong>{nome_medico} {crm_medico}-{uf_crm_medico}</strong>.
+                {texto_principal}
             </div>
             
             <!-- CAIXA DE DECISÃO -->
@@ -470,7 +480,7 @@ def get_html_template() -> str:
     </div>
     
     <!-- PÁGINA 2 - PRONTUÁRIO -->
-    <div class="page">
+    <div class="page" contenteditable="true">
         <!-- CABEÇALHO (repetido) -->
         <div class="header">
             <img src="{logo_base64}" class="header-logo" alt="Logo NOVA" />
@@ -600,10 +610,21 @@ def generate_html(data: Dict[str, Any], logo_left: Optional[str] = None,
         # Formatar registro profissional: "CRM 12345" ou apenas número se tipo não informado
         crm_formatado = f"{tipo_registro} {crm_numero}" if tipo_registro else crm_numero
         
+        # Definir título e texto principal com base no tipo de atestado
+        tipo_atestado = data.get('tipo_atestado', 'saude')
+        if tipo_atestado == 'fisico':
+            titulo_documento = 'ATESTADO DE SAÚDE'
+            texto_principal = f"O candidato (a) <strong>{str(data.get('nome_paciente', '')).strip()}</strong>, <strong>{str(data.get('tipo_doc_paciente', '')).upper()}: {str(data.get('numero_doc_paciente', '')).strip()}</strong> examinado (a) por mim, apresenta boas condições de saúde física e mental, não havendo qualquer contraindicação clinica formal para a prática de exercícios físicos, na presente data."
+        else:
+            titulo_documento = 'DECLARAÇÃO'
+            texto_principal = f"Declaro, para os devidos fins, que <strong>{str(data.get('nome_paciente', '')).strip()}</strong>, portador do <strong>{str(data.get('tipo_doc_paciente', '')).upper()} nº: {str(data.get('numero_doc_paciente', '')).strip()}</strong>, esteve em consulta médica nesta data e encontra-se em boas condições de saúde física e mental. Não foram constatadas patologias no exame clínico, estando, portanto, apto(a) á exercer o cargo como <strong>{str(data.get('cargo_paciente', '')).strip()}</strong> no <strong>{str(data.get('empresa_paciente', '')).strip()}</strong>."
+
         # SEMPRE usa a data atual do sistema para assinatura
         data_atual_sistema = datetime.now()
         replacements = {
             '{logo_base64}': logo_base64,
+            '{titulo_documento}': titulo_documento,
+            '{texto_principal}': texto_principal,
             '{nome_paciente}': str(data.get('nome_paciente', '')).strip(),
             '{documento_paciente_formatado}': f"{data.get('tipo_doc_paciente', '').upper()} nº: {data.get('numero_doc_paciente', '')}",
             '{data_atestado}': _format_date_brazil(data.get('data_atestado', '')),

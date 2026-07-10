@@ -114,39 +114,6 @@ function App() {
     return missing
   }
 
-  const handleGenerateWord = async () => {
-    const missing = validateFormData()
-    
-    if (missing.length > 0) {
-      setMissingFields(missing)
-      setShowValidationModal(true)
-      return
-    }
-
-    setLoading('word')
-    setMessage(null)
-
-    try {
-      const blob = await generateDocument(formData, 'word')
-      
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `Atestado_${formData.nomePaciente.replace(/\s+/g, '_')}_${new Date().getTime()}.docx`
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
-      window.URL.revokeObjectURL(url)
-
-      setMessage({ type: 'success', text: 'Documento gerado com sucesso! O download foi iniciado.' })
-    } catch (error) {
-      console.error('Erro ao gerar documento:', error)
-      setMessage({ type: 'error', text: 'Não foi possível gerar o documento. Por favor, tente novamente.' })
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const handleGenerateHTML = async () => {
     const missing = validateFormData()
     
@@ -183,11 +150,12 @@ function App() {
       })
 
       const htmlContent = response.data
-      
-      // Usa a nova utilidade de impressão que evita about:blank e bloqueios de popup
-      imprimirHTML(htmlContent)
+      const blob = new Blob([htmlContent], { type: 'text/html' })
+      const url = window.URL.createObjectURL(blob)
+      window.open(url, '_blank')
+      window.URL.revokeObjectURL(url)
 
-      setMessage({ type: 'success', text: 'Documento gerado e enviado para impressão!' })
+      setMessage({ type: 'success', text: 'Documento gerado com sucesso!' })
     } catch (error) {
       console.error('Erro ao gerar documento:', error)
       setMessage({ type: 'error', text: 'Não foi possível gerar o documento. Por favor, tente novamente.' })
@@ -300,7 +268,6 @@ function App() {
           {/* Botões de Ação */}
           <footer className="mt-12 pt-10 border-t border-zinc-100 dark:border-zinc-800">
             <ActionButtons 
-              onGenerateWord={handleGenerateWord}
               onGenerateHTML={handleGenerateHTML}
               onClear={handleClear}
               loading={loading}
