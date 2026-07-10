@@ -1,8 +1,6 @@
 """
 Sistema de Homologação de Atestados Médicos - Backend API (Vercel Serverless)
 ══════════════════════════════════════════════════════════════════════════════
-[CÓDIGO MANTIDO] Estrutura original adaptada para rodar como Serverless Function na Vercel.
-[CÓDIGO SEGURO] Adicionadas 6 Camadas de Segurança (Auth, Crypto, Rate Limit, Audit, Sanitização).
 """
 
 from fastapi import FastAPI, HTTPException, Query, Depends, APIRouter
@@ -219,17 +217,20 @@ async def generate_html_endpoint(data: DocumentoRequest, _=Depends(rate_limit), 
             with get_db_connection() as conn:
                 if is_postgres:
                     from sqlalchemy import text
-                    # [UPSERT] Tenta inserir, se houver conflito (CPF + Empresa), não faz nada (mantém original)
-                    insert_query = """
-                        INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, numero_doc_hash, cargo, empresa) 
-                        VALUES (:nome, :tipo_doc, :numero_doc, :hash_doc, :cargo, :empresa)
-                        ON CONFLICT (numero_doc_hash, empresa) DO NOTHING
-                    """
-                    conn.execute(text(insert_query), {
-                        "nome": enc_nome_paciente, "tipo_doc": sanitizar_entrada(data.paciente.tipo_documento),
-                        "numero_doc": enc_doc_paciente, "hash_doc": hash_doc_paciente,
-                        "cargo": sanitizar_entrada(data.paciente.cargo), "empresa": sanitizar_entrada(data.paciente.empresa)
+                    # [UPSERT] Tenta inserir. Se já existir (por hash do documento), não faz nada (mantém original)
+                    result_paciente = conn.execute(text("SELECT id FROM pacientes WHERE numero_doc_hash = :hash_doc"), {
+                        "hash_doc": hash_doc_paciente
                     })
+                    if not result_paciente.fetchone():
+                        insert_query = """
+                            INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, numero_doc_hash, cargo, empresa) 
+                            VALUES (:nome, :tipo_doc, :numero_doc, :hash_doc, :cargo, :empresa)
+                        """
+                        conn.execute(text(insert_query), {
+                            "nome": enc_nome_paciente, "tipo_doc": sanitizar_entrada(data.paciente.tipo_documento),
+                            "numero_doc": enc_doc_paciente, "hash_doc": hash_doc_paciente,
+                            "cargo": sanitizar_entrada(data.paciente.cargo), "empresa": sanitizar_entrada(data.paciente.empresa)
+                        })
                     
                     # Para médicos, mantemos o comportamento original de atualização se já existir (conflito por CRM)
                     result_medico = conn.execute(text("SELECT id FROM medicos WHERE crm_hash = :crm_hash AND tipo_crm = :tipo_crm"), {
