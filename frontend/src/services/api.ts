@@ -1,8 +1,8 @@
 import axios from 'axios'
-// Alias renomeado para evitar colisão com o tipo nativo do browser `window.FormData`.
-// O TypeScript pode resolver `FormData` como a Web API global em vez do nosso tipo
+// Alias renomeado para evitar colisão com o tipo nativo do browser `window.AppFormData`.
+// O TypeScript pode resolver `AppFormData` como a Web API global em vez do nosso tipo
 // customizado, causando erros de propriedade inexistente no build de produção (Vercel).
-import type { FormData as AppFormData, Paciente, Medico } from '../types'
+import type { AppFormData, Paciente, Medico } from '../types'
 
 // Detecta ambiente automaticamente
 const API_BASE_URL = import.meta.env.VITE_API_URL || ''
