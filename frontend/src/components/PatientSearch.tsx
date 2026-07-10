@@ -29,8 +29,8 @@ export default function PatientSearch({ onSelect }: PatientSearchProps) {
   const loadPatients = async () => {
     try {
       setLoading(true)
-      const results = await searchPatients(search)
-      setPatients(results)
+      const data = await searchPatients(search, 1, 20)
+      setPatients(data.patients)
       setShowResults(true)
     } catch (error) {
       console.error('Erro ao buscar pacientes:', error)

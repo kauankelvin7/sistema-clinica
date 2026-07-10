@@ -46,6 +46,7 @@ export interface DocumentRequest {
     dias_afastamento: number
     cid: string
     cid_nao_informado: boolean
+    tipo_atestado?: string
   }
   medico: {
     nome: string
@@ -67,9 +68,10 @@ export const generateDocument = async (formData: FormData, format: 'word' | 'pdf
     },
     atestado: {
       data_atestado: formData.dataAtestado,
-      dias_afastamento: parseInt(formData.diasAfastamento),
-      cid: formData.cid,
-      cid_nao_informado: formData.cidNaoInformado,
+      dias_afastamento: formData.tipoAtestado === 'fisico' ? 0 : (parseInt(formData.diasAfastamento) || 0),
+      cid: formData.tipoAtestado === 'fisico' ? "" : formData.cid,
+      cid_nao_informado: formData.tipoAtestado === 'fisico' ? true : formData.cidNaoInformado,
+      tipo_atestado: formData.tipoAtestado,
     },
     medico: {
       nome: formData.nomeMedico,
@@ -96,12 +98,24 @@ export const generateDocument = async (formData: FormData, format: 'word' | 'pdf
 }
 
 // Buscar pacientes
-export const searchPatients = async (search?: string): Promise<Paciente[]> => {
+export interface PaginatedPatients {
+  total: number;
+  page: number;
+  page_size: number;
+  patients: Paciente[];
+}
+
+export const searchPatients = async (
+  search?: string,
+  page: number = 1,
+  page_size?: number
+): Promise<PaginatedPatients> => {
   const response = await api.get('/api/patients', {
-    params: { search },
+    params: { search, page, page_size },
   })
   return response.data
 }
+
 
 // Buscar médicos
 export interface PaginatedDoctors {

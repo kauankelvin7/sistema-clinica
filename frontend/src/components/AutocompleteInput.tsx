@@ -1,32 +1,40 @@
 import { useState, useEffect, useRef } from 'react'
-import { Search } from 'lucide-react'
+import { Search, Loader2 } from 'lucide-react'
 import { normalizeText } from '../utils/normalize'
 
 interface AutocompleteOption {
   label: string
   value: any
+  data?: any
 }
 
 interface AutocompleteInputProps {
   value: string
   onChange: (value: string) => void
   onSelect?: (option: AutocompleteOption) => void
+  /** Chamada com o termo de busca atual. Quando definida, desativa o filtro local
+   *  e usa as `options` diretamente (já filtradas pelo servidor via debounce externo). */
+  onSearch?: (query: string) => void
   placeholder?: string
   options: AutocompleteOption[]
   minChars?: number
   className?: string
   disabled?: boolean
+  /** Exibe spinner enquanto aguarda resposta do servidor */
+  isLoading?: boolean
 }
 
 export default function AutocompleteInput({
   value,
   onChange,
   onSelect,
+  onSearch,
   placeholder,
   options,
   minChars = 2,
   className = '',
-  disabled = false
+  disabled = false,
+  isLoading = false,
 }: AutocompleteInputProps) {
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [filteredOptions, setFilteredOptions] = useState<AutocompleteOption[]>([])
@@ -35,17 +43,24 @@ export default function AutocompleteInput({
 
   useEffect(() => {
     if (value.length >= minChars) {
-      const normalizedSearch = normalizeText(value)
-      const filtered = options.filter(option =>
-        normalizeText(option.label).includes(normalizedSearch)
-      )
-      setFilteredOptions(filtered)
-      setShowSuggestions(filtered.length > 0)
+      if (onSearch) {
+        // Modo assíncrono: usa as options diretamente (já vieram filtradas da API)
+        setFilteredOptions(options)
+        setShowSuggestions(options.length > 0 || isLoading)
+      } else {
+        // Modo local: filtra as options em memória (comportamento original)
+        const normalizedSearch = normalizeText(value)
+        const filtered = options.filter(option =>
+          normalizeText(option.label).includes(normalizedSearch)
+        )
+        setFilteredOptions(filtered)
+        setShowSuggestions(filtered.length > 0)
+      }
     } else {
       setShowSuggestions(false)
       setFilteredOptions([])
     }
-  }, [value, options, minChars])
+  }, [value, options, minChars, onSearch, isLoading])
 
   // Fechar ao clicar fora
   useEffect(() => {
@@ -57,6 +72,14 @@ export default function AutocompleteInput({
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value
+    onChange(newValue)
+    if (onSearch) {
+      onSearch(newValue)
+    }
+  }
 
   const handleSelect = (option: AutocompleteOption) => {
     onChange(option.label)
@@ -89,37 +112,50 @@ export default function AutocompleteInput({
         <input
           type="text"
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={handleChange}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
           className={`input-field pr-10 ${className}`}
         />
         {value.length >= minChars && (
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+          isLoading
+            ? <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-orange-500 animate-spin" />
+            : <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-orange-500 dark:text-orange-400" />
         )}
       </div>
 
-      {showSuggestions && filteredOptions.length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-900/95 border-2 border-emerald-200 dark:border-emerald-700/50 rounded-lg shadow-lg max-h-60 overflow-y-auto backdrop-blur-md">
+      {showSuggestions && (
+        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-zinc-900 border-2 border-orange-200 dark:border-orange-700/40 rounded-xl shadow-xl max-h-60 overflow-y-auto backdrop-blur-md">
           <div className="p-1">
-            {filteredOptions.map((option, index) => (
-              <button
-                key={index}
-                type="button"
-                onClick={() => handleSelect(option)}
-                className={`w-full text-left px-3 py-2 rounded-md text-sm
-                  ${index === selectedIndex
-                    ? 'bg-emerald-100 dark:bg-emerald-800/60 text-emerald-900 dark:text-emerald-50'
-                    : 'hover:bg-emerald-50 dark:hover:bg-emerald-900/40 text-gray-700 dark:text-gray-100'
-                  }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Search className="w-3 h-3 text-emerald-600" />
-                  <span className="font-medium">{option.label}</span>
-                </div>
-              </button>
-            ))}
+            {isLoading ? (
+              <div className="flex items-center gap-3 px-3 py-3 text-sm text-zinc-500 dark:text-zinc-400">
+                <Loader2 className="w-4 h-4 animate-spin text-orange-500 shrink-0" />
+                Buscando pacientes...
+              </div>
+            ) : filteredOptions.length === 0 ? (
+              <div className="px-3 py-3 text-sm text-zinc-400 dark:text-zinc-500 text-center">
+                Nenhum resultado encontrado
+              </div>
+            ) : (
+              filteredOptions.map((option, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => handleSelect(option)}
+                  className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors
+                    ${index === selectedIndex
+                      ? 'bg-orange-100 dark:bg-orange-500/20 text-orange-900 dark:text-orange-100'
+                      : 'hover:bg-orange-50 dark:hover:bg-orange-500/10 text-zinc-700 dark:text-zinc-200'
+                    }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Search className="w-3 h-3 text-orange-500 shrink-0" />
+                    <span className="font-medium">{option.label}</span>
+                  </div>
+                </button>
+              ))
+            )}
           </div>
         </div>
       )}

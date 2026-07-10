@@ -1,5 +1,5 @@
 import type { PatientFormProps } from '../types'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Users, Eye, AlertCircle } from 'lucide-react'
 import { searchPatients, checkDuplicate } from '../services/api'
 import PatientsListModal from './PatientsListModal'
@@ -19,23 +19,43 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
   const [totalPacientes, setTotalPacientes] = useState<number>(0)
   const [showListModal, setShowListModal] = useState(false)
   const [pacientesOptions, setPacientesOptions] = useState<Array<{label: string, value: string, data: any}>>([])
+  const [isSearching, setIsSearching] = useState(false)
   const [isDuplicate, setIsDuplicate] = useState(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // Buscar apenas o total de pacientes no mount (requisição leve: page_size=1)
   useEffect(() => {
-    // Buscar total de pacientes salvos e criar options para autocomplete
-    searchPatients()
-      .then(data => {
-        setTotalPacientes(data.length)
-        
-        // Criar options para autocomplete
-        const options = data.map((p: any) => ({
+    searchPatients(undefined, 1, 1)
+      .then(data => setTotalPacientes(data.total))
+      .catch(() => setTotalPacientes(0))
+  }, [])
+
+  // Busca assíncrona com debounce de 400ms acionada pelo AutocompleteInput
+  const handlePatientSearch = useCallback((query: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+
+    if (query.length < 2) {
+      setPacientesOptions([])
+      setIsSearching(false)
+      return
+    }
+
+    setIsSearching(true)
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const data = await searchPatients(query, 1, 20)
+        const options = data.patients.map((p: any) => ({
           label: p.nome_completo,
           value: p.nome_completo,
-          data: p
+          data: p,
         }))
         setPacientesOptions(options)
-      })
-      .catch(() => setTotalPacientes(0))
+      } catch {
+        setPacientesOptions([])
+      } finally {
+        setIsSearching(false)
+      }
+    }, 400)
   }, [])
 
   // Verificar duplicatas quando o número do documento ou empresa muda
@@ -99,7 +119,7 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
         </div>
       </button>
 
-      {/* Nome Completo com Autocomplete */}
+      {/* Nome Completo com Autocomplete Assíncrono */}
       <div>
         <label className="block text-sm font-extrabold tracking-tight text-zinc-800 dark:text-zinc-200 mb-2">
           Nome Completo
@@ -107,6 +127,7 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
         <AutocompleteInput
           value={formData.nomePaciente}
           onChange={(value) => updateFormData('nomePaciente', value)}
+          onSearch={handlePatientSearch}
           onSelect={(option: any) => {
             if (option.data) {
               updateFormData('nomePaciente', option.data.nome_completo)
@@ -117,6 +138,7 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
             }
           }}
           options={pacientesOptions}
+          isLoading={isSearching}
           placeholder="Digite o nome completo do paciente"
           minChars={2}
         />
