@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { FileText, User, Stethoscope, CheckCircle, XCircle, Smartphone, Monitor, Github, Linkedin, LogOut } from 'lucide-react'
+import { FileText, User, Stethoscope, CheckCircle, XCircle, Smartphone, Monitor } from 'lucide-react'
 import Header from './components/Header'
 import PatientForm from './components/PatientForm'
 import CertificateForm from './components/CertificateForm'
@@ -187,147 +187,115 @@ function App() {
   }
 
   return (
-    <main className="min-h-screen py-8 px-4 bg-zinc-50 dark:bg-zinc-950 transition-colors duration-300">
-      <div className="max-w-[1800px] mx-auto space-y-8">
-        
-        <Header />
+    <div className="h-[100dvh] flex flex-col bg-zinc-50 dark:bg-surface-page overflow-hidden font-sans transition-colors duration-300">
+      
+      {/* Header Fixo no Topo */}
+      <Header onLogout={handleLogout} />
 
-        {/* Botão de Alternância de Layout e Logout */}
-        <div className="flex justify-end gap-4">
+      {/* Mensagem de Status flutuante (Toast) */}
+      {message && (
+        <div className={`fixed top-4 right-4 z-50 rounded-xl px-4 py-3 flex items-center gap-3 shadow-xl transition-all animate-in fade-in slide-in-from-top-3 duration-200 backdrop-blur-md border text-xs sm:text-sm font-medium
+          ${message.type === 'success'
+            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300'
+            : 'bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300'}
+        `}>
+          {message.type === 'success' ? (
+            <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+          ) : (
+            <XCircle className="w-5 h-5 text-rose-500 flex-shrink-0" />
+          )}
+          <span>{message.text}</span>
+          <button onClick={() => setMessage(null)} className="ml-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-white font-bold">✕</button>
+        </div>
+      )}
+
+      {/* Conteúdo Principal com Scroll Próprio */}
+      <main className="flex-1 overflow-y-auto px-[clamp(12px,2vw,32px)] py-[clamp(8px,1.5vh,20px)] space-y-4 max-w-[1800px] mx-auto w-full">
+        
+        {/* Sub-header com preferência de layout opcional */}
+        <div className="flex justify-between items-center text-xs text-zinc-500 dark:text-zinc-400">
+          <span>Sistema de Homologação v2.1 • Atestados Digitais</span>
           <button
             onClick={() => setLayoutMode(prev => prev === 'horizontal' ? 'vertical' : 'horizontal')}
-            className="group flex items-center gap-3 px-6 py-3 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-md hover:shadow-orange-500/20 hover:border-orange-400/50 dark:hover:border-orange-500/50 transition-all duration-300"
-            title="Alternar Layout"
+            className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-surface-card border border-zinc-200 dark:border-zinc-800 rounded-lg hover:border-orange-500/30 transition-all text-xs"
+            title="Alternar preferência de exibição"
           >
             {layoutMode === 'horizontal' ? (
-              <Smartphone className="w-5 h-5 text-orange-500 dark:text-orange-400 group-hover:scale-110 transition-transform" />
+              <Smartphone className="w-3.5 h-3.5 text-orange-500" />
             ) : (
-              <Monitor className="w-5 h-5 text-orange-500 dark:text-orange-400 group-hover:scale-110 transition-transform" />
+              <Monitor className="w-3.5 h-3.5 text-orange-500" />
             )}
-          </button>
-          <button
-            onClick={handleLogout}
-            className="group flex items-center gap-3 px-6 py-3 bg-rose-50 dark:bg-rose-900/20 backdrop-blur-sm border border-rose-200 dark:border-rose-800 rounded-xl shadow-md hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-all duration-300"
-            title="Sair do Sistema"
-          >
-            <LogOut className="w-5 h-5 text-rose-500 dark:text-rose-400 group-hover:scale-110 transition-transform" />
+            <span className="hidden sm:inline">Modo {layoutMode === 'horizontal' ? 'Fluido' : 'Coluna'}</span>
           </button>
         </div>
 
-        {/* Mensagem de Status flutuante (Toast) */}
-        {message && (
-          <div className={`fixed top-6 right-6 z-50 rounded-2xl p-5 flex items-center gap-4 shadow-2xl transition-all animate-in fade-in slide-in-from-top-5 duration-300 backdrop-blur-sm border
-            ${message.type === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 shadow-emerald-500/10'
-              : 'bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300 shadow-rose-500/10'}
-          `}>
-            {message.type === 'success' ? (
-              <CheckCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-            ) : (
-              <XCircle className="w-6 h-6 text-rose-600 dark:text-rose-400 flex-shrink-0" />
-            )}
-            <p className="font-semibold text-base">{message.text}</p>
-            <button onClick={() => setMessage(null)} className="ml-4 text-zinc-400 hover:text-zinc-900 dark:hover:text-white font-bold transition-colors">✕</button>
-          </div>
-        )}
+        {/* Grid dos Três Formulários com Auto-fit Fluido */}
+        <div 
+          className="grid gap-[clamp(12px,1.5vw,24px)] items-start"
+          style={{ gridTemplateColumns: layoutMode === 'horizontal' ? 'repeat(auto-fit, minmax(260px, 1fr))' : '1fr' }}
+        >
+          {/* Seção: Dados do Paciente */}
+          <article className="card-orange group">
+            <header className="flex items-center gap-3 mb-4 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
+              <div className="w-9 h-9 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform duration-200">
+                <User className="w-4 h-4" />
+              </div>
+              <h2 className="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
+                Dados do Paciente
+              </h2>
+            </header>
+            <PatientForm formData={formData} updateFormData={updateFormData} />
+          </article>
 
-        {/* Container Principal com efeito Glow */}
-        <section className="bg-white dark:bg-zinc-900 rounded-3xl p-8 lg:p-12 
-                            border border-zinc-100 dark:border-zinc-800
-                            shadow-[0_0_60px_-15px_rgba(249,115,22,0.08)] 
-                            dark:shadow-[0_0_60px_-15px_rgba(249,115,22,0.12)]
-                            transition-all duration-300">
-          
-          <div className={`grid gap-12 items-start relative ${layoutMode === 'horizontal' ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}>
-            
-            {/* Seção: Dados do Paciente */}
-            <article className="card-orange group min-w-[300px] flex-1">
-              <header className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:scale-105 transition-transform duration-300">
-                  <User className="w-7 h-7 text-white" />
-                </div>
-                <h2 className="text-zinc-900 dark:text-zinc-50 text-xl font-extrabold tracking-tight">Dados do Paciente</h2>
-              </header>
-              <PatientForm formData={formData} updateFormData={updateFormData} />
-            </article>
+          {/* Seção: Dados do Atestado */}
+          <article className="card-orange group">
+            <header className="flex items-center gap-3 mb-4 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
+              <div className="w-9 h-9 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform duration-200">
+                <FileText className="w-4 h-4" />
+              </div>
+              <h2 className="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
+                Dados do Atestado
+              </h2>
+            </header>
+            <CertificateForm formData={formData} updateFormData={updateFormData} />
+          </article>
 
-            {/* Seção: Dados do Atestado */}
-            <article className="card-orange group min-w-[300px] flex-1">
-              <header className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:scale-105 transition-transform duration-300">
-                  <FileText className="w-7 h-7 text-white" />
-                </div>
-                <h2 className="text-zinc-900 dark:text-zinc-50 text-xl font-extrabold tracking-tight">Dados do Atestado</h2>
-              </header>
-              <CertificateForm formData={formData} updateFormData={updateFormData} />
-            </article>
+          {/* Seção: Dados do Médico */}
+          <article className="card-orange group">
+            <header className="flex items-center gap-3 mb-4 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
+              <div className="w-9 h-9 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform duration-200">
+                <Stethoscope className="w-4 h-4" />
+              </div>
+              <h2 className="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
+                Dados do Médico
+              </h2>
+            </header>
+            <DoctorForm formData={formData} updateFormData={updateFormData} />
+          </article>
 
-            {/* Seção: Dados do Médico */}
-            <article className="card-orange group min-w-[300px] flex-1">
-              <header className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:scale-105 transition-transform duration-300">
-                  <Stethoscope className="w-7 h-7 text-white" />
-                </div>
-                <h2 className="text-zinc-900 dark:text-zinc-50 text-xl font-extrabold tracking-tight">Dados do Médico</h2>
-              </header>
-              <DoctorForm formData={formData} updateFormData={updateFormData} />
-            </article>
+        </div>
 
-          </div>
+      </main>
 
-          {/* Botões de Ação */}
-          <footer className="mt-12 pt-10 border-t border-zinc-100 dark:border-zinc-800">
-            <ActionButtons 
-              onGenerateHTML={handleGenerateHTML}
-              onClear={handleClear}
-              loading={loading}
-            />
-          </footer>
-        </section>
+      {/* Barra de Ações Sticky Fixada na Parte Inferior */}
+      <footer className="sticky bottom-0 z-30 bg-white/95 dark:bg-surface-page/95 backdrop-blur-md border-t border-zinc-200 dark:border-zinc-800 px-[clamp(12px,2vw,32px)] py-3">
+        <div className="max-w-[1800px] mx-auto">
+          <ActionButtons 
+            onGenerateHTML={handleGenerateHTML}
+            onClear={handleClear}
+            loading={loading}
+          />
+        </div>
+      </footer>
 
-        {/* Modal de Validação */}
-        <ValidationModal 
-          isOpen={showValidationModal}
-          onClose={() => setShowValidationModal(false)}
-          missingFields={missingFields}
-        />
+      {/* Modal de Validação */}
+      <ValidationModal 
+        isOpen={showValidationModal}
+        onClose={() => setShowValidationModal(false)}
+        missingFields={missingFields}
+      />
 
-        {/* Footer Atualizado com Redes Sociais */}
-        <footer className="text-center pb-4">
-          <div className="inline-flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-full px-8 py-3 shadow-md transition-all duration-300 hover:shadow-orange-500/10 hover:border-orange-500/20">
-            <p className="text-zinc-600 dark:text-zinc-400 text-sm font-medium">
-              Sistema de Homologação v2.0 • Desenvolvido por <span className="text-orange-600 dark:text-orange-400 font-bold">Kauan Kelvin</span>
-            </p>
-            
-            {/* Divisor Vertical (some no mobile) */}
-            <div className="hidden sm:block w-px h-5 bg-zinc-200 dark:bg-zinc-700"></div>
-            
-            {/* Links Sociais */}
-            <div className="flex items-center gap-4">
-              <a 
-                href="https://github.com/kauankelvin7" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-zinc-400 hover:text-orange-500 transition-colors duration-300 group"
-                aria-label="GitHub de Kauan Kelvin"
-              >
-                <Github className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              </a>
-              <a 
-                href="https://www.linkedin.com/in/kauan-kelvin/" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-zinc-400 hover:text-orange-500 transition-colors duration-300 group"
-                aria-label="LinkedIn de Kauan Kelvin"
-              >
-                <Linkedin className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              </a>
-            </div>
-          </div>
-        </footer>
-
-      </div>
-    </main>
+    </div>
   )
 }
 

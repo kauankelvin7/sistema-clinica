@@ -26,13 +26,13 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
   }
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Seleção do Tipo de Atestado */}
       <div>
-        <label className="block text-sm font-extrabold tracking-tight text-zinc-800 dark:text-zinc-200 mb-2">
+        <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
           Tipo de Atestado
         </label>
-        <div className="flex gap-6">
+        <div className="flex gap-4">
           <label className="flex items-center gap-2 cursor-pointer group">
             <input
               type="radio"
@@ -40,9 +40,9 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
               value="saude"
               checked={formData.tipoAtestado === 'saude'}
               onChange={() => updateFormData('tipoAtestado', 'saude')}
-              className="w-4 h-4 text-orange-500 focus:ring-orange-500/20 focus:border-orange-500 cursor-pointer"
+              className="w-3.5 h-3.5 text-orange-500 focus:ring-orange-500/20 focus:border-orange-500 cursor-pointer"
             />
-            <span className="text-sm font-bold text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-950 dark:group-hover:text-zinc-200 transition-colors">
+            <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-950 dark:group-hover:text-zinc-100 transition-colors">
               Homologação (Atestado Médico)
             </span>
           </label>
@@ -53,9 +53,9 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
               value="fisico"
               checked={formData.tipoAtestado === 'fisico'}
               onChange={() => updateFormData('tipoAtestado', 'fisico')}
-              className="w-4 h-4 text-orange-500 focus:ring-orange-500/20 focus:border-orange-500 cursor-pointer"
+              className="w-3.5 h-3.5 text-orange-500 focus:ring-orange-500/20 focus:border-orange-500 cursor-pointer"
             />
-            <span className="text-sm font-bold text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-950 dark:group-hover:text-zinc-200 transition-colors">
+            <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-950 dark:group-hover:text-zinc-100 transition-colors">
               Atestado Físico
             </span>
           </label>
@@ -65,7 +65,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
       {formData.tipoAtestado === 'fisico' ? (
         /* Apenas Data para Atestado Físico */
         <div>
-          <label className="block text-sm font-extrabold tracking-tight text-zinc-800 dark:text-zinc-200 mb-2">
+          <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
             Data do Atestado
           </label>
           <input
@@ -79,9 +79,9 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
         /* Estrutura completa de Homologação */
         <>
           {/* Data e Dias de Afastamento em linha */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-extrabold tracking-tight text-zinc-800 dark:text-zinc-200 mb-2">
+              <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
                 Data do Atestado
               </label>
               <input
@@ -93,7 +93,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
             </div>
 
             <div>
-              <label className="block text-sm font-extrabold tracking-tight text-zinc-800 dark:text-zinc-200 mb-2">
+              <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
                 Dias de Afastamento
               </label>
               <input
@@ -109,10 +109,10 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
 
           {/* CID */}
           <div>
-            <label className="block text-sm font-extrabold tracking-tight text-zinc-800 dark:text-zinc-200 mb-2">
+            <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
               Código CID
             </label>
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
               
               <div className="w-full flex-1">
                 <AutocompleteInput
@@ -134,14 +134,14 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
                 />
               </div>
 
-              <label className="flex items-center gap-3 cursor-pointer whitespace-nowrap px-2 py-2 group">
+              <label className="flex items-center gap-2 cursor-pointer whitespace-nowrap px-1 py-1 group">
                 <input
                   type="checkbox"
-                  className="w-5 h-5 rounded border-2 border-zinc-300 dark:border-zinc-600 text-orange-500 bg-white/50 dark:bg-zinc-800 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all cursor-pointer"
+                  className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-orange-500 bg-white dark:bg-surface-input focus:ring-2 focus:ring-orange-500/20 transition-all cursor-pointer"
                   checked={formData.cidNaoInformado}
                   onChange={(e) => updateFormData('cidNaoInformado', e.target.checked)}
                 />
-                <span className="text-sm font-bold text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-200 transition-colors">
+                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-200 transition-colors">
                   Não Informado
                 </span>
               </label>

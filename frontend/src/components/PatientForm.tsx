@@ -93,35 +93,41 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Modal de Listagem */}
       <PatientsListModal isOpen={showListModal} onClose={() => setShowListModal(false)} />
 
-      {/* Contador de Pacientes Salvos - Clicável (Atualizado Tema Zinc/Laranja) */}
+      {/* Contador de Pacientes Salvos */}
       <button
         type="button"
         onClick={() => setShowListModal(true)}
-        className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-5 hover:shadow-[0_0_30px_-5px_rgba(249,115,22,0.15)] hover:border-orange-500/30 group transition-all duration-300"
+        className="w-full bg-zinc-50 dark:bg-surface-input border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 hover:border-orange-500/30 group transition-all duration-200"
       >
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:scale-105 transition-transform duration-300">
-            <Users className="w-6 h-6 text-white" />
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-lg flex items-center justify-center text-orange-500 flex-shrink-0">
+            <Users className="w-4 h-4" />
           </div>
-          <div className="text-left flex-1">
-            <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+          <div className="text-left flex-1 min-w-0">
+            <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wide">
               Pacientes Cadastrados
             </p>
-            <p className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-50 tracking-tight group-hover:text-orange-500 transition-colors">
-              {totalPacientes}
-            </p>
+            {totalPacientes > 0 ? (
+              <p className="text-lg font-bold text-zinc-900 dark:text-zinc-50 leading-tight group-hover:text-orange-500 transition-colors">
+                {totalPacientes} paciente{totalPacientes > 1 ? 's' : ''} registrado{totalPacientes > 1 ? 's' : ''}
+              </p>
+            ) : (
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Nenhum paciente salvo na base • Clique para consultar
+              </p>
+            )}
           </div>
-          <Eye className="w-6 h-6 text-zinc-400 group-hover:text-orange-500 transition-colors duration-300" />
+          <Eye className="w-4 h-4 text-zinc-400 group-hover:text-orange-500 transition-colors flex-shrink-0" />
         </div>
       </button>
 
       {/* Nome Completo com Autocomplete Assíncrono */}
       <div>
-        <label className="block text-sm font-extrabold tracking-tight text-zinc-800 dark:text-zinc-200 mb-2">
+        <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
           Nome Completo
         </label>
         <AutocompleteInput
@@ -146,12 +152,12 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
 
       {/* Documento (CPF/RG) */}
       <div>
-        <label className="block text-sm font-extrabold tracking-tight text-zinc-800 dark:text-zinc-200 mb-2">
+        <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
           Documento
         </label>
-        <div className="flex gap-4">
+        <div className="flex gap-2">
           <select
-            className="input-field w-32 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2371717a%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-[length:1.2em_1.2em] bg-no-repeat bg-[right_0.8rem_center] pr-10 cursor-pointer"
+            className="input-field w-28 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2371717a%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-[length:1.2em_1.2em] bg-no-repeat bg-[right_0.6rem_center] pr-8 cursor-pointer"
             value={formData.tipoDocumento}
             onChange={handleTipoDocumentoChange}
           >
@@ -160,7 +166,7 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
           </select>
           <input
             type="text"
-            className={`input-field flex-1 ${isDuplicate ? 'border-amber-500 bg-amber-500/5 focus:border-amber-600' : ''}`}
+            className={`input-field flex-1 ${isDuplicate ? 'border-amber-500/80 bg-amber-500/5 focus:border-amber-500' : ''}`}
             placeholder={formData.tipoDocumento === 'CPF' ? '000.000.000-00' : 'Digite o RG'}
             value={formData.numeroDocumento}
             onChange={handleDocumentoChange}
@@ -169,17 +175,17 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
           />
         </div>
         {isDuplicate && (
-          <div className="flex items-center gap-2 mt-2 text-amber-600 dark:text-amber-400 text-xs font-bold animate-pulse">
-            <AlertCircle className="w-4 h-4" />
+          <div className="flex items-center gap-1.5 mt-1 text-amber-600 dark:text-amber-400 text-[11px] font-medium animate-pulse">
+            <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
             <span>Este paciente já está cadastrado nesta empresa.</span>
           </div>
         )}
       </div>
 
       {/* Cargo e Empresa em linha */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-extrabold tracking-tight text-zinc-800 dark:text-zinc-200 mb-2">
+          <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
             Cargo
           </label>
           <input
@@ -192,7 +198,7 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
         </div>
 
         <div>
-          <label className="block text-sm font-extrabold tracking-tight text-zinc-800 dark:text-zinc-200 mb-2">
+          <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
             Empresa
           </label>
           <input

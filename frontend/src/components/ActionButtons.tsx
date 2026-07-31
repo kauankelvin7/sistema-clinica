@@ -3,38 +3,36 @@ import type { ActionButtonsProps } from '../types'
 
 export default function ActionButtons({ onGenerateHTML, onClear, loading }: ActionButtonsProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative">
-      {/* Botão Gerar Documento */}
+    <div className="flex flex-col sm:flex-row items-center justify-end gap-3 w-full">
+      {/* Botão Limpar - Secondary Ghost/Outline */}
       <button
-        onClick={onGenerateHTML}
-        disabled={!!loading}
-        className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold py-5 px-6 rounded-2xl shadow-lg hover:shadow-orange-500/20 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-300 border border-transparent hover:border-orange-500/50 group"
-      >
-        <div className="flex items-center justify-center gap-3">
-          {loading === 'html' ? (
-            <>
-              <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
-              <span className="text-base font-extrabold tracking-tight">Gerando HTML...</span>
-            </>
-          ) : (
-            <>
-              <FileText className="w-6 h-6 group-hover:text-orange-500 transition-colors" />
-              <span className="text-base font-extrabold tracking-tight">Abrir Documento</span>
-            </>
-          )}
-        </div>
-      </button>
-
-      {/* Botão Limpar */}
-      <button
+        type="button"
         onClick={onClear}
         disabled={!!loading}
-        className="bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-bold py-5 px-8 rounded-2xl shadow-sm border-2 border-zinc-200 dark:border-zinc-700 hover:border-red-500 hover:text-red-500 dark:hover:border-red-500 dark:hover:text-red-400 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-300 group"
+        className="w-full sm:w-auto px-4 py-2.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-xl disabled:opacity-50 transition-all duration-200 flex items-center justify-center gap-2 group"
       >
-        <div className="flex items-center justify-center gap-3">
-          <Trash2 className="w-6 h-6 group-hover:scale-110 transition-transform" />
-          <span className="text-base font-extrabold tracking-tight">Limpar Tudo</span>
-        </div>
+        <Trash2 className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+        <span>Limpar Formulário</span>
+      </button>
+
+      {/* Botão Gerar Documento - Única Ação Primária Sólida da Tela */}
+      <button
+        type="button"
+        onClick={onGenerateHTML}
+        disabled={!!loading}
+        className="w-full sm:w-auto px-6 py-2.5 text-xs font-bold font-display text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 active:scale-[0.98] rounded-xl shadow-md shadow-orange-500/20 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 group"
+      >
+        {loading === 'html' ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin text-white" />
+            <span>Gerando Documento...</span>
+          </>
+        ) : (
+          <>
+            <FileText className="w-4 h-4 text-white group-hover:scale-105 transition-transform" />
+            <span>Abrir Documento</span>
+          </>
+        )}
       </button>
     </div>
   )
