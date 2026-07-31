@@ -10,7 +10,7 @@ if path not in sys.path:
     sys.path.append(path)
 
 # Configurar variáveis de ambiente
-os.environ['DATABASE_URL'] = 'postgresql://postgres:justinbieber2010adminnova@db.gnolsvpefqdkmmaglozw.supabase.co:5432/postgres'
+os.environ['DATABASE_URL'] = 'postgresql://postgres.gnolsvpefqdkmmaglozw:justinbieber2010adminnova@aws-1-us-west-2.pooler.supabase.com:6543/postgres'
 os.environ['RENDER'] = 'true'
 
 # Importar a aplicação FastAPI
