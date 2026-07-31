@@ -11,23 +11,26 @@ Sistema de Homologação de Atestados Médicos
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-import jwt
 import os
 from datetime import datetime, timedelta
+from pathlib import Path
 
 bearer = HTTPBearer()
 
-# [HOTFIX-01] — Remoção de Fallback Hardcoded (Credenciais)
-#
-# ANTES (VULNERÁVEL):
-#   SECRET = os.getenv("JWT_SECRET", "super-secret-key-dev-only")
-#
-# RISCO: Se JWT_SECRET não estiver definido no ambiente de deploy (Vercel, Railway,
-# Render), a aplicação subia normalmente usando a chave pública "super-secret-key-dev-only".
-# Qualquer pessoa com acesso ao código-fonte poderia assinar JWTs válidos e se autenticar.
-#
-# CORREÇÃO: Lança RuntimeError imediatamente na importação do módulo.
-# O servidor NÃO SOBE sem a variável configurada — falha rápida e explícita (Fail-Fast).
+# Tenta carregar o arquivo .env se existir no projeto
+env_path = Path(__file__).resolve().parent.parent / '.env'
+if env_path.exists():
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(dotenv_path=env_path)
+    except ImportError:
+        with open(env_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, val = line.split('=', 1)
+                    os.environ.setdefault(key.strip(), val.strip().strip("'\""))
+
 _jwt_secret = os.getenv("JWT_SECRET")
 if not _jwt_secret:
     raise RuntimeError(

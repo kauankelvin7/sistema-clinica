@@ -9,6 +9,20 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+# Tenta carregar o arquivo .env se existir no projeto
+env_path = Path(__file__).resolve().parent.parent / '.env'
+if env_path.exists():
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(dotenv_path=env_path)
+    except ImportError:
+        with open(env_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, val = line.split('=', 1)
+                    os.environ.setdefault(key.strip(), val.strip().strip("'\""))
+
 # Detectar se estamos em produção de forma robusta
 # Se houver DATABASE_URL ou variáveis específicas de plataforma, consideramos PRODUÇÃO
 IS_PRODUCTION = bool(
