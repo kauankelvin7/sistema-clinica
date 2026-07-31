@@ -67,7 +67,7 @@ if IS_PRODUCTION:
                 proto, user_pass = prefix.split('://', 1)
                 if ':' in user_pass:
                     user, password = user_pass.split(':', 1)
-                    if '.' in user:
+                    if '.' in user and '%2E' not in user:
                         new_user = user.replace('.', '%2E')
                         DATABASE_URL = f"{proto}://{new_user}:{password}@{rest}"
                         logger.info("Usuário do banco detectado com ponto. Aplicando encoding %2E para compatibilidade.")
