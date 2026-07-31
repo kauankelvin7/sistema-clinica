@@ -15,7 +15,9 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 
-bearer = HTTPBearer()
+from typing import Optional
+
+bearer = HTTPBearer(auto_error=False)
 
 # Tenta carregar o arquivo .env se existir no projeto
 env_path = Path(__file__).resolve().parent.parent / '.env'
@@ -60,7 +62,7 @@ def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
     return jwt.encode(to_encode, SECRET, algorithm=ALGORITHM)
 
 
-def require_auth(credentials: HTTPAuthorizationCredentials = Security(bearer)):
+def require_auth(credentials: Optional[HTTPAuthorizationCredentials] = Security(bearer)):
     """
     Dependência FastAPI para proteção de rotas via Bearer Token.
     Valida a assinatura e expiração do JWT recebido no header Authorization.
@@ -68,6 +70,11 @@ def require_auth(credentials: HTTPAuthorizationCredentials = Security(bearer)):
     Raises:
         HTTPException 401: Se o token estiver expirado ou for inválido.
     """
+    if not credentials or not credentials.credentials:
+        raise HTTPException(
+            status_code=401,
+            detail="Não autenticado. Cabeçalho Authorization ausente ou formato inválido."
+        )
     try:
         payload = jwt.decode(credentials.credentials, SECRET, algorithms=[ALGORITHM])
         return payload
@@ -79,5 +86,5 @@ def require_auth(credentials: HTTPAuthorizationCredentials = Security(bearer)):
     except jwt.InvalidTokenError:
         raise HTTPException(
             status_code=401,
-            detail="Token inválido."
+            detail="Token inválido. Por favor, faça login novamente."
         )
