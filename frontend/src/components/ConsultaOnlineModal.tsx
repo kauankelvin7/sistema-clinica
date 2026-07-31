@@ -13,7 +13,7 @@ export default function ConsultaOnlineModal({ isOpen, onClose, tipoRegistro }: C
   const urls = {
     CRM: 'https://portal.cfm.org.br/busca-medicos/',
     CRO: 'https://website.cfo.org.br/profissionais-cadastrados/',
-    RMS: 'https://maismedicos.saude.gov.br/' // Portal genérico RMS
+    RMS: 'https://maismedicos.saude.gov.br/new/web/app.php/maismedicos/rms' // Portal genérico RMS
   }
 
   const targetUrl = urls[tipoRegistro]
