@@ -9,13 +9,13 @@ Sistema de Homologação de Atestados Médicos
   com uma chave pública e previsível em produção.
 """
 
-from fastapi import Depends, HTTPException, Security
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import os
+import jwt
 from datetime import datetime, timedelta
 from pathlib import Path
-
 from typing import Optional
+from fastapi import Request, HTTPException, Depends, Security
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 bearer = HTTPBearer(auto_error=False)
 
@@ -62,7 +62,10 @@ def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
     return jwt.encode(to_encode, SECRET, algorithm=ALGORITHM)
 
 
-def require_auth(credentials: Optional[HTTPAuthorizationCredentials] = Security(bearer)):
+def require_auth(
+    request: Request,
+    credentials: Optional[HTTPAuthorizationCredentials] = Security(bearer)
+):
     """
     Dependência FastAPI para proteção de rotas via Bearer Token.
     Valida a assinatura e expiração do JWT recebido no header Authorization.
@@ -70,13 +73,24 @@ def require_auth(credentials: Optional[HTTPAuthorizationCredentials] = Security(
     Raises:
         HTTPException 401: Se o token estiver expirado ou for inválido.
     """
-    if not credentials or not credentials.credentials:
+    token = None
+    if credentials and credentials.credentials:
+        token = credentials.credentials
+    else:
+        auth_header = request.headers.get("authorization") or request.headers.get("Authorization")
+        if auth_header:
+            parts = auth_header.split()
+            if len(parts) == 2 and parts[0].lower() == "bearer":
+                token = parts[1]
+
+    if not token:
         raise HTTPException(
             status_code=401,
             detail="Não autenticado. Cabeçalho Authorization ausente ou formato inválido."
         )
+
     try:
-        payload = jwt.decode(credentials.credentials, SECRET, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
         return payload
     except jwt.ExpiredSignatureError:
         raise HTTPException(
