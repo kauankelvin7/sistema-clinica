@@ -410,20 +410,32 @@ async def get_patients(
                 "total": total,
                 "page": page,
                 "page_size": page_size,
-                "patients": patients_page
+                "patients": patients_page,
+                "debug": {
+                    "provider": "PostgreSQL (Supabase)" if is_postgres else "SQLite",
+                    "scanned_db_records": len(result) if is_postgres else len(result)
+                }
             }
     except Exception as e:
-        logger.error(f"Erro ao buscar pacientes: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"❌ ERRO ao buscar pacientes no Supabase: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro de Banco de Dados [Pacientes]: {str(e)}"
+        )
 
 @api_router.get("/doctors")
 async def get_doctors(search: Optional[str] = None, _=Depends(rate_limit), __=Depends(require_auth)):
+    """
+    Retorna médicos com busca e diagnóstico detalhado de log.
+    """
     try:
-        is_postgres = bool(os.getenv('DATABASE_URL')) or os.getenv('RENDER') or os.getenv('RAILWAY_ENVIRONMENT') or os.getenv('VERCEL')
+        from core.db_manager import IS_PRODUCTION as is_postgres
+        logger.info(f"🔍 Buscando médicos - Banco de dados PostgreSQL/Supabase: {is_postgres}")
+
         with get_db_connection() as conn:
             if is_postgres:
                 from sqlalchemy import text
-                result = conn.execute(text("SELECT id, nome_completo, tipo_crm, crm, uf_crm FROM medicos ORDER BY data_criacao DESC"))
+                result = conn.execute(text("SELECT id, nome_completo, tipo_crm, crm, uf_crm FROM medicos ORDER BY data_criacao DESC")).fetchall()
             else:
                 cursor = conn.cursor()
                 cursor.execute("SELECT id, nome_completo, tipo_crm, crm, uf_crm FROM medicos ORDER BY data_criacao DESC")
@@ -436,9 +448,14 @@ async def get_doctors(search: Optional[str] = None, _=Depends(rate_limit), __=De
                     continue
                 medicos.append({"id": r[0], "nome_completo": nome, "tipo_crm": r[2], "crm": r[3], "uf_crm": r[4]})
             
+            logger.info(f"✅ Sucesso ao buscar médicos! Total encontrados: {len(medicos)}")
             return medicos
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"❌ ERRO ao buscar médicos no Supabase: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro de Banco de Dados [Médicos]: {str(e)}"
+        )
 
 @api_router.get("/check-duplicate")
 async def check_duplicate(tipo: str, valor: str, empresa: Optional[str] = None, _=Depends(rate_limit), __=Depends(require_auth)):
@@ -543,6 +560,55 @@ if _DEBUG_MODE:
 # CORREÇÃO: O /health agora retorna apenas um sinal vital limpo ("ok" ou "degraded"),
 # sem expor metadados internos. Ele verifica a conectividade com o banco executando
 # uma query mínima (SELECT 1), sem retornar nenhum dado de negócio.
+@api_router.get("/db-status")
+async def db_status():
+    """
+    Endpoint de diagnóstico público para inspecionar a conexão com o Supabase/PostgreSQL.
+    """
+    status_info: dict = {}
+    try:
+        from core.db_manager import IS_PRODUCTION as is_postgres
+        db_url = os.getenv('DATABASE_URL', '')
+        
+        status_info = {
+            "is_postgres": is_postgres,
+            "has_database_url": bool(db_url),
+            "database_url_length": len(db_url),
+            "environment": "Vercel / Production" if is_postgres else "Local",
+        }
+        
+        with get_db_connection() as conn:
+            if is_postgres:
+                from sqlalchemy import text
+                user_db = conn.execute(text("SELECT current_user, current_database()")).fetchone()
+                pacientes_cnt = conn.execute(text("SELECT COUNT(*) FROM pacientes")).scalar()
+                medicos_cnt = conn.execute(text("SELECT COUNT(*) FROM medicos")).scalar()
+                
+                status_info["db_user"] = user_db[0]
+                status_info["db_name"] = user_db[1]
+                status_info["total_pacientes_bd"] = pacientes_cnt
+                status_info["total_medicos_bd"] = medicos_cnt
+                status_info["connection_status"] = "OK - Conectado ao Supabase PostgreSQL"
+            else:
+                cursor = conn.cursor()
+                cursor.execute("SELECT COUNT(*) FROM pacientes")
+                pacientes_cnt = cursor.fetchone()[0]
+                cursor.execute("SELECT COUNT(*) FROM medicos")
+                medicos_cnt = cursor.fetchone()[0]
+                
+                status_info["total_pacientes_bd"] = pacientes_cnt
+                status_info["total_medicos_bd"] = medicos_cnt
+                status_info["connection_status"] = "OK - Conectado ao SQLite Local"
+                
+        return {"status": "success", "info": status_info}
+    except Exception as e:
+        logger.error(f"Erro de conexão no /db-status: {e}", exc_info=True)
+        return {
+            "status": "error",
+            "error": str(e),
+            "info": status_info
+        }
+
 @api_router.get("/health")
 async def health_check():
     """
