@@ -236,9 +236,21 @@ def create_tables():
             'CREATE INDEX IF NOT EXISTS idx_atestados_data ON atestados(data_atestado)',
         ]
         
+        migration_queries = [
+            'ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS numero_doc_hash TEXT',
+            'ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+            'ALTER TABLE medicos ADD COLUMN IF NOT EXISTS crm_hash TEXT',
+            'ALTER TABLE medicos ADD COLUMN IF NOT EXISTS data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+        ]
+        
         with get_db_connection() as session:
             for query in queries:
                 session.execute(text(query))
+            for m_query in migration_queries:
+                try:
+                    session.execute(text(m_query))
+                except Exception as m_err:
+                    logger.warning(f"Migração opcional: {m_err}")
             session.commit()
             
     else:

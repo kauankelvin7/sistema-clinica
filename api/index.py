@@ -249,6 +249,7 @@ async def generate_html_endpoint(data: DocumentoRequest, _=Depends(rate_limit), 
                             "tipo_crm": sanitizar_entrada(data.medico.tipo_registro)
                         })
                     conn.commit()
+                    logger.info("✅ Paciente e Médico salvos/atualizados com sucesso no banco de dados!")
                 else:
                     cursor = conn.cursor()
                     # SQLite fallback para o comportamento original (manual upsert)
@@ -257,7 +258,6 @@ async def generate_html_endpoint(data: DocumentoRequest, _=Depends(rate_limit), 
                         cursor.execute("INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, numero_doc_hash, cargo, empresa) VALUES (?, ?, ?, ?, ?, ?)", (
                             enc_nome_paciente, sanitizar_entrada(data.paciente.tipo_documento), enc_doc_paciente, hash_doc_paciente, sanitizar_entrada(data.paciente.cargo), sanitizar_entrada(data.paciente.empresa)
                         ))
-                    # Note: No SQLite não atualizamos para seguir o padrão "DO NOTHING" pedido para pacientes
                     
                     cursor.execute("SELECT id FROM medicos WHERE crm_hash = ? AND tipo_crm = ?", (hash_crm_medico, sanitizar_entrada(data.medico.tipo_registro)))
                     if not cursor.fetchone():
@@ -269,8 +269,9 @@ async def generate_html_endpoint(data: DocumentoRequest, _=Depends(rate_limit), 
                             enc_nome_medico, sanitizar_entrada(data.medico.uf_registro), sanitizar_entrada(data.medico.numero_registro), hash_crm_medico, sanitizar_entrada(data.medico.tipo_registro)
                         ))
                     conn.commit()
+                    logger.info("✅ Paciente e Médico salvos no SQLite!")
         except Exception as db_error:
-            logger.warning(f"Erro ao salvar no banco (continuando): {str(db_error)}")
+            logger.error(f"❌ Erro ao salvar no banco de dados: {str(db_error)}", exc_info=True)
         
         documento_data = {
             "nome_paciente": data.paciente.nome, "tipo_doc_paciente": data.paciente.tipo_documento,
