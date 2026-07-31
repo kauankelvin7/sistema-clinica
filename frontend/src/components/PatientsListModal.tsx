@@ -33,16 +33,18 @@ export default function PatientsListModal({ isOpen, onClose }: Props) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
-  // Função central de busca paginada
   const fetchPage = useCallback((search: string, targetPage: number) => {
     setLoading(true)
+    console.log('[PatientsListModal] Carregando pacientes...', { search, targetPage })
     searchPatients(search || undefined, targetPage, PAGE_SIZE)
       .then(data => {
-        setPacientes(data.patients)
-        setTotal(data.total)
+        console.log('[PatientsListModal] Pacientes recebidos:', data)
+        setPacientes(data.patients || [])
+        setTotal(data.total || 0)
         setLoading(false)
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('[PatientsListModal] Erro ao carregar pacientes:', err)
         setPacientes([])
         setTotal(0)
         setLoading(false)

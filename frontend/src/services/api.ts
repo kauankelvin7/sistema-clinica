@@ -17,17 +17,33 @@ const api = axios.create({
 // Interceptor para adicionar o token em todas as requisições
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('auth_token')
+  console.log(`[API REQUEST] 🚀 ${config.method?.toUpperCase()} ${config.url}`, {
+    hasToken: !!token,
+    tokenPrefix: token ? token.substring(0, 15) + '...' : 'NENHUM TOKEN'
+  })
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+    // Garante compatibilidade total com AxiosHeaders (v1.x) e objetos plain
+    if (config.headers && typeof (config.headers as any).set === 'function') {
+      (config.headers as any).set('Authorization', `Bearer ${token}`)
+    }
+    config.headers['Authorization'] = `Bearer ${token}`
   }
   return config
 })
 
 // Interceptor para deslogar em caso de 401
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`[API RESPONSE] ✅ ${response.config.method?.toUpperCase()} ${response.config.url}`, response.data)
+    return response
+  },
   (error) => {
+    console.error(`[API ERROR] ❌ ${error.config?.method?.toUpperCase()} ${error.config?.url}`, {
+      status: error.response?.status,
+      data: error.response?.data
+    })
     if (error.response && error.response.status === 401) {
+      console.warn('[API AUTH] ⚠️ Resposta 401 recebida! Removendo token e disparando logout...')
       localStorage.removeItem('auth_token')
       window.dispatchEvent(new Event('auth_logout'))
     }
@@ -113,9 +129,11 @@ export const searchPatients = async (
   page: number = 1,
   page_size?: number
 ): Promise<PaginatedPatients> => {
+  console.log('[API] Invando searchPatients:', { search, page, page_size })
   const response = await api.get('/api/patients', {
     params: { search, page, page_size },
   })
+  console.log('[API] Retorno searchPatients:', response.data)
   return response.data
 }
 
@@ -133,9 +151,22 @@ export const searchDoctors = async (
   page: number = 1,
   page_size?: number
 ): Promise<PaginatedDoctors> => {
+  console.log('[API] Invocando searchDoctors:', { search, page, page_size })
   const response = await api.get('/api/doctors', {
     params: { search, page, page_size },
   });
+  console.log('[API] Retorno bruto searchDoctors:', response.data)
+  
+  // Se a API retornar um Array [...], formata para a interface PaginatedDoctors
+  if (Array.isArray(response.data)) {
+    return {
+      total: response.data.length,
+      page: 1,
+      page_size: response.data.length,
+      doctors: response.data
+    };
+  }
+  
   return response.data;
 }
 
@@ -154,7 +185,9 @@ export const checkDuplicate = async (tipo: 'paciente' | 'medico', valor: string,
 
 // Login
 export const loginUser = async (username: string, password: string, rememberMe: boolean = false): Promise<{ access_token: string }> => {
+  console.log('[API] Fazendo login do usuário:', username)
   const response = await api.post('/api/auth/token', { username, password, remember_me: rememberMe })
+  console.log('[API] Login realizado com sucesso! Token recebido:', !!response.data.access_token)
   return response.data
 }
 

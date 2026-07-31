@@ -33,11 +33,14 @@ export default function DoctorSearch({ onSelect }: DoctorSearchProps) {
   const loadDoctors = async () => {
     try {
       setLoading(true)
+      console.log('[DoctorSearch] Buscando médicos:', search)
       const results = await searchDoctors(search)
-      setDoctors(results.doctors)
+      console.log('[DoctorSearch] Resultados recebidos:', results)
+      const list = results.doctors || (Array.isArray(results) ? results : [])
+      setDoctors(list)
       setShowResults(true)
     } catch (error) {
-      console.error('Erro ao buscar médicos:', error)
+      console.error('[DoctorSearch] Erro ao buscar médicos:', error)
       setDoctors([])
     } finally {
       setLoading(false)

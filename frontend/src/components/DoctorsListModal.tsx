@@ -34,9 +34,11 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
   useEffect(() => {
     if (isOpen) {
       setLoading(true)
+      console.log('[DoctorsListModal] Carregando médicos...')
       searchDoctors()
         .then(data => {
-          const doctorsList = (data as any).doctors || data;
+          console.log('[DoctorsListModal] Dados recebidos:', data)
+          const doctorsList = (data as any).doctors || (Array.isArray(data) ? data : []);
           setMedicos(doctorsList)
           setFilteredMedicos(doctorsList)
           
@@ -49,7 +51,7 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
           setLoading(false)
         })
         .catch(err => {
-          console.error('Erro ao carregar médicos:', err)
+          console.error('[DoctorsListModal] Erro ao carregar médicos:', err)
           setMedicos([])
           setFilteredMedicos([])
           setLoading(false)
