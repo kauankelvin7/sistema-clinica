@@ -29,7 +29,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('auth_token')
-      // Pode adicionar window.location.reload() ou disparar evento se preferir
+      window.dispatchEvent(new Event('auth_logout'))
     }
     return Promise.reject(error)
   }

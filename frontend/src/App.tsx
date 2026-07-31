@@ -24,6 +24,17 @@ function App() {
     setIsAuthenticated(false)
   }
 
+  // Ouvir evento global de deslogue (disparado pelo interceptor em caso de 401)
+  useEffect(() => {
+    const handleAuthLogout = () => {
+      setIsAuthenticated(false)
+    }
+    window.addEventListener('auth_logout', handleAuthLogout)
+    return () => {
+      window.removeEventListener('auth_logout', handleAuthLogout)
+    }
+  }, [])
+
   // --- 1. LÓGICA DE NEGÓCIO INTACTA ---
 
   // Estado do layout (vertical = horizontal)
