@@ -72,14 +72,14 @@ if IS_PRODUCTION:
                         DATABASE_URL = f"{proto}://{new_user}:{password}@{rest}"
                         logger.info("Usuário do banco detectado com ponto. Aplicando encoding %2E para compatibilidade.")
         
-        # Tenta forçar IPv4 se não houver parâmetros
-        if '?' not in DATABASE_URL:
-            DATABASE_URL += '?sslmode=require'
-        
-        # Forçar parâmetros de sessão para o Supavisor
-        if 'supavisor_session' not in DATABASE_URL:
+        # Limpa supavisor_session se estiver presente (incompatível com psycopg2)
+        if 'supavisor_session' in DATABASE_URL:
+            DATABASE_URL = DATABASE_URL.replace('supavisor_session=true&', '').replace('&supavisor_session=true', '').replace('?supavisor_session=true', '')
+
+        # Força sslmode=require se não especificado
+        if 'sslmode' not in DATABASE_URL:
             connector = '&' if '?' in DATABASE_URL else '?'
-            DATABASE_URL += f"{connector}supavisor_session=true"
+            DATABASE_URL += f"{connector}sslmode=require"
         
         engine = create_engine(
             DATABASE_URL,
