@@ -335,7 +335,7 @@ async def get_patients(
                     )
                     count_sql = text("SELECT COUNT(*) FROM pacientes")
                     total_db = conn.execute(count_sql).scalar()
-                    result = conn.execute(sql, {"scan_limit": MAX_SCAN_FOR_SEARCH})
+                    result = conn.execute(sql, {"scan_limit": MAX_SCAN_FOR_SEARCH}).fetchall()
                 else:
                     # Sem busca: paginação com parâmetros bindados
                     count_sql = text("SELECT COUNT(*) FROM pacientes")
@@ -344,9 +344,9 @@ async def get_patients(
                     sql = text(
                         "SELECT id, nome_completo, tipo_doc, numero_doc, cargo, empresa "
                         "FROM pacientes ORDER BY data_criacao DESC "
-                        "LIMIT :limit OFFSET :offset"  # ← parâmetros bindados, não f-string
+                        "LIMIT :limit OFFSET :offset"  # ← parâmetro bindado, não f-string
                     )
-                    result = conn.execute(sql, {"limit": page_size, "offset": offset})
+                    result = conn.execute(sql, {"limit": page_size, "offset": offset}).fetchall()
             else:
                 cursor = conn.cursor()
                 if search:
