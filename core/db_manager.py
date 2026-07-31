@@ -239,8 +239,12 @@ def create_tables():
         migration_queries = [
             'ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS numero_doc_hash TEXT',
             'ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+            'ALTER TABLE pacientes ALTER COLUMN numero_doc TYPE TEXT',
+            'ALTER TABLE pacientes ALTER COLUMN nome_completo TYPE TEXT',
             'ALTER TABLE medicos ADD COLUMN IF NOT EXISTS crm_hash TEXT',
             'ALTER TABLE medicos ADD COLUMN IF NOT EXISTS data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+            'ALTER TABLE medicos ALTER COLUMN crm TYPE TEXT',
+            'ALTER TABLE medicos ALTER COLUMN nome_completo TYPE TEXT',
         ]
         
         with get_db_connection() as session:
