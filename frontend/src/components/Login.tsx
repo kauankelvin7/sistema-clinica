@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Stethoscope, Lock, User as UserIcon, Loader2 } from 'lucide-react'
+import { Lock, User as UserIcon, Loader2 } from 'lucide-react'
 import { loginUser } from '../services/api'
 
 interface LoginProps {
@@ -31,15 +31,19 @@ export default function Login({ onLoginSuccess }: LoginProps) {
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-amber-500 rounded-3xl flex items-center justify-center shadow-lg shadow-orange-500/30 transform rotate-12 hover:rotate-0 transition-transform duration-300">
-            <Stethoscope className="w-10 h-10 text-white -rotate-12" />
+          <div className="w-14 h-14 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-2xl flex items-center justify-center text-orange-500 flex-shrink-0 shadow-lg shadow-orange-500/10">
+            <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"></path>
+              <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"></path>
+              <circle cx="20" cy="10" r="2"></circle>
+            </svg>
           </div>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-zinc-900 dark:text-zinc-50 tracking-tight">
           Acesso Restrito
         </h2>
         <p className="mt-2 text-center text-sm text-zinc-600 dark:text-zinc-400">
-          Sistema de Homologação de Atestados
+          Sistema de Homologação de Atestados Digitais
         </p>
       </div>
 

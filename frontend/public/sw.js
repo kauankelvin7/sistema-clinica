@@ -1,34 +1,33 @@
-const CACHE_NAME = 'nova-homologacao-v2';
+const CACHE_NAME = 'nova-homologacao-v3-' + Date.now();
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/logo_light.png',
-  '/logo_dark.png',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
   '/icons/maskable-icon-512x512.png',
   '/icons/apple-touch-icon.png'
 ];
 
-// Install event - Cache core static assets
+// Install event - Immediate skipWaiting to force update without closing tabs
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Pre-caching core app shell assets v2');
+      console.log('[PWA SW] Pre-caching core shell assets (Always Fresh mode)');
       return cache.addAll(ASSETS_TO_CACHE);
-    }).then(() => self.skipWaiting())
+    })
   );
 });
 
-// Activate event - Cleanup old caches
+// Activate event - Delete all old caches immediately & claim clients
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
           if (cache !== CACHE_NAME) {
-            console.log('[SW] Clearing old cache:', cache);
+            console.log('[PWA SW] Removendo cache antigo:', cache);
             return caches.delete(cache);
           }
         })
@@ -37,15 +36,18 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch event - Stale-While-Revalidate strategy for static assets
+// Fetch event - Network-First strategy for static assets & HTML
+// Garante que o PWA SEMPRE busque a versão mais recente da rede quando online
 self.addEventListener('fetch', (event) => {
+  // Ignorar chamadas de API ou requisições não-GET
   if (event.request.method !== 'GET' || event.request.url.includes('/api/')) {
     return;
   }
 
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request).then((networkResponse) => {
+    fetch(event.request)
+      .then((networkResponse) => {
+        // Se a rede respondeu com sucesso (200 OK), atualiza a cópia em cache
         if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -53,13 +55,19 @@ self.addEventListener('fetch', (event) => {
           });
         }
         return networkResponse;
-      }).catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
-        }
-      });
-
-      return cachedResponse || fetchPromise;
-    })
+      })
+      .catch(() => {
+        // Se estiver verdadeiramente offline ou a rede falhar, usa o cache como fallback
+        console.log('[PWA SW] Offline: servindo do cache fallback:', event.request.url);
+        return caches.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          if (event.request.mode === 'navigate') {
+            return caches.match('/index.html');
+          }
+        });
+      })
   );
 });
+
