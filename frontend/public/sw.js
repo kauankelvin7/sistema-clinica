@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nova-homologacao-v1';
+const CACHE_NAME = 'nova-homologacao-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -15,7 +15,7 @@ const ASSETS_TO_CACHE = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Pre-caching core app shell assets');
+      console.log('[SW] Pre-caching core app shell assets v2');
       return cache.addAll(ASSETS_TO_CACHE);
     }).then(() => self.skipWaiting())
   );
@@ -39,7 +39,6 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event - Stale-While-Revalidate strategy for static assets
 self.addEventListener('fetch', (event) => {
-  // Ignore non-GET requests or API calls
   if (event.request.method !== 'GET' || event.request.url.includes('/api/')) {
     return;
   }
@@ -55,7 +54,6 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       }).catch(() => {
-        // Fallback to index.html if navigation request fails offline
         if (event.request.mode === 'navigate') {
           return caches.match('/index.html');
         }
