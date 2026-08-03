@@ -187,8 +187,22 @@ function App() {
   }
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-zinc-50 dark:bg-surface-page overflow-hidden font-sans transition-colors duration-300">
+    <div className="relative h-[100dvh] flex flex-col bg-zinc-50 dark:bg-surface-page overflow-hidden font-sans transition-colors duration-300">
       
+      {/* Marca d'água de Plano de Fundo (NOVA Logo PNG sem fundo) */}
+      <div className="fixed inset-0 pointer-events-none select-none z-0 flex items-center justify-center overflow-hidden p-6">
+        <img 
+          src="/logo_light.png" 
+          alt="NOVA Logo" 
+          className="w-[85vw] max-w-[720px] object-contain opacity-[0.08] dark:hidden transition-opacity duration-300"
+        />
+        <img 
+          src="/logo_dark.png" 
+          alt="NOVA Logo" 
+          className="w-[85vw] max-w-[720px] object-contain opacity-[0.10] hidden dark:block transition-opacity duration-300"
+        />
+      </div>
+
       {/* Header Fixo no Topo */}
       <Header onLogout={handleLogout} />
 
@@ -210,7 +224,7 @@ function App() {
       )}
 
       {/* Conteúdo Principal com Scroll Próprio */}
-      <main className="flex-1 overflow-y-auto px-[clamp(12px,2vw,32px)] py-[clamp(8px,1.5vh,20px)] space-y-4 max-w-[1800px] mx-auto w-full">
+      <main className="relative z-10 flex-1 overflow-y-auto px-[clamp(12px,2vw,32px)] py-[clamp(8px,1.5vh,20px)] space-y-4 max-w-[1800px] mx-auto w-full">
         
         {/* Sub-header com preferência de layout opcional */}
         <div className="flex justify-between items-center text-xs text-zinc-500 dark:text-zinc-400">

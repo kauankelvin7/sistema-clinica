@@ -87,21 +87,21 @@ export default function PatientsListModal({ isOpen, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/60 dark:bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
-      <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col transform transition-all animate-in zoom-in-95 duration-300">
+      <div className="bg-white dark:bg-surface-card rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col transform transition-all animate-in zoom-in-95 duration-200">
 
-        {/* Header Premium Glassmorphism */}
-        <div className="bg-zinc-900 dark:bg-black p-6 sm:p-8 flex items-center justify-between border-b border-zinc-800 relative overflow-hidden shrink-0">
-          <div className="absolute top-0 left-0 w-full h-full bg-orange-500/10 blur-2xl"></div>
-
-          <div className="flex items-center gap-4 relative z-10">
-            <div className="w-14 h-14 bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/20">
-              <User className="w-7 h-7 text-white" />
+        {/* Header Adaptativo Glassmorphism */}
+        <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md px-6 py-5 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800/80 shrink-0">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-2xl flex items-center justify-center text-orange-500 flex-shrink-0 shadow-xs">
+              <User className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-2xl font-black tracking-tight text-white mb-0.5">Pacientes Cadastrados</h2>
-              <p className="text-zinc-400 text-sm font-medium">
+              <h2 className="font-display text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight leading-tight">
+                Pacientes Cadastrados
+              </h2>
+              <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">
                 {loading
-                  ? 'Carregando...'
+                  ? 'Buscando registros...'
                   : `${filteredPacientes.length} exibidos · ${total} no total`
                 }
               </p>
@@ -109,43 +109,42 @@ export default function PatientsListModal({ isOpen, onClose }: Props) {
           </div>
           <button
             onClick={onClose}
-            className="relative z-10 w-10 h-10 bg-zinc-800/50 hover:bg-orange-500/20 rounded-xl flex items-center justify-center transition-colors border border-zinc-700/50 hover:border-orange-500/50 group"
+            className="w-9 h-9 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 rounded-xl flex items-center justify-center transition-all border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+            title="Fechar"
           >
-            <X className="w-5 h-5 text-zinc-400 group-hover:text-orange-500 transition-colors" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Filtros */}
-        <div className="bg-zinc-50 dark:bg-zinc-800/30 border-b border-zinc-200 dark:border-zinc-800 p-5 space-y-4 shrink-0">
-          {/* Busca por texto (com debounce server-side) */}
+        {/* Filtros Modernizados */}
+        <div className="bg-zinc-50/80 dark:bg-zinc-900/40 border-b border-zinc-200/80 dark:border-zinc-800/80 p-4 sm:p-5 space-y-3 shrink-0">
+          {/* Busca por texto */}
           <div className="relative group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
             <input
               type="text"
               placeholder="Buscar por nome ou documento..."
               value={searchTerm}
               onChange={handleSearchChange}
-              className="w-full pl-12 pr-4 py-3.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all shadow-sm"
+              className="input-field pl-10 py-2.5 text-xs sm:text-sm bg-white dark:bg-surface-input border border-zinc-200 dark:border-zinc-800 rounded-xl"
             />
           </div>
 
           {/* Filtros em linha */}
           <div className="flex flex-wrap items-center gap-3">
-            {/* Filtro Tipo de Documento (local, sem nova request) */}
-            <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl px-3 shadow-sm focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/20 transition-all">
-              <Filter className="w-4 h-4 text-orange-500 shrink-0" />
+            <div className="flex items-center gap-2 bg-white dark:bg-surface-input border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-1.5 shadow-xs">
+              <Filter className="w-3.5 h-3.5 text-orange-500 shrink-0" />
               <select
                 value={filterTipoDoc}
                 onChange={(e) => setFilterTipoDoc(e.target.value as 'TODOS' | 'CPF' | 'RG')}
-                className="py-2.5 bg-transparent text-sm font-semibold text-zinc-700 dark:text-zinc-300 focus:outline-none cursor-pointer appearance-none pr-6"
+                className="bg-transparent text-xs font-semibold text-zinc-700 dark:text-zinc-300 focus:outline-none cursor-pointer pr-2"
               >
-                <option value="TODOS">Todos Documentos</option>
-                <option value="CPF">CPF</option>
-                <option value="RG">RG</option>
+                <option value="TODOS" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">Todos Documentos</option>
+                <option value="CPF" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">CPF</option>
+                <option value="RG" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">RG</option>
               </select>
             </div>
 
-            {/* Botão Limpar */}
             {(searchTerm || filterTipoDoc !== 'TODOS') && (
               <button
                 onClick={() => {
@@ -154,7 +153,7 @@ export default function PatientsListModal({ isOpen, onClose }: Props) {
                   setPage(1)
                   fetchPage('', 1)
                 }}
-                className="px-4 py-2.5 bg-zinc-100 hover:bg-rose-50 dark:bg-zinc-800 dark:hover:bg-rose-500/10 text-zinc-600 hover:text-rose-600 dark:text-zinc-300 dark:hover:text-rose-400 text-sm font-bold rounded-xl transition-colors border border-transparent hover:border-rose-200 dark:hover:border-rose-500/30 ml-auto"
+                className="px-3 py-1.5 bg-zinc-100 hover:bg-rose-50 dark:bg-zinc-800 dark:hover:bg-rose-500/10 text-zinc-600 hover:text-rose-600 dark:text-zinc-300 dark:hover:text-rose-400 text-xs font-semibold rounded-xl transition-all border border-zinc-200 dark:border-zinc-700 ml-auto"
               >
                 Limpar Filtros
               </button>
@@ -162,76 +161,77 @@ export default function PatientsListModal({ isOpen, onClose }: Props) {
           </div>
         </div>
 
-        {/* Content (Listagem) */}
-        <div className="p-6 overflow-y-auto flex-1 bg-zinc-50/50 dark:bg-zinc-950/50">
+        {/* Lista de Pacientes */}
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 bg-zinc-50/40 dark:bg-surface-page/40">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <div className="animate-spin w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full mb-4"></div>
-              <p className="text-zinc-500 font-medium">Buscando pacientes...</p>
+            <div className="flex flex-col items-center justify-center py-16">
+              <div className="animate-spin w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full mb-3"></div>
+              <p className="text-xs text-zinc-500 font-medium">Buscando pacientes...</p>
             </div>
           ) : filteredPacientes.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-20 h-20 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-5">
-                <User className="w-10 h-10 text-zinc-400" />
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-14 h-14 bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl flex items-center justify-center mb-4 text-zinc-400">
+                <User className="w-7 h-7" />
               </div>
-              <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">Nenhum paciente encontrado</h3>
-              <p className="text-zinc-500 max-w-md">
+              <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 mb-1">Nenhum paciente encontrado</h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-xs">
                 {total === 0
                   ? 'A base de dados de pacientes está vazia no momento.'
                   : 'Nenhum paciente corresponde aos filtros aplicados.'}
               </p>
             </div>
           ) : (
-            <div className="grid gap-4">
+            <div className="grid gap-3 sm:gap-4">
               {filteredPacientes.map((paciente, index) => (
                 <div
                   key={paciente.id}
-                  className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 hover:shadow-md hover:border-orange-500/30 transition-all duration-300 group"
+                  className="bg-white dark:bg-surface-card border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-4 sm:p-5 hover:border-orange-500/40 hover:shadow-md transition-all duration-200 group"
                 >
-                  <div className="flex items-start gap-5">
-                    {/* Número/Avatar Laranja */}
-                    <div className="w-12 h-12 bg-orange-50 dark:bg-orange-500/10 rounded-xl flex items-center justify-center shrink-0 border border-orange-100 dark:border-orange-500/20 group-hover:bg-orange-500 transition-colors duration-300">
-                      <span className="text-orange-600 dark:text-orange-400 font-black text-lg group-hover:text-white transition-colors">
+                  <div className="flex items-start gap-4">
+                    {/* Badge numérica */}
+                    <div className="w-10 h-10 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-orange-500 transition-colors duration-200">
+                      <span className="text-orange-600 dark:text-orange-400 font-bold text-sm group-hover:text-white transition-colors">
                         {(page - 1) * PAGE_SIZE + index + 1}
                       </span>
                     </div>
 
-                    <div className="flex-1 min-w-0 pt-1">
-                      <h3 className="text-lg font-black tracking-tight text-zinc-900 dark:text-white mb-3 truncate">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-50 mb-2 truncate group-hover:text-orange-500 transition-colors">
                         {paciente.nome_completo}
                       </h3>
-                      <div className="flex flex-wrap gap-x-6 gap-y-3">
-                        <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-                          <Hash className="w-4 h-4 text-orange-500" />
-                          <span className="font-bold text-zinc-700 dark:text-zinc-300">{paciente.tipo_doc}:</span>
+                      
+                      <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-zinc-600 dark:text-zinc-400">
+                        <div className="flex items-center gap-1.5">
+                          <Hash className="w-3.5 h-3.5 text-orange-500" />
+                          <span className="font-semibold text-zinc-700 dark:text-zinc-300">{paciente.tipo_doc}:</span>
                           <span>{paciente.numero_doc}</span>
                         </div>
 
                         {paciente.cargo && (
-                          <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-                            <Briefcase className="w-4 h-4 text-orange-500" />
-                            <span className="font-medium truncate">{paciente.cargo}</span>
+                          <div className="flex items-center gap-1.5">
+                            <Briefcase className="w-3.5 h-3.5 text-orange-500" />
+                            <span className="truncate">{paciente.cargo}</span>
                           </div>
                         )}
 
                         {paciente.empresa && (
-                          <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-                            <Building2 className="w-4 h-4 text-orange-500" />
-                            <span className="font-medium truncate">{paciente.empresa}</span>
+                          <div className="flex items-center gap-1.5">
+                            <Building2 className="w-3.5 h-3.5 text-orange-500" />
+                            <span className="truncate">{paciente.empresa}</span>
                           </div>
                         )}
 
                         {paciente.telefone && (
-                          <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-                            <Phone className="w-4 h-4 text-orange-500" />
-                            <span className="font-medium">{paciente.telefone}</span>
+                          <div className="flex items-center gap-1.5">
+                            <Phone className="w-3.5 h-3.5 text-orange-500" />
+                            <span>{paciente.telefone}</span>
                           </div>
                         )}
 
                         {paciente.email && (
-                          <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-                            <Mail className="w-4 h-4 text-orange-500" />
-                            <span className="font-medium truncate">{paciente.email}</span>
+                          <div className="flex items-center gap-1.5">
+                            <Mail className="w-3.5 h-3.5 text-orange-500" />
+                            <span className="truncate">{paciente.email}</span>
                           </div>
                         )}
                       </div>
@@ -245,8 +245,8 @@ export default function PatientsListModal({ isOpen, onClose }: Props) {
 
         {/* Paginação */}
         {!loading && total > PAGE_SIZE && (
-          <div className="shrink-0 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-6 py-4 flex items-center justify-between">
-            <span className="text-sm text-zinc-500 dark:text-zinc-400 font-medium">
+          <div className="shrink-0 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-6 py-3 flex items-center justify-between">
+            <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
               Página <span className="font-bold text-zinc-800 dark:text-zinc-200">{page}</span> de <span className="font-bold text-zinc-800 dark:text-zinc-200">{totalPages}</span>
             </span>
 
@@ -254,26 +254,26 @@ export default function PatientsListModal({ isOpen, onClose }: Props) {
               <button
                 onClick={() => goToPage(page - 1)}
                 disabled={page <= 1}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all
                   disabled:opacity-40 disabled:cursor-not-allowed
                   bg-zinc-100 hover:bg-orange-500 dark:bg-zinc-800 dark:hover:bg-orange-500
                   text-zinc-700 hover:text-white dark:text-zinc-300 dark:hover:text-white
                   border border-zinc-200 dark:border-zinc-700 hover:border-orange-500"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-3.5 h-3.5" />
                 Anterior
               </button>
               <button
                 onClick={() => goToPage(page + 1)}
                 disabled={page >= totalPages}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all
                   disabled:opacity-40 disabled:cursor-not-allowed
                   bg-zinc-100 hover:bg-orange-500 dark:bg-zinc-800 dark:hover:bg-orange-500
                   text-zinc-700 hover:text-white dark:text-zinc-300 dark:hover:text-white
                   border border-zinc-200 dark:border-zinc-700 hover:border-orange-500"
               >
                 Próximo
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
