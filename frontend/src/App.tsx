@@ -245,8 +245,10 @@ function App() {
 
         {/* Grid dos Três Formulários com Auto-fit Fluido */}
         <div
-          className="grid gap-[clamp(12px,1.5vw,24px)] items-start"
-          style={{ gridTemplateColumns: layoutMode === 'horizontal' ? 'repeat(auto-fit, minmax(260px, 1fr))' : '1fr' }}
+          className={`grid gap-[clamp(12px,1.5vw,24px)] items-start transition-all duration-300 ${
+            layoutMode === 'vertical' ? 'max-w-3xl mx-auto w-full' : 'w-full'
+          }`}
+          style={{ gridTemplateColumns: layoutMode === 'horizontal' ? 'repeat(auto-fit, minmax(320px, 1fr))' : '1fr' }}
         >
           {/* Seção: Dados do Paciente */}
           <article className="card-orange group">
