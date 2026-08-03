@@ -55,14 +55,14 @@ function App() {
     numeroDocumento: '',
     cargo: '',
     empresa: '',
-    
+
     // Atestado
     dataAtestado: new Date().toISOString().split('T')[0],
     diasAfastamento: '',
     cid: '',
     cidNaoInformado: false,
     tipoAtestado: 'saude',
-    
+
     // Médico
     nomeMedico: '',
     tipoRegistro: 'CRM',
@@ -126,7 +126,7 @@ function App() {
 
   const handleGenerateHTML = async () => {
     const missing = validateFormData()
-    
+
     if (missing.length > 0) {
       setMissingFields(missing)
       setShowValidationModal(true)
@@ -188,17 +188,17 @@ function App() {
 
   return (
     <div className="relative h-[100dvh] flex flex-col bg-zinc-50 dark:bg-surface-page overflow-hidden font-sans transition-colors duration-300">
-      
+
       {/* Marca d'água de Plano de Fundo (NOVA Logo PNG sem fundo) */}
       <div className="fixed inset-0 pointer-events-none select-none z-0 flex items-center justify-center overflow-hidden p-6">
-        <img 
-          src="/logo_light.png" 
-          alt="NOVA Logo" 
+        <img
+          src="/logo_light.png"
+          alt="NOVA Logo"
           className="w-[85vw] max-w-[720px] object-contain opacity-[0.08] dark:hidden transition-opacity duration-300"
         />
-        <img 
-          src="/logo_dark.png" 
-          alt="NOVA Logo" 
+        <img
+          src="/logo_dark.png"
+          alt="NOVA Logo"
           className="w-[85vw] max-w-[720px] object-contain opacity-[0.10] hidden dark:block transition-opacity duration-300"
         />
       </div>
@@ -225,10 +225,10 @@ function App() {
 
       {/* Conteúdo Principal com Scroll Próprio */}
       <main className="relative z-10 flex-1 overflow-y-auto px-[clamp(12px,2vw,32px)] py-[clamp(8px,1.5vh,20px)] space-y-4 max-w-[1800px] mx-auto w-full">
-        
+
         {/* Sub-header com preferência de layout opcional */}
         <div className="flex justify-between items-center text-xs text-zinc-500 dark:text-zinc-400">
-          <span>Sistema de Homologação v2.1 • Atestados Digitais</span>
+          <span>Sistema de Homologação • Atestados Digitais</span>
           <button
             onClick={() => setLayoutMode(prev => prev === 'horizontal' ? 'vertical' : 'horizontal')}
             className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-surface-card border border-zinc-200 dark:border-zinc-800 rounded-lg hover:border-orange-500/30 transition-all text-xs"
@@ -244,7 +244,7 @@ function App() {
         </div>
 
         {/* Grid dos Três Formulários com Auto-fit Fluido */}
-        <div 
+        <div
           className="grid gap-[clamp(12px,1.5vw,24px)] items-start"
           style={{ gridTemplateColumns: layoutMode === 'horizontal' ? 'repeat(auto-fit, minmax(260px, 1fr))' : '1fr' }}
         >
@@ -294,7 +294,7 @@ function App() {
       {/* Barra de Ações Sticky Fixada na Parte Inferior */}
       <footer className="sticky bottom-0 z-30 bg-white/95 dark:bg-surface-page/95 backdrop-blur-md border-t border-zinc-200 dark:border-zinc-800 px-[clamp(12px,2vw,32px)] py-3">
         <div className="max-w-[1800px] mx-auto">
-          <ActionButtons 
+          <ActionButtons
             onGenerateHTML={handleGenerateHTML}
             onClear={handleClear}
             loading={loading}
@@ -303,7 +303,7 @@ function App() {
       </footer>
 
       {/* Modal de Validação */}
-      <ValidationModal 
+      <ValidationModal
         isOpen={showValidationModal}
         onClose={() => setShowValidationModal(false)}
         missingFields={missingFields}

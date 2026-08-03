@@ -92,20 +92,20 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/60 dark:bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
-      <div className="bg-white dark:bg-surface-card rounded-3xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col transform transition-all animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/60 dark:bg-black/80 backdrop-blur-md p-3 sm:p-4 animate-in fade-in duration-300">
+      <div className="bg-white dark:bg-surface-card rounded-3xl shadow-2xl w-full max-w-5xl w-[95vw] max-h-[85vh] overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col transform transition-all animate-in zoom-in-95 duration-200">
         
         {/* Header Adaptativo Glassmorphism */}
-        <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md px-6 py-5 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800/80 shrink-0">
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-2xl flex items-center justify-center text-orange-500 flex-shrink-0 shadow-xs">
+        <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md px-5 sm:px-6 py-4 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800/80 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-2xl flex items-center justify-center text-orange-500 flex-shrink-0 shadow-xs">
               <Stethoscope className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-display text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight leading-tight">
+              <h2 className="font-display text-base sm:text-xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight leading-tight">
                 Médicos Cadastrados
               </h2>
-              <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">
+              <p className="text-[11px] sm:text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">
                 {filteredMedicos.length} de {medicos.length} registro{medicos.length !== 1 ? 's' : ''}
               </p>
             </div>
@@ -120,8 +120,7 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
         </div>
 
         {/* Filtros Modernizados */}
-        <div className="bg-zinc-50/80 dark:bg-zinc-900/40 border-b border-zinc-200/80 dark:border-zinc-800/80 p-4 sm:p-5 space-y-3 shrink-0">
-          {/* Busca por texto */}
+        <div className="bg-zinc-50/80 dark:bg-zinc-900/40 border-b border-zinc-200/80 dark:border-zinc-800/80 p-3 sm:p-4 space-y-3 shrink-0">
           <div className="relative group">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
             <input
@@ -129,12 +128,11 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
               placeholder="Buscar por nome, CRM ou especialidade..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="input-field pl-10 py-2.5 text-xs sm:text-sm bg-white dark:bg-surface-input border border-zinc-200 dark:border-zinc-800 rounded-xl"
+              className="input-field pl-10 py-2 text-xs sm:text-sm bg-white dark:bg-surface-input border border-zinc-200 dark:border-zinc-800 rounded-xl"
             />
           </div>
 
-          {/* Filtros em linha */}
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
             <div className="flex items-center gap-2 bg-white dark:bg-surface-input border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-1.5 shadow-xs">
               <Filter className="w-3.5 h-3.5 text-orange-500 shrink-0" />
               <select
@@ -174,7 +172,7 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
         </div>
 
         {/* Lista de Médicos */}
-        <div className="p-4 sm:p-6 overflow-y-auto flex-1 bg-zinc-50/40 dark:bg-surface-page/40">
+        <div className="p-3 sm:p-5 overflow-y-auto flex-1 bg-zinc-50/40 dark:bg-surface-page/40">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-16">
               <div className="animate-spin w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full mb-3"></div>
@@ -193,39 +191,39 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
               </p>
             </div>
           ) : (
-            <div className="grid gap-3 sm:gap-4">
+            <div className="grid gap-3">
               {filteredMedicos.map((medico, index) => (
                 <div
                   key={medico.id}
-                  className="bg-white dark:bg-surface-card border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-4 sm:p-5 hover:border-orange-500/40 hover:shadow-md transition-all duration-200 group"
+                  className="bg-white dark:bg-surface-card border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-4 sm:p-4.5 hover:border-orange-500/40 hover:shadow-md transition-all duration-200 group"
                 >
-                  <div className="flex items-start gap-4">
-                    {/* Badge numérica */}
-                    <div className="w-10 h-10 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-orange-500 transition-colors duration-200">
-                      <span className="text-orange-600 dark:text-orange-400 font-bold text-sm group-hover:text-white transition-colors">
+                  <div className="flex items-start gap-3.5">
+                    {/* Badge numérica compacta */}
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-orange-500 transition-colors duration-200">
+                      <span className="text-orange-600 dark:text-orange-400 font-bold text-xs sm:text-sm group-hover:text-white transition-colors">
                         {index + 1}
                       </span>
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-50 mb-2 truncate group-hover:text-orange-500 transition-colors">
+                      <h3 className="text-sm sm:text-base font-bold text-orange-600 dark:text-orange-400 leading-snug break-words mb-2 group-hover:text-orange-500 transition-colors">
                         {medico.nome_completo}
                       </h3>
-                      <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-zinc-600 dark:text-zinc-400">
-                        <div className="flex items-center gap-1.5">
-                          <Award className="w-3.5 h-3.5 text-orange-500" />
-                          <span className="font-semibold text-zinc-700 dark:text-zinc-300">{medico.tipo_crm}:</span>
-                          <span>{medico.crm}</span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+                        <div className="flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-900/50 px-2.5 py-1 rounded-lg border border-zinc-200/60 dark:border-zinc-800/60">
+                          <Award className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+                          <span className="font-semibold text-zinc-700 dark:text-zinc-300 shrink-0">{medico.tipo_crm}:</span>
+                          <span className="font-mono text-zinc-800 dark:text-zinc-200 break-all">{medico.crm}</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          <MapPin className="w-3.5 h-3.5 text-orange-500" />
-                          <span className="font-semibold text-zinc-700 dark:text-zinc-300">UF:</span>
-                          <span>{medico.uf_crm}</span>
+                        <div className="flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-900/50 px-2.5 py-1 rounded-lg border border-zinc-200/60 dark:border-zinc-800/60">
+                          <MapPin className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+                          <span className="font-semibold text-zinc-700 dark:text-zinc-300 shrink-0">UF:</span>
+                          <span className="font-bold text-zinc-800 dark:text-zinc-200">{medico.uf_crm}</span>
                         </div>
                         {medico.especialidade && (
-                          <div className="flex items-center gap-1.5">
-                            <Stethoscope className="w-3.5 h-3.5 text-orange-500" />
-                            <span className="truncate">{medico.especialidade}</span>
+                          <div className="flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-900/50 px-2.5 py-1 rounded-lg border border-zinc-200/60 dark:border-zinc-800/60 sm:col-span-2 lg:col-span-1">
+                            <Stethoscope className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+                            <span className="break-words font-medium">{medico.especialidade}</span>
                           </div>
                         )}
                       </div>

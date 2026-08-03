@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Sun, Moon, LogOut } from 'lucide-react'
+import { Sun, Moon, LogOut, Download, CheckCircle2 } from 'lucide-react'
 
 interface HeaderProps {
   onLogout?: () => void
@@ -17,6 +17,11 @@ export default function Header({ onLogout }: HeaderProps) {
     return 'light';
   });
 
+  // PWA Install Prompt State
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [installed, setInstalled] = useState(false);
+
   useEffect(() => {
     try {
       if (theme === 'dark') {
@@ -28,6 +33,44 @@ export default function Header({ onLogout }: HeaderProps) {
       }
     } catch {}
   }, [theme])
+
+  useEffect(() => {
+    // Detect if already running as standalone app
+    const checkStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+    setIsStandalone(!!checkStandalone);
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    const handleAppInstalled = () => {
+      setInstalled(true);
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) {
+      // Fallback instructions if prompt not available directly
+      alert('Para instalar o App no Desktop:\n1. Clique no ícone de instalação (ou 3 pontos) na barra do seu navegador.\n2. Selecione "Instalar NOVA - Sistema de Homologação".');
+      return;
+    }
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setInstalled(true);
+    }
+    setDeferredPrompt(null);
+  };
 
   const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark')
 
@@ -55,8 +98,34 @@ export default function Header({ onLogout }: HeaderProps) {
           </div>
         </div>
 
-        {/* Botões de Ação do Header (Tema + Logout Neutro) */}
+        {/* Botões de Ação do Header (PWA Desktop + Tema + Logout) */}
         <div className="flex items-center gap-2">
+          
+          {/* Botão de Instalação PWA Desktop */}
+          {!isStandalone && (
+            <button
+              onClick={handleInstallClick}
+              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-lg border transition-all duration-200 shadow-xs ${
+                installed 
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400' 
+                  : 'bg-orange-500 hover:bg-orange-600 text-white border-orange-500 hover:border-orange-600'
+              }`}
+              title="Instalar Sistema no Desktop"
+            >
+              {installed ? (
+                <>
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">App Instalado</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-3.5 h-3.5 animate-bounce" />
+                  <span>Instalar App</span>
+                </>
+              )}
+            </button>
+          )}
+
           {/* Alternador de Tema */}
           <button
             onClick={toggleTheme}
@@ -71,7 +140,7 @@ export default function Header({ onLogout }: HeaderProps) {
             )}
           </button>
 
-          {/* Botão de Sair / Logout (Neutro - sem tom rose) */}
+          {/* Botão de Sair / Logout */}
           {onLogout && (
             <button
               onClick={onLogout}
@@ -87,4 +156,3 @@ export default function Header({ onLogout }: HeaderProps) {
     </header>
   )
 }
-
