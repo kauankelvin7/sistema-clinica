@@ -93,7 +93,7 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/60 dark:bg-black/80 backdrop-blur-md p-3 sm:p-4 animate-in fade-in duration-300">
-      <div className="bg-white dark:bg-surface-card rounded-3xl shadow-2xl w-full max-w-5xl w-[95vw] max-h-[85vh] overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col transform transition-all animate-in zoom-in-95 duration-200">
+      <div className="bg-white dark:bg-surface-card rounded-3xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col transform transition-all animate-in zoom-in-95 duration-200">
         
         {/* Header Adaptativo Glassmorphism */}
         <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md px-5 sm:px-6 py-4 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800/80 shrink-0">
@@ -206,24 +206,24 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-sm sm:text-base font-bold text-orange-600 dark:text-orange-400 leading-snug break-words mb-2 group-hover:text-orange-500 transition-colors">
+                      <h3 className="text-sm sm:text-base font-bold text-orange-600 dark:text-orange-400 leading-snug break-words mb-2.5 group-hover:text-orange-500 transition-colors">
                         {medico.nome_completo}
                       </h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs text-zinc-600 dark:text-zinc-400">
-                        <div className="flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-900/50 px-2.5 py-1 rounded-lg border border-zinc-200/60 dark:border-zinc-800/60">
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+                        <div className="flex items-center gap-1.5 whitespace-nowrap bg-zinc-100/70 dark:bg-zinc-800/60 px-2.5 py-1 rounded-md border border-zinc-200/50 dark:border-zinc-700/50">
                           <Award className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-                          <span className="font-semibold text-zinc-700 dark:text-zinc-300 shrink-0">{medico.tipo_crm}:</span>
-                          <span className="font-mono text-zinc-800 dark:text-zinc-200 break-all">{medico.crm}</span>
+                          <span className="font-semibold text-zinc-700 dark:text-zinc-300">{medico.tipo_crm}:</span>
+                          <span className="font-mono font-bold text-zinc-800 dark:text-zinc-200">{medico.crm}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-900/50 px-2.5 py-1 rounded-lg border border-zinc-200/60 dark:border-zinc-800/60">
+                        <div className="flex items-center gap-1.5 whitespace-nowrap bg-zinc-100/70 dark:bg-zinc-800/60 px-2.5 py-1 rounded-md border border-zinc-200/50 dark:border-zinc-700/50">
                           <MapPin className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-                          <span className="font-semibold text-zinc-700 dark:text-zinc-300 shrink-0">UF:</span>
+                          <span className="font-semibold text-zinc-700 dark:text-zinc-300">UF:</span>
                           <span className="font-bold text-zinc-800 dark:text-zinc-200">{medico.uf_crm}</span>
                         </div>
                         {medico.especialidade && (
-                          <div className="flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-900/50 px-2.5 py-1 rounded-lg border border-zinc-200/60 dark:border-zinc-800/60 sm:col-span-2 lg:col-span-1">
+                          <div className="flex items-center gap-1.5 bg-zinc-100/70 dark:bg-zinc-800/60 px-2.5 py-1 rounded-md border border-zinc-200/50 dark:border-zinc-700/50">
                             <Stethoscope className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-                            <span className="break-words font-medium">{medico.especialidade}</span>
+                            <span className="font-medium text-zinc-800 dark:text-zinc-200">{medico.especialidade}</span>
                           </div>
                         )}
                       </div>

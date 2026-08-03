@@ -87,7 +87,7 @@ export default function PatientsListModal({ isOpen, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/60 dark:bg-black/80 backdrop-blur-md p-3 sm:p-4 animate-in fade-in duration-300">
-      <div className="bg-white dark:bg-surface-card rounded-3xl shadow-2xl w-full max-w-5xl w-[95vw] max-h-[90vh] overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col transform transition-all animate-in zoom-in-95 duration-200">
+      <div className="bg-white dark:bg-surface-card rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col transform transition-all animate-in zoom-in-95 duration-200">
 
         {/* Header Adaptativo Glassmorphism */}
         <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md px-5 sm:px-6 py-4 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800/80 shrink-0">
@@ -194,44 +194,44 @@ export default function PatientsListModal({ isOpen, onClose }: Props) {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      {/* Nome Completo com Quebra de Linha Suave e Fonte Otimizada */}
-                      <h3 className="text-sm sm:text-base font-bold text-orange-600 dark:text-orange-400 leading-snug break-words mb-2 group-hover:text-orange-500 transition-colors">
+                      {/* Nome Completo */}
+                      <h3 className="text-sm sm:text-base font-bold text-orange-600 dark:text-orange-400 leading-snug break-words mb-2.5 group-hover:text-orange-500 transition-colors">
                         {paciente.nome_completo}
                       </h3>
                       
-                      {/* Grid de Metadados Responsivo Sem Truncamento Ruim */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs text-zinc-600 dark:text-zinc-400">
-                        <div className="flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-900/50 px-2.5 py-1 rounded-lg border border-zinc-200/60 dark:border-zinc-800/60">
+                      {/* Metadados: Flex Wrap limpo sem caixas espremidas e sem break-all em numeros */}
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+                        <div className="flex items-center gap-1.5 whitespace-nowrap bg-zinc-100/70 dark:bg-zinc-800/60 px-2.5 py-1 rounded-md border border-zinc-200/50 dark:border-zinc-700/50">
                           <Hash className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-                          <span className="font-semibold text-zinc-700 dark:text-zinc-300 shrink-0">{paciente.tipo_doc}:</span>
-                          <span className="font-mono text-zinc-800 dark:text-zinc-200 break-all">{paciente.numero_doc}</span>
+                          <span className="font-semibold text-zinc-700 dark:text-zinc-300">{paciente.tipo_doc}:</span>
+                          <span className="font-mono font-bold text-zinc-800 dark:text-zinc-200">{paciente.numero_doc}</span>
                         </div>
 
                         {paciente.cargo && (
-                          <div className="flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-900/50 px-2.5 py-1 rounded-lg border border-zinc-200/60 dark:border-zinc-800/60">
+                          <div className="flex items-center gap-1.5 bg-zinc-100/70 dark:bg-zinc-800/60 px-2.5 py-1 rounded-md border border-zinc-200/50 dark:border-zinc-700/50">
                             <Briefcase className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-                            <span className="break-words font-medium">{paciente.cargo}</span>
+                            <span className="font-medium text-zinc-800 dark:text-zinc-200">{paciente.cargo}</span>
                           </div>
                         )}
 
                         {paciente.empresa && (
-                          <div className="flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-900/50 px-2.5 py-1 rounded-lg border border-zinc-200/60 dark:border-zinc-800/60 sm:col-span-2 lg:col-span-1">
+                          <div className="flex items-center gap-1.5 bg-zinc-100/70 dark:bg-zinc-800/60 px-2.5 py-1 rounded-md border border-zinc-200/50 dark:border-zinc-700/50">
                             <Building2 className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-                            <span className="break-words font-medium">{paciente.empresa}</span>
+                            <span className="font-medium text-zinc-800 dark:text-zinc-200">{paciente.empresa}</span>
                           </div>
                         )}
 
                         {paciente.telefone && (
-                          <div className="flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-900/50 px-2.5 py-1 rounded-lg border border-zinc-200/60 dark:border-zinc-800/60">
+                          <div className="flex items-center gap-1.5 whitespace-nowrap bg-zinc-100/70 dark:bg-zinc-800/60 px-2.5 py-1 rounded-md border border-zinc-200/50 dark:border-zinc-700/50">
                             <Phone className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-                            <span className="font-medium">{paciente.telefone}</span>
+                            <span className="font-medium text-zinc-800 dark:text-zinc-200">{paciente.telefone}</span>
                           </div>
                         )}
 
                         {paciente.email && (
-                          <div className="flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-900/50 px-2.5 py-1 rounded-lg border border-zinc-200/60 dark:border-zinc-800/60 sm:col-span-2 lg:col-span-2">
+                          <div className="flex items-center gap-1.5 bg-zinc-100/70 dark:bg-zinc-800/60 px-2.5 py-1 rounded-md border border-zinc-200/50 dark:border-zinc-700/50">
                             <Mail className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-                            <span className="break-all font-medium">{paciente.email}</span>
+                            <span className="font-medium text-zinc-800 dark:text-zinc-200">{paciente.email}</span>
                           </div>
                         )}
                       </div>
