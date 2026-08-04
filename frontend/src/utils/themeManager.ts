@@ -144,10 +144,10 @@ class ThemeManager {
 
     let hexColor: string
     if (isDark) {
-      // No modo escuro, utiliza a cor escura de fundo (#18181b - zinc 900)
-      hexColor = '#18181b'
+      // No modo escuro, utiliza a cor escura de fundo real da paleta ativa (#0d0000 para Garnet)
+      hexColor = rgbToHex(palette.bgPage || palette[900])
     } else {
-      // No modo claro, utiliza a cor primária de destaque (500) da paleta ativa
+      // No modo claro, utiliza a cor primária de destaque (500) da paleta ativa (#6e2d29 para Garnet)
       hexColor = rgbToHex(palette[500])
     }
 

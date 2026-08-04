@@ -64,7 +64,16 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
   return (
     <div className="space-y-4 relative">
       {/* Modal de Listagem Interna */}
-      <DoctorsListModal isOpen={showListModal} onClose={() => setShowListModal(false)} />
+      <DoctorsListModal
+        isOpen={showListModal}
+        onClose={() => setShowListModal(false)}
+        onSelect={(medico) => {
+          updateFormData('nomeMedico', medico.nome_completo)
+          updateFormData('tipoRegistro', medico.tipo_crm)
+          updateFormData('numeroRegistro', medico.crm)
+          updateFormData('ufRegistro', medico.uf_crm)
+        }}
+      />
 
       {/* Modal de Consulta Externa (CFM/CRO/RMS) */}
       <ConsultaOnlineModal 

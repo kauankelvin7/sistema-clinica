@@ -97,7 +97,17 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
   return (
     <div className="space-y-4">
       {/* Modal de Listagem */}
-      <PatientsListModal isOpen={showListModal} onClose={() => setShowListModal(false)} />
+      <PatientsListModal
+        isOpen={showListModal}
+        onClose={() => setShowListModal(false)}
+        onSelect={(patient) => {
+          updateFormData('nomePaciente', patient.nome_completo)
+          updateFormData('tipoDocumento', patient.tipo_doc)
+          updateFormData('numeroDocumento', patient.numero_doc)
+          if (patient.cargo) updateFormData('cargo', patient.cargo)
+          if (patient.empresa) updateFormData('empresa', patient.empresa)
+        }}
+      />
 
       {/* Contador de Pacientes Salvos */}
       <button

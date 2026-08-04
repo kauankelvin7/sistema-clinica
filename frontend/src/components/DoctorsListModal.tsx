@@ -19,9 +19,10 @@ interface Medico {
 interface Props {
   isOpen: boolean
   onClose: () => void
+  onSelect?: (medico: Medico) => void
 }
 
-export default function DoctorsListModal({ isOpen, onClose }: Props) {
+export default function DoctorsListModal({ isOpen, onClose, onSelect }: Props) {
   const { t } = useTranslation()
   const [medicos, setMedicos] = useState<Medico[]>([])
   const [filteredMedicos, setFilteredMedicos] = useState<Medico[]>([])
@@ -84,11 +85,11 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/60 dark:bg-black/80 backdrop-blur-md p-3 sm:p-4 animate-in fade-in duration-300">
-      <div className="bg-white dark:bg-surface-card rounded-3xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col transform transition-all animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/75 dark:bg-black/85 backdrop-blur-md p-2 sm:p-4 animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-surface-card rounded-3xl shadow-2xl w-full max-w-5xl h-[90vh] sm:h-[85vh] max-h-[850px] overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col transform transition-all animate-in zoom-in-95 duration-200">
         
         {/* Header Adaptativo Glassmorphism */}
-        <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md px-5 sm:px-6 py-4 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800/80 shrink-0">
+        <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800/80 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 sm:w-11 sm:h-11 bg-zinc-500/10 dark:bg-zinc-400/15 border border-zinc-500/20 dark:border-zinc-400/25 rounded-2xl flex items-center justify-center text-zinc-600 dark:text-zinc-300 flex-shrink-0 shadow-xs">
               <Stethoscope className="w-5 h-5" />
@@ -104,7 +105,7 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
           </div>
           <button
             onClick={onClose}
-            className="w-9 h-9 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 rounded-xl flex items-center justify-center transition-all border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+            className="w-9 h-9 sm:w-10 sm:h-10 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 rounded-xl flex items-center justify-center transition-all border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
             title="Fechar"
           >
             <X className="w-4 h-4" />
@@ -170,24 +171,32 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
               </p>
             </div>
           ) : (
-            <div className="grid gap-3">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
               {filteredMedicos.map((medico, index) => (
                 <div
                   key={medico.id}
-                  className="bg-white dark:bg-surface-card border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-4 sm:p-4.5 hover:border-orange-500/40 hover:shadow-md transition-all duration-200 group"
+                  onClick={() => {
+                    if (onSelect) {
+                      onSelect(medico)
+                      onClose()
+                    }
+                  }}
+                  className={`bg-white dark:bg-surface-card border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-3.5 sm:p-4.5 transition-all duration-200 group ${
+                    onSelect ? 'cursor-pointer hover:border-orange-500/60 hover:shadow-lg active:scale-[0.995]' : 'hover:border-orange-500/40'
+                  }`}
                 >
-                  <div className="flex items-start gap-3.5">
-                    <div className="w-8 h-8 sm:w-9 sm:h-9 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-orange-500 transition-colors duration-200">
-                      <span className="text-orange-600 dark:text-orange-400 font-bold text-xs sm:text-sm group-hover:text-white transition-colors">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-orange-500 transition-colors duration-200 mt-0.5">
+                      <span className="text-orange-600 dark:text-orange-400 font-bold text-xs group-hover:text-white transition-colors">
                         {index + 1}
                       </span>
                     </div>
                     
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-sm sm:text-base font-bold text-orange-600 dark:text-orange-400 leading-snug break-words mb-2.5 group-hover:text-orange-500 transition-colors">
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <h3 className="text-sm sm:text-base font-bold text-orange-600 dark:text-orange-400 leading-snug break-normal [overflow-wrap:anywhere] min-w-0 mb-2 group-hover:text-orange-500 transition-colors">
                         {medico.nome_completo}
                       </h3>
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+                      <div className="flex flex-wrap items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 max-w-full">
                         <div className="flex items-center gap-1.5 whitespace-nowrap bg-zinc-100/70 dark:bg-zinc-800/60 px-2.5 py-1 rounded-md border border-zinc-200/50 dark:border-zinc-700/50">
                           <Award className="w-3.5 h-3.5 text-orange-500 shrink-0" />
                           <span className="font-semibold text-zinc-700 dark:text-zinc-300">{medico.tipo_crm}:</span>

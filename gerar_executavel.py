@@ -42,15 +42,15 @@ def print_step(step_num, total_steps, text):
 
 def print_success(text):
     """Imprime mensagem de sucesso"""
-    print(f"{Colors.OKGREEN}✓ {text}{Colors.ENDC}")
+    print(f"{Colors.OKGREEN}[OK] {text}{Colors.ENDC}")
 
 def print_error(text):
     """Imprime mensagem de erro"""
-    print(f"{Colors.FAIL}✗ {text}{Colors.ENDC}")
+    print(f"{Colors.FAIL}[X] {text}{Colors.ENDC}")
 
 def print_warning(text):
     """Imprime mensagem de aviso"""
-    print(f"{Colors.WARNING}⚠ {text}{Colors.ENDC}")
+    print(f"{Colors.WARNING}[!] {text}{Colors.ENDC}")
 
 def verificar_pyinstaller():
     """Verifica se PyInstaller está instalado"""
