@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
-import { Settings, X, Globe, Palette, Check, Moon, Sun, Monitor, Sparkles } from 'lucide-react'
+import { Settings, X, Globe, Palette, Check, Moon, Sun, Monitor, Sparkles, Download, CheckCircle2 } from 'lucide-react'
 import { useTranslation, Language, setSavedLanguage } from '../utils/i18n'
 import { themeManager, THEME_PALETTES, PaletteName } from '../utils/themeManager'
 import { FlagBR, FlagUS, FlagES } from './LanguageSelector'
+import { usePWA } from '../utils/usePWA'
 
 interface SettingsModalProps {
   isOpen: boolean
@@ -11,6 +12,7 @@ interface SettingsModalProps {
 
 export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { lang } = useTranslation()
+  const { isStandalone, installed, installApp } = usePWA()
   const [currentPalette, setCurrentPalette] = useState<PaletteName>(() => themeManager.getPalette())
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null)
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -48,7 +50,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const handlePaletteSelect = (palName: PaletteName) => {
     themeManager.applyPalette(palName)
     setCurrentPalette(palName)
-    showFeedback(`Paleta de cores alterada para ${THEME_PALETTES[palName].label}`)
+    showFeedback(`Paleta alterada para ${THEME_PALETTES[palName].label}`)
   }
 
   // Trata alternância Claro / Escuro
@@ -65,6 +67,14 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         showFeedback('Modo Claro ativado')
       }
     } catch {}
+  }
+
+  // Trata auto-instalação PWA
+  const handleAutoInstallPWA = async () => {
+    const success = await installApp()
+    if (success) {
+      showFeedback('Instalação do aplicativo iniciada!')
+    }
   }
 
   if (!isOpen) return null
@@ -91,7 +101,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 </span>
               </div>
               <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-1">
-                Personalize idioma, paleta de cores e tema de exibição
+                Personalize idioma, cores, tema e instale o app no dispositivo
               </p>
             </div>
           </div>
@@ -123,15 +133,15 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 <span>Paleta de Cores do Sistema</span>
               </div>
               <span className="text-[11px] font-semibold text-garnet-600 dark:text-garnet-400">
-                Mudança em tempo real
+                Altera todo o site em tempo real
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
-                { name: 'garnet', label: 'Garnet Burgundy', desc: 'Vinho Tinto & Terracota', colors: ['#6e2d29', '#3d0407', '#a6544d'] },
-                { name: 'emerald', label: 'Emerald Health', desc: 'Verde Médico & Esmeralda', colors: ['#059669', '#047857', '#34d399'] },
-                { name: 'sapphire', label: 'Sapphire Clinical', desc: 'Azul Safira & Clínico', colors: ['#1d4ed8', '#1e3a8a', '#60a5fa'] },
+                { name: 'garnet', label: 'Garnet Burgundy', desc: 'Vinho Tinto Escuro (Padrão)', colors: ['#6e2d29', '#3d0407', '#a6544d'] },
+                { name: 'emerald', label: 'Emerald Health', desc: 'Verde Esmeralda Clínico', colors: ['#059669', '#047857', '#34d399'] },
+                { name: 'sapphire', label: 'Sapphire Clinical', desc: 'Azul Safira Hospitalar', colors: ['#1d4ed8', '#1e3a8a', '#60a5fa'] },
                 { name: 'amber', label: 'Amber Gold', desc: 'Dourado Ambar & Nobre', colors: ['#d97706', '#b45309', '#fbbf24'] },
               ].map((pal) => {
                 const isSelected = currentPalette === pal.name
@@ -219,11 +229,55 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
           <div className="border-t border-zinc-100 dark:border-zinc-800/80" />
 
-          {/* 3. SEÇÃO DE TEMA CLARO / ESCURO */}
+          {/* 3. SEÇÃO DE INSTALAÇÃO PWA AUTO-INSTALL */}
+          {!isStandalone && (
+            <>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-xs font-extrabold text-zinc-400 uppercase tracking-widest">
+                  <Download className="w-4 h-4 text-garnet-500" />
+                  <span>Aplicativo do Sistema (PWA)</span>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-garnet-500/10 dark:bg-garnet-500/15 border border-garnet-500/25 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="space-y-1 text-center sm:text-left">
+                    <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-50">
+                      {installed ? 'App Instalado no Dispositivo' : 'Instalar NOVA no Dispositivo'}
+                    </h4>
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                      {installed 
+                        ? 'O aplicativo já está pronto para uso no seu sistema.'
+                        : 'Acesse o sistema diretamente da sua área de trabalho como um app nativo.'
+                      }
+                    </p>
+                  </div>
+
+                  {installed ? (
+                    <div className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold shrink-0">
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Instalado</span>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleAutoInstallPWA}
+                      className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-garnet-500 to-garnet-600 hover:from-garnet-600 hover:to-garnet-700 shadow-md shadow-garnet-500/20 transition-all flex items-center justify-center gap-2 shrink-0 active:scale-95"
+                    >
+                      <Download className="w-4 h-4 animate-bounce" />
+                      <span>Instalar App Agora</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="border-t border-zinc-100 dark:border-zinc-800/80" />
+            </>
+          )}
+
+          {/* 4. SEÇÃO DE TEMA CLARO / ESCURO */}
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-xs font-extrabold text-zinc-400 uppercase tracking-widest">
               <Monitor className="w-4 h-4 text-garnet-500" />
-              <span>Modo de Exibição do Navegador</span>
+              <span>Modo de Exibição</span>
             </div>
 
             <div className="grid grid-cols-2 gap-3">

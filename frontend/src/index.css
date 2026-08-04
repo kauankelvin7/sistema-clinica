@@ -22,9 +22,9 @@
 }
 
 .dark {
-  --color-bg-page: 13 0 0;
-  --color-bg-card: 26 3 3;
-  --color-bg-input: 18 2 2;
+  --color-bg-page: var(--color-dark-bg-page, 13 0 0);
+  --color-bg-card: var(--color-dark-bg-card, 26 3 3);
+  --color-bg-input: var(--color-dark-bg-input, 18 2 2);
 }
 
 @layer components {
@@ -64,7 +64,7 @@
 
 @layer base {
   body {
-    @apply min-h-screen font-sans antialiased text-zinc-900 dark:text-zinc-50 bg-zinc-50 dark:bg-surface-page;
+    @apply min-h-screen font-sans antialiased text-zinc-900 dark:text-zinc-50 bg-zinc-50 dark:bg-surface-page transition-colors duration-300;
   }
 }
 

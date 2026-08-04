@@ -135,7 +135,6 @@ class ThemeManager {
     const palette = THEME_PALETTES[name].colors
     const root = document.documentElement
 
-    // Aplicar variáveis CSS RGB para o Tailwind interpolar dinamicamente
     root.style.setProperty('--color-primary-50', palette[50])
     root.style.setProperty('--color-primary-100', palette[100])
     root.style.setProperty('--color-primary-200', palette[200])
@@ -148,9 +147,9 @@ class ThemeManager {
     root.style.setProperty('--color-primary-900', palette[900])
     root.style.setProperty('--color-primary-950', palette[950])
 
-    root.style.setProperty('--color-bg-page', palette.bgPage)
-    root.style.setProperty('--color-bg-card', palette.bgCard)
-    root.style.setProperty('--color-bg-input', palette.bgInput)
+    root.style.setProperty('--color-dark-bg-page', palette.bgPage)
+    root.style.setProperty('--color-dark-bg-card', palette.bgCard)
+    root.style.setProperty('--color-dark-bg-input', palette.bgInput)
 
     window.dispatchEvent(new CustomEvent('palette_changed', { detail: name }))
   }

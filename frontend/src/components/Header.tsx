@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Sun, Moon, LogOut, Download, CheckCircle2, Monitor, Smartphone, Settings } from 'lucide-react'
 import { getSavedLanguage, TRANSLATIONS, Language } from '../utils/i18n'
 import SettingsModal from './SettingsModal'
+import PaletteSelector from './PaletteSelector'
+import { usePWA } from '../utils/usePWA'
 
 interface HeaderProps {
   onLogout?: () => void
@@ -12,6 +14,7 @@ interface HeaderProps {
 export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLayout }: HeaderProps) {
   const [lang, setLang] = useState<Language>(getSavedLanguage)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const { isStandalone, installed, installApp } = usePWA()
 
   useEffect(() => {
     const handleLangChange = (e: Event) => {
@@ -35,11 +38,6 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
     return 'light';
   });
 
-  // PWA Install Prompt State
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [isStandalone, setIsStandalone] = useState(false);
-  const [installed, setInstalled] = useState(false);
-
   useEffect(() => {
     try {
       if (theme === 'dark') {
@@ -51,42 +49,6 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
       }
     } catch {}
   }, [theme])
-
-  useEffect(() => {
-    const checkStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
-    setIsStandalone(!!checkStandalone);
-
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-
-    const handleAppInstalled = () => {
-      setInstalled(true);
-      setDeferredPrompt(null);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
-    };
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) {
-      alert('Para instalar o App no Desktop:\n1. Clique no ícone de instalação (ou 3 pontos) na barra do seu navegador.\n2. Selecione "Instalar NOVA - Sistema de Homologação".');
-      return;
-    }
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setInstalled(true);
-    }
-    setDeferredPrompt(null);
-  };
 
   const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark')
 
@@ -125,8 +87,11 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
           </div>
         </div>
 
-        {/* CENTRO: Alternador de Layout */}
+        {/* CENTRO: Seletor Rápido de Paleta + Alternador de Layout */}
         <div className="flex items-center gap-3">
+          {/* Seletor Rápido de Paletas de Cores */}
+          <PaletteSelector />
+
           {onToggleLayout && (
             <button
               onClick={onToggleLayout}
@@ -146,11 +111,11 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
         {/* LADO DIREITO: Engrenagem de Configurações + PWA + Tema + Sair */}
         <div className="flex items-center gap-2.5">
 
-          {/* Botão de Engrenagem de Configurações (Abre Modal de Idiomas + Cores + Tema) */}
+          {/* Botão de Engrenagem de Configurações */}
           <button
             onClick={() => setIsSettingsOpen(true)}
             className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-100/90 dark:bg-zinc-800/60 hover:bg-zinc-200/80 dark:hover:bg-zinc-700/60 border border-zinc-200/80 dark:border-zinc-700/60 text-xs font-semibold text-zinc-800 dark:text-zinc-200 transition-all duration-200 shadow-xs group"
-            title="Configurações (Idioma e Tema)"
+            title="Configurações do Sistema"
           >
             <Settings className="w-4 h-4 text-garnet-500 group-hover:rotate-90 transition-transform duration-300" />
             <span className="hidden sm:inline">Configurações</span>
@@ -159,13 +124,13 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
           {/* Botão de Instalação PWA Desktop */}
           {!isStandalone && (
             <button
-              onClick={handleInstallClick}
+              onClick={() => installApp()}
               className={`flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl border transition-all duration-200 shadow-xs ${
                 installed 
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400' 
                   : 'bg-gradient-to-r from-garnet-500 to-garnet-600 hover:from-garnet-600 hover:to-garnet-700 text-white border-transparent shadow-md shadow-garnet-500/20'
               }`}
-              title="Instalar Sistema no Desktop"
+              title="Instalar Sistema no Dispositivo"
             >
               {installed ? (
                 <>
