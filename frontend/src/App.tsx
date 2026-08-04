@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { FileText, User, Stethoscope, CheckCircle, XCircle, Smartphone, Monitor } from 'lucide-react'
+import { FileText, User, Stethoscope, CheckCircle, XCircle } from 'lucide-react'
 import Header from './components/Header'
 import PatientForm from './components/PatientForm'
 import CertificateForm from './components/CertificateForm'
@@ -204,7 +204,11 @@ function App() {
       </div>
 
       {/* Header Fixo no Topo */}
-      <Header onLogout={handleLogout} />
+      <Header 
+        onLogout={handleLogout} 
+        layoutMode={layoutMode}
+        onToggleLayout={() => setLayoutMode(prev => prev === 'horizontal' ? 'vertical' : 'horizontal')}
+      />
 
       {/* Mensagem de Status flutuante (Toast) */}
       {message && (
@@ -224,24 +228,7 @@ function App() {
       )}
 
       {/* Conteúdo Principal com Scroll Próprio */}
-      <main className="relative z-10 flex-1 overflow-y-auto px-[clamp(12px,2vw,32px)] py-[clamp(8px,1.5vh,20px)] space-y-4 max-w-[1800px] mx-auto w-full">
-
-        {/* Sub-header com preferência de layout opcional */}
-        <div className="flex justify-between items-center text-xs text-zinc-500 dark:text-zinc-400">
-          <span>Sistema de Homologação • Atestados Digitais</span>
-          <button
-            onClick={() => setLayoutMode(prev => prev === 'horizontal' ? 'vertical' : 'horizontal')}
-            className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-surface-card border border-zinc-200 dark:border-zinc-800 rounded-lg hover:border-orange-500/30 transition-all text-xs"
-            title="Alternar preferência de exibição"
-          >
-            {layoutMode === 'horizontal' ? (
-              <Smartphone className="w-3.5 h-3.5 text-orange-500" />
-            ) : (
-              <Monitor className="w-3.5 h-3.5 text-orange-500" />
-            )}
-            <span className="hidden sm:inline">Modo {layoutMode === 'horizontal' ? 'Fluido' : 'Coluna'}</span>
-          </button>
-        </div>
+      <main className="relative z-10 flex-1 overflow-y-auto px-[clamp(12px,2vw,32px)] py-4 space-y-4 max-w-[1800px] mx-auto w-full">
 
         {/* Grid dos Três Formulários com Auto-fit Fluido */}
         <div

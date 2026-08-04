@@ -196,7 +196,15 @@ class MainWindow(QMainWindow):
         logger.info("Janela principal inicializada com sucesso")
 
     def _configurar_icone_janela(self):
-        """Configura o ícone da janela principal"""
+        """Configura o ícone da janela principal e da barra de tarefas do Windows"""
+        try:
+            if sys.platform == 'win32':
+                import ctypes
+                myappid = 'novamedicina.homologacao.atestados.v2'
+                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+        except Exception as e:
+            logger.warning(f"Não foi possível definir AppUserModelID no Windows: {e}")
+
         try:
             icon_path_for_window = resource_path("assets/app_icon.ico")
             if not QPixmap(icon_path_for_window).isNull():
