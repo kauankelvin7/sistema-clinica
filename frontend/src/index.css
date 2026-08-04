@@ -4,13 +4,27 @@
 
 :root {
   /* Variáveis Globais de Cores (Gerenciadas pelo ThemeManager) */
-  --color-primary: 143 61 56;       /* Garnet #8f3d38 */
-  --color-primary-dark: 86 7 12;    /* Garnet #56070c */
-  --color-primary-light: 203 113 105;/* Garnet #cb7169 */
-  --color-bg-dark-page: 23 0 0;     /* Garnet #170000 */
-  --color-bg-dark-card: 39 7 7;     /* Garnet #270707 */
-  --color-bg-dark-input: 31 4 4;    /* Garnet #1f0404 */
-  --color-border-dark: 60 10 10;
+  --color-primary-50: 249 234 234;
+  --color-primary-100: 240 206 205;
+  --color-primary-200: 225 157 154;
+  --color-primary-300: 202 117 111;
+  --color-primary-400: 166 84 77;    /* #a6544d */
+  --color-primary-500: 110 45 41;    /* #6e2d29 */
+  --color-primary-600: 61 4 7;       /* #3d0407 */
+  --color-primary-700: 35 5 3;       /* #230503 */
+  --color-primary-800: 23 2 2;
+  --color-primary-900: 13 0 0;       /* #0d0000 */
+  --color-primary-950: 5 0 0;
+
+  --color-bg-page: 250 250 250;
+  --color-bg-card: 255 255 255;
+  --color-bg-input: 244 244 245;
+}
+
+.dark {
+  --color-bg-page: 13 0 0;
+  --color-bg-card: 26 3 3;
+  --color-bg-input: 18 2 2;
 }
 
 @layer components {
@@ -19,7 +33,7 @@
     padding: clamp(14px, 2vw, 22px);
     @apply rounded-2xl transition-all duration-200;
     @apply bg-white/80 dark:bg-surface-card/85 backdrop-blur-md;
-    @apply border border-zinc-200/80 dark:border-red-950/40;
+    @apply border border-zinc-200/80 dark:border-zinc-800/80;
   }
 
   .card-orange:hover {
@@ -42,7 +56,6 @@
     @apply flex items-center gap-3 mb-6 pb-3 border-b border-zinc-200 dark:border-zinc-800;
   }
 
-  /* Ícone de seção suavizado com bg-garnet-soft */
   .icon-box {
     @apply w-10 h-10 bg-garnet-500/10 dark:bg-garnet-500/15 text-garnet-500 rounded-xl
            flex items-center justify-center border border-garnet-500/20;
@@ -55,7 +68,7 @@
   }
 }
 
-/* --- Scrollbar personalizada dinamizada pelas variáveis globais --- */
+/* Scrollbar personalizada dinamizada pelas variáveis globais */
 ::-webkit-scrollbar {
   width: 10px;
 }
@@ -65,21 +78,21 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, rgb(var(--color-primary)), rgb(var(--color-primary-dark)));
+  background: linear-gradient(to bottom, rgb(var(--color-primary-500)), rgb(var(--color-primary-600)));
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, rgb(var(--color-primary-dark)), rgb(var(--color-bg-dark-page)));
+  background: linear-gradient(to bottom, rgb(var(--color-primary-600)), rgb(var(--color-primary-700)));
 }
 
 /* Dark scrollbar */
 .dark ::-webkit-scrollbar-track {
-  background: rgb(var(--color-bg-dark-page));
+  background: rgb(var(--color-bg-page));
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, rgb(var(--color-primary-dark)), rgb(var(--color-bg-dark-page)));
+  background: linear-gradient(to bottom, rgb(var(--color-primary-600)), rgb(var(--color-primary-900)));
 }
 
 @keyframes dropdown {

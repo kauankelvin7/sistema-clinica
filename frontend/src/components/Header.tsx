@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Sun, Moon, LogOut, Download, CheckCircle2, Monitor, Smartphone } from 'lucide-react'
-import LanguageSelector from './LanguageSelector'
-import PaletteSelector from './PaletteSelector'
+import { Sun, Moon, LogOut, Download, CheckCircle2, Monitor, Smartphone, Settings } from 'lucide-react'
 import { getSavedLanguage, TRANSLATIONS, Language } from '../utils/i18n'
+import SettingsModal from './SettingsModal'
 
 interface HeaderProps {
   onLogout?: () => void
@@ -12,6 +11,7 @@ interface HeaderProps {
 
 export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLayout }: HeaderProps) {
   const [lang, setLang] = useState<Language>(getSavedLanguage)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 
   useEffect(() => {
     const handleLangChange = (e: Event) => {
@@ -53,7 +53,6 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
   }, [theme])
 
   useEffect(() => {
-    // Detect if already running as standalone app
     const checkStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
     setIsStandalone(!!checkStandalone);
 
@@ -93,14 +92,17 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
 
   return (
     <header className="relative bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border-b border-zinc-200/80 dark:border-zinc-800/80 px-4 sm:px-8 py-3.5 sm:py-4 transition-all duration-200 z-20 shadow-xs dark:shadow-none">
+      {/* Modal de Configurações Unificado */}
+      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+
       {/* Linha de Destaque Superior em Gradiente Garnet Burgundy */}
-      <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#56070c] via-[#cb7169] to-[#8f3d38]" />
+      <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#3d0407] via-[#a6544d] to-[#6e2d29]" />
 
       <div className="max-w-[1800px] mx-auto flex items-center justify-between gap-4">
         
         {/* LADO ESQUERDO: Logo + Título + Subtítulo */}
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-orange-500/20 via-orange-500/10 to-amber-500/5 dark:from-orange-500/25 dark:via-orange-500/15 dark:to-amber-500/10 border border-orange-500/30 rounded-2xl flex items-center justify-center text-orange-500 flex-shrink-0 shadow-sm shadow-orange-500/10 transition-transform hover:scale-105 duration-200">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-garnet-500/20 via-garnet-500/10 to-amber-500/5 dark:from-garnet-500/25 dark:via-garnet-500/15 dark:to-amber-500/10 border border-garnet-500/30 rounded-2xl flex items-center justify-center text-garnet-500 flex-shrink-0 shadow-sm shadow-garnet-500/10 transition-transform hover:scale-105 duration-200">
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3" />
               <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4" />
@@ -113,26 +115,18 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
               <h1 className="font-display text-base sm:text-xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight leading-none transition-all duration-300">
                 {t.headerTitle}
               </h1>
-              <span className="px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded-md bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 hidden xs:inline-block">
+              <span className="px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded-md bg-garnet-500/10 text-garnet-600 dark:text-garnet-400 border border-garnet-500/20 hidden xs:inline-block">
                 v2.0
               </span>
             </div>
-            <p className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-widest leading-none hidden sm:block transition-all duration-300">
+            <p className="text-xs font-semibold text-garnet-600 dark:text-garnet-400 uppercase tracking-widest leading-none hidden sm:block transition-all duration-300">
               {t.headerSubtitle}
             </p>
           </div>
         </div>
 
-        {/* CENTRO: Seletor de Idiomas + Seletor de Tema/Paletas + Alternador de Layout */}
+        {/* CENTRO: Alternador de Layout */}
         <div className="flex items-center gap-3">
-          
-          {/* Seletor de Idioma Local com Bandeiras Animadas */}
-          <LanguageSelector />
-
-          {/* Seletor de Paleta Dinâmico inspirada no ThemeManager */}
-          <PaletteSelector />
-
-          {/* Botão de Alternar Modo de Layout */}
           {onToggleLayout && (
             <button
               onClick={onToggleLayout}
@@ -140,17 +134,27 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
               title="Alternar entre visualização lado a lado e coluna"
             >
               {layoutMode === 'horizontal' ? (
-                <Monitor className="w-4 h-4 text-orange-500" />
+                <Monitor className="w-4 h-4 text-garnet-500" />
               ) : (
-                <Smartphone className="w-4 h-4 text-orange-500" />
+                <Smartphone className="w-4 h-4 text-garnet-500" />
               )}
               <span>{layoutMode === 'horizontal' ? t.modeSideBySide : t.modeColumn}</span>
             </button>
           )}
         </div>
 
-        {/* LADO DIREITO: PWA + Tema + Sair */}
+        {/* LADO DIREITO: Engrenagem de Configurações + PWA + Tema + Sair */}
         <div className="flex items-center gap-2.5">
+
+          {/* Botão de Engrenagem de Configurações (Abre Modal de Idiomas + Cores + Tema) */}
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-100/90 dark:bg-zinc-800/60 hover:bg-zinc-200/80 dark:hover:bg-zinc-700/60 border border-zinc-200/80 dark:border-zinc-700/60 text-xs font-semibold text-zinc-800 dark:text-zinc-200 transition-all duration-200 shadow-xs group"
+            title="Configurações (Idioma e Tema)"
+          >
+            <Settings className="w-4 h-4 text-garnet-500 group-hover:rotate-90 transition-transform duration-300" />
+            <span className="hidden sm:inline">Configurações</span>
+          </button>
 
           {/* Botão de Instalação PWA Desktop */}
           {!isStandalone && (
@@ -159,7 +163,7 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
               className={`flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl border transition-all duration-200 shadow-xs ${
                 installed 
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400' 
-                  : 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white border-transparent shadow-md shadow-orange-500/20'
+                  : 'bg-gradient-to-r from-garnet-500 to-garnet-600 hover:from-garnet-600 hover:to-garnet-700 text-white border-transparent shadow-md shadow-garnet-500/20'
               }`}
               title="Instalar Sistema no Desktop"
             >
@@ -177,11 +181,11 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
             </button>
           )}
 
-          {/* Alternador de Tema Claro/Escuro */}
+          {/* Alternador Rápido de Tema Claro/Escuro */}
           <button
             onClick={toggleTheme}
             aria-label="Alternar tema"
-            className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60 hover:border-orange-500/40 text-zinc-500 dark:text-zinc-300 hover:text-orange-500 transition-all duration-200 flex items-center justify-center group shadow-xs"
+            className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60 hover:border-garnet-500/40 text-zinc-500 dark:text-zinc-300 hover:text-garnet-500 transition-all duration-200 flex items-center justify-center group shadow-xs"
             title={t.toggleTheme}
           >
             {theme === 'dark' ? (

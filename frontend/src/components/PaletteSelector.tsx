@@ -63,7 +63,7 @@ export default function PaletteSelector() {
                     {/* Previsualizador de Cor */}
                     <div
                       className="w-4 h-4 rounded-full border border-black/20 shadow-xs shrink-0"
-                      style={{ backgroundColor: `rgb(${pal.colors.primary})` }}
+                      style={{ backgroundColor: `rgb(${pal.colors[500]})` }}
                     />
                     <span>{pal.label}</span>
                   </div>
