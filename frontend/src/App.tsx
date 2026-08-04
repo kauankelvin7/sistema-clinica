@@ -242,15 +242,16 @@ function App() {
       {/* Conteúdo Principal com Scroll Próprio */}
       <main className="relative z-10 flex-1 overflow-y-auto px-[clamp(12px,2vw,32px)] py-4 space-y-4 max-w-[1800px] mx-auto w-full">
 
-        {/* Grid dos Três Formulários com Auto-fit Fluido */}
+        {/* Grid dos Três Formulários com Layout Responsivo por Breakpoints */}
         <div
           className={`grid gap-[clamp(12px,1.5vw,24px)] items-stretch transition-all duration-300 ${
-            layoutMode === 'vertical' ? 'max-w-3xl mx-auto w-full' : 'w-full'
+            layoutMode === 'vertical'
+              ? 'max-w-3xl mx-auto w-full grid-cols-1'
+              : 'w-full grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
           }`}
-          style={{ gridTemplateColumns: layoutMode === 'horizontal' ? 'repeat(auto-fit, minmax(320px, 1fr))' : '1fr' }}
         >
           {/* Seção: Dados do Paciente */}
-          <article className="card-orange group h-full flex flex-col justify-between">
+          <article className="card-orange group h-full flex flex-col justify-between min-w-0 w-full">
             <div>
               <header className="flex items-center gap-3 mb-4 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
                 <div className="w-9 h-9 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform duration-200">
@@ -265,7 +266,7 @@ function App() {
           </article>
 
           {/* Seção: Dados do Atestado */}
-          <article className="card-orange group h-full flex flex-col justify-between">
+          <article className="card-orange group h-full flex flex-col justify-between min-w-0 w-full">
             <div>
               <header className="flex items-center gap-3 mb-4 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
                 <div className="w-9 h-9 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform duration-200">
@@ -280,7 +281,7 @@ function App() {
           </article>
 
           {/* Seção: Dados do Médico */}
-          <article className="card-orange group h-full flex flex-col justify-between">
+          <article className="card-orange group h-full flex flex-col justify-between min-w-0 w-full">
             <div>
               <header className="flex items-center gap-3 mb-4 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
                 <div className="w-9 h-9 bg-zinc-500/10 dark:bg-zinc-400/15 border border-zinc-500/20 dark:border-zinc-400/25 rounded-xl flex items-center justify-center text-zinc-600 dark:text-zinc-300 group-hover:scale-105 transition-transform duration-200">

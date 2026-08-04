@@ -171,7 +171,7 @@ export default function DoctorsListModal({ isOpen, onClose, onSelect }: Props) {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-3 sm:gap-4">
               {filteredMedicos.map((medico, index) => (
                 <div
                   key={medico.id}
@@ -193,16 +193,19 @@ export default function DoctorsListModal({ isOpen, onClose, onSelect }: Props) {
                     </div>
                     
                     <div className="flex-1 min-w-0 overflow-hidden">
-                      <h3 className="text-sm sm:text-base font-bold text-orange-600 dark:text-orange-400 leading-snug break-normal [overflow-wrap:anywhere] min-w-0 mb-2 group-hover:text-orange-500 transition-colors">
+                      <h3
+                        className="text-sm sm:text-base font-bold text-orange-600 dark:text-orange-400 leading-snug truncate min-w-0 mb-2 group-hover:text-orange-500 transition-colors"
+                        title={medico.nome_completo}
+                      >
                         {medico.nome_completo}
                       </h3>
                       <div className="flex flex-wrap items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 max-w-full">
-                        <div className="flex items-center gap-1.5 whitespace-nowrap bg-zinc-100/70 dark:bg-zinc-800/60 px-2.5 py-1 rounded-md border border-zinc-200/50 dark:border-zinc-700/50">
+                        <div className="flex items-center gap-1.5 bg-zinc-100/70 dark:bg-zinc-800/60 px-2.5 py-1 rounded-md border border-zinc-200/50 dark:border-zinc-700/50 max-w-full min-w-0">
                           <Award className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-                          <span className="font-semibold text-zinc-700 dark:text-zinc-300">{medico.tipo_crm}:</span>
-                          <span className="font-mono font-bold text-zinc-800 dark:text-zinc-200">{medico.crm}</span>
+                          <span className="font-semibold text-zinc-700 dark:text-zinc-300 shrink-0">{medico.tipo_crm}:</span>
+                          <span className="font-mono font-bold text-zinc-800 dark:text-zinc-200 truncate min-w-0">{medico.crm}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 whitespace-nowrap bg-zinc-100/70 dark:bg-zinc-800/60 px-2.5 py-1 rounded-md border border-zinc-200/50 dark:border-zinc-700/50">
+                        <div className="flex items-center gap-1.5 bg-zinc-100/70 dark:bg-zinc-800/60 px-2.5 py-1 rounded-md border border-zinc-200/50 dark:border-zinc-700/50 shrink-0">
                           <MapPin className="w-3.5 h-3.5 text-orange-500 shrink-0" />
                           <span className="font-semibold text-zinc-700 dark:text-zinc-300">UF:</span>
                           <span className="font-bold text-zinc-800 dark:text-zinc-200">{medico.uf_crm}</span>
