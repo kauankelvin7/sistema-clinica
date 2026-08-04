@@ -92,8 +92,8 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
 
   return (
     <header className="relative bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border-b border-zinc-200/80 dark:border-zinc-800/80 px-4 sm:px-8 py-3.5 sm:py-4 transition-all duration-200 z-20 shadow-xs dark:shadow-none">
-      {/* Linha de Destaque Superior em Gradiente Laranja */}
-      <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500" />
+      {/* Linha de Destaque Superior em Gradiente Garnet Burgundy */}
+      <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#56070c] via-[#cb7169] to-[#8f3d38]" />
 
       <div className="max-w-[1800px] mx-auto flex items-center justify-between gap-4">
         
