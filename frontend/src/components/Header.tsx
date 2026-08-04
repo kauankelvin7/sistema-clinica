@@ -58,13 +58,13 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
 
       {/* Linha de Destaque Superior em Gradiente Dinâmico */}
-      <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-garnet-600 via-garnet-400 to-garnet-500 transition-all duration-500" />
+      <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-slate-600 via-zinc-400 to-slate-500 transition-all duration-500" />
 
       <div className="max-w-[1800px] mx-auto flex items-center justify-between gap-4">
         
         {/* LADO ESQUERDO: Logo + Título + Subtítulo */}
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-garnet-500/20 via-garnet-500/10 to-amber-500/5 dark:from-garnet-500/25 dark:via-garnet-500/15 dark:to-amber-500/10 border border-garnet-500/30 rounded-2xl flex items-center justify-center text-garnet-500 flex-shrink-0 shadow-sm shadow-garnet-500/10 transition-transform hover:scale-105 duration-200">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-slate-400/20 via-zinc-400/10 to-slate-500/10 dark:from-slate-400/25 dark:via-zinc-400/15 border border-slate-400/30 rounded-2xl flex items-center justify-center text-slate-300 dark:text-slate-200 flex-shrink-0 shadow-sm shadow-slate-500/10 transition-transform hover:scale-105 duration-200">
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3" />
               <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4" />
@@ -77,11 +77,11 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
               <h1 className="font-display text-base sm:text-xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight leading-none transition-all duration-300">
                 {t.headerTitle}
               </h1>
-              <span className="px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded-md bg-garnet-500/10 text-garnet-600 dark:text-garnet-400 border border-garnet-500/20 hidden xs:inline-block">
+              <span className="px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded-md bg-slate-500/10 text-slate-400 dark:text-slate-300 border border-slate-500/20 hidden xs:inline-block">
                 v2.0
               </span>
             </div>
-            <p className="text-xs font-semibold text-garnet-600 dark:text-garnet-400 uppercase tracking-widest leading-none hidden sm:block transition-all duration-300">
+            <p className="text-xs font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-widest leading-none hidden sm:block transition-all duration-300">
               {t.headerSubtitle}
             </p>
           </div>

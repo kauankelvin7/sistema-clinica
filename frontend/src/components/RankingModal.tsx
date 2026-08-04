@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { User, Trophy, X } from 'lucide-react'
 import api from '../services/api'
 
@@ -31,11 +32,37 @@ export default function RankingModal({ open, onClose }: RankingModalProps) {
     }
   }, [open])
 
+  // Trancar scroll do body enquanto aberto
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [open])
+
+  // Fechar com tecla ESC
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && open) onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [open, onClose])
+
   if (!open) return null
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/60 dark:bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
-      <div className="bg-white dark:bg-surface-card rounded-3xl shadow-2xl p-6 w-full max-w-lg relative border border-zinc-200 dark:border-zinc-800 overflow-hidden transform animate-in zoom-in-95 duration-200">
+  return createPortal(
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-zinc-950/80 dark:bg-black/90 backdrop-blur-md pt-16 sm:pt-20 pb-4 sm:pb-6 px-4 overflow-y-auto animate-in fade-in duration-300"
+    >
+      <div className="bg-white dark:bg-surface-card rounded-3xl shadow-2xl p-6 w-full max-w-lg relative border border-zinc-200 dark:border-zinc-800 overflow-hidden transform animate-in zoom-in-95 duration-200 my-auto">
         
         {/* Header */}
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-zinc-200 dark:border-zinc-800">
@@ -76,7 +103,7 @@ export default function RankingModal({ open, onClose }: RankingModalProps) {
                 <tr><td colSpan={4} className="text-center py-8 text-zinc-500">Nenhum paciente encontrado</td></tr>
               ) : ranking.map((p, i) => (
                 <tr key={p.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
-                  <td className="px-3 py-2.5 font-bold text-orange-500">{i + 1}</td>
+                  <td className="px-3 py-2.5 font-bold text-slate-500">{i + 1}</td>
                   <td className="px-3 py-2.5 font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
                     <User className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                     <span className="truncate max-w-[140px]">{p.nome}</span>
@@ -89,6 +116,7 @@ export default function RankingModal({ open, onClose }: RankingModalProps) {
           </table>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

@@ -1,5 +1,6 @@
 import { X, Stethoscope, MapPin, Award, Search, Filter } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { searchDoctors } from '../services/api'
 import { normalizeText } from '../utils/normalize'
 import { useTranslation } from '../utils/i18n'
@@ -58,6 +59,27 @@ export default function DoctorsListModal({ isOpen, onClose, onSelect }: Props) {
     }
   }, [isOpen])
 
+  // Trancar scroll do body enquanto aberto
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isOpen])
+
+  // Fechar com tecla ESC
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
+
   // Aplicar filtros
   useEffect(() => {
     let filtered = [...medicos]
@@ -84,9 +106,14 @@ export default function DoctorsListModal({ isOpen, onClose, onSelect }: Props) {
 
   if (!isOpen) return null
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/75 dark:bg-black/85 backdrop-blur-md p-2 sm:p-4 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-surface-card rounded-3xl shadow-2xl w-full max-w-5xl h-[90vh] sm:h-[85vh] max-h-[850px] overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col transform transition-all animate-in zoom-in-95 duration-200">
+  return createPortal(
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-zinc-950/80 dark:bg-black/90 backdrop-blur-md pt-16 sm:pt-20 pb-4 sm:pb-6 px-3 sm:px-6 overflow-y-auto animate-in fade-in duration-200"
+    >
+      <div className="bg-white dark:bg-surface-card rounded-3xl shadow-2xl w-full max-w-5xl h-[82vh] max-h-[760px] overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col transform transition-all animate-in zoom-in-95 duration-200 my-auto">
         
         {/* Header Adaptativo Glassmorphism */}
         <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800/80 shrink-0">
@@ -219,6 +246,7 @@ export default function DoctorsListModal({ isOpen, onClose, onSelect }: Props) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

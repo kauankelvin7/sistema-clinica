@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { Settings, X, Globe, Palette, Check, Moon, Sun, Monitor, Sparkles, Download, CheckCircle2 } from 'lucide-react'
 import { useTranslation, Language, setSavedLanguage } from '../utils/i18n'
 import { themeManager, THEME_PALETTES, PaletteName } from '../utils/themeManager'
@@ -80,11 +81,11 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   if (!isOpen) return null
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/70 dark:bg-black/85 backdrop-blur-md p-3 sm:p-6 animate-in fade-in duration-200">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-zinc-950/80 dark:bg-black/90 backdrop-blur-md pt-16 sm:pt-20 pb-4 sm:pb-6 px-3 sm:px-6 overflow-y-auto animate-in fade-in duration-200">
       <div
         ref={modalRef}
-        className="bg-white dark:bg-surface-card rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col transform transition-all animate-in zoom-in-95 duration-200"
+        className="bg-white dark:bg-surface-card rounded-3xl shadow-2xl w-full max-w-xl max-h-[82vh] overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col transform transition-all animate-in zoom-in-95 duration-200 my-auto"
       >
         {/* Header Elegante do Modal */}
         <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md px-6 py-4.5 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800/80 shrink-0 relative">
@@ -319,6 +320,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

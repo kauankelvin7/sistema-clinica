@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
   <defs>
-    <linearGradient id="garnetGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#a6544d;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#6e2d29;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#3d0407;stop-opacity:1" />
+    <linearGradient id="slateGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#cbd5e1;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#94a3b8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#64748b;stop-opacity:1" />
     </linearGradient>
     <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#6e2d29;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#230503;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#475569;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e293b;stop-opacity:1" />
     </linearGradient>
     <filter id="glow">
       <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
@@ -32,35 +32,35 @@
   
   <!-- Medical Cross (Modern) -->
   <g filter="url(#strongGlow)">
-    <rect x="90" y="60" width="20" height="80" rx="6" fill="url(#garnetGrad)"/>
-    <rect x="70" y="90" width="60" height="20" rx="6" fill="url(#garnetGrad)"/>
+    <rect x="90" y="60" width="20" height="80" rx="6" fill="url(#slateGrad)"/>
+    <rect x="70" y="90" width="60" height="20" rx="6" fill="url(#slateGrad)"/>
   </g>
   
   <!-- Certificate Document -->
   <g filter="url(#glow)">
-    <rect x="125" y="50" width="45" height="60" rx="4" fill="none" stroke="url(#garnetGrad)" stroke-width="3"/>
-    <line x1="132" y1="65" x2="163" y2="65" stroke="url(#garnetGrad)" stroke-width="2" stroke-linecap="round"/>
-    <line x1="132" y1="75" x2="163" y2="75" stroke="url(#garnetGrad)" stroke-width="2" stroke-linecap="round"/>
-    <line x1="132" y1="85" x2="155" y2="85" stroke="url(#garnetGrad)" stroke-width="2" stroke-linecap="round"/>
+    <rect x="125" y="50" width="45" height="60" rx="4" fill="none" stroke="url(#slateGrad)" stroke-width="3"/>
+    <line x1="132" y1="65" x2="163" y2="65" stroke="url(#slateGrad)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="132" y1="75" x2="163" y2="75" stroke="url(#slateGrad)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="132" y1="85" x2="155" y2="85" stroke="url(#slateGrad)" stroke-width="2" stroke-linecap="round"/>
   </g>
   
   <!-- Stethoscope (Elegant) -->
-  <g filter="url(#glow)" stroke="url(#garnetGrad)" stroke-width="4" fill="none" stroke-linecap="round">
+  <g filter="url(#glow)" stroke="url(#slateGrad)" stroke-width="4" fill="none" stroke-linecap="round">
     <path d="M 35 75 Q 25 60, 40 48"/>
-    <circle cx="40" cy="42" r="6" fill="url(#garnetGrad)"/>
+    <circle cx="40" cy="42" r="6" fill="url(#slateGrad)"/>
     <path d="M 40 48 L 40 90 Q 40 100, 50 100 L 70 100"/>
   </g>
   
   <!-- Health Monitor Pulse -->
-  <g filter="url(#glow)" stroke="url(#garnetGrad)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <g filter="url(#glow)" stroke="url(#slateGrad)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
     <path d="M 30 150 L 50 150 L 58 135 L 66 165 L 74 150 L 170 150"/>
   </g>
   
   <!-- Accent Elements -->
-  <circle cx="100" cy="100" r="92" stroke="url(#garnetGrad)" stroke-width="2" fill="none" opacity="0.3"/>
-  <circle cx="100" cy="100" r="85" stroke="url(#garnetGrad)" stroke-width="1" fill="none" opacity="0.2"/>
+  <circle cx="100" cy="100" r="92" stroke="url(#slateGrad)" stroke-width="2" fill="none" opacity="0.3"/>
+  <circle cx="100" cy="100" r="85" stroke="url(#slateGrad)" stroke-width="1" fill="none" opacity="0.2"/>
   
   <!-- Glow Dots -->
-  <circle cx="145" cy="115" r="3" fill="url(#garnetGrad)" opacity="0.8" filter="url(#glow)"/>
-  <circle cx="55" cy="115" r="3" fill="url(#garnetGrad)" opacity="0.8" filter="url(#glow)"/>
+  <circle cx="145" cy="115" r="3" fill="url(#slateGrad)" opacity="0.8" filter="url(#glow)"/>
+  <circle cx="55" cy="115" r="3" fill="url(#slateGrad)" opacity="0.8" filter="url(#glow)"/>
 </svg>

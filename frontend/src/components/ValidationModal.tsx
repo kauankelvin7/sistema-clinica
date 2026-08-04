@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertCircle, X } from 'lucide-react';
 import { useTranslation } from '../utils/i18n';
 
@@ -11,11 +12,37 @@ interface ValidationModalProps {
 export const ValidationModal: React.FC<ValidationModalProps> = ({ isOpen, onClose, missingFields }) => {
   const { t } = useTranslation();
 
+  // Trancar scroll do body enquanto aberto
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isOpen])
+
+  // Fechar com tecla ESC
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
+
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/60 dark:bg-black/80 backdrop-blur-md px-4 animate-in fade-in duration-300">
-      <div className="bg-white dark:bg-surface-card rounded-3xl shadow-2xl max-w-md w-full border border-zinc-200 dark:border-zinc-800 overflow-hidden relative transform animate-in zoom-in-95 duration-200">
+  return createPortal(
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-zinc-950/80 dark:bg-black/90 backdrop-blur-md pt-16 sm:pt-20 pb-4 sm:pb-6 px-4 overflow-y-auto animate-in fade-in duration-300"
+    >
+      <div className="bg-white dark:bg-surface-card rounded-3xl shadow-2xl max-w-md w-full border border-zinc-200 dark:border-zinc-800 overflow-hidden relative transform animate-in zoom-in-95 duration-200 my-auto">
         
         {/* Header com tom de alerta sutil */}
         <div className="bg-rose-500/10 dark:bg-rose-500/15 border-b border-rose-500/20 p-5 flex items-center justify-between">
@@ -48,7 +75,7 @@ export const ValidationModal: React.FC<ValidationModalProps> = ({ isOpen, onClos
             <ul className="space-y-2.5">
               {missingFields.map((field, index) => (
                 <li key={index} className="flex items-center gap-2.5 text-xs text-zinc-800 dark:text-zinc-200 font-medium">
-                  <div className="w-2 h-2 rounded-full bg-orange-500 shrink-0"></div>
+                  <div className="w-2 h-2 rounded-full bg-rose-500 shrink-0"></div>
                   <span>{field}</span>
                 </li>
               ))}
@@ -60,12 +87,13 @@ export const ValidationModal: React.FC<ValidationModalProps> = ({ isOpen, onClos
         <div className="flex justify-end p-5 pt-0">
           <button
             onClick={onClose}
-            className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold text-white bg-orange-500 hover:bg-orange-600 rounded-xl shadow-xs transition-all"
+            className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold text-white bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-500 rounded-xl shadow-xs transition-all"
           >
             {t.btnGotIt}
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
