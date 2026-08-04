@@ -95,8 +95,8 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
       {/* Modal de Configurações Unificado */}
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
 
-      {/* Linha de Destaque Superior em Gradiente Garnet Burgundy */}
-      <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#3d0407] via-[#a6544d] to-[#6e2d29]" />
+      {/* Linha de Destaque Superior em Gradiente Dinâmico */}
+      <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-garnet-600 via-garnet-400 to-garnet-500 transition-all duration-500" />
 
       <div className="max-w-[1800px] mx-auto flex items-center justify-between gap-4">
         
