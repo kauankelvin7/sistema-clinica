@@ -1,33 +1,35 @@
-const CACHE_NAME = 'nova-homologacao-v3-' + Date.now();
+const CACHE_NAME = 'nova-homologacao-v4-stethoscope';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png',
-  '/icons/maskable-icon-512x512.png',
-  '/icons/apple-touch-icon.png'
+  '/stethoscope.svg?v=2.0.1',
+  '/icons/icon-192x192.png?v=2.0.1',
+  '/icons/icon-512x512.png?v=2.0.1',
+  '/icons/maskable-icon-512x512.png?v=2.0.1',
+  '/icons/apple-touch-icon.png?v=2.0.1',
+  '/favicon.ico?v=2.0.1'
 ];
 
-// Install event - Immediate skipWaiting to force update without closing tabs
+// Install event - Forçar ativação imediata sem esperar o usuário fechar abas
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[PWA SW] Pre-caching core shell assets (Always Fresh mode)');
+      console.log('[PWA SW] Atualizando silenciosamente os ativos e o novo ícone do Estetoscópio');
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
 });
 
-// Activate event - Delete all old caches immediately & claim clients
+// Activate event - Limpar caches antigos imediatamente e assumir controle dos clientes
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
           if (cache !== CACHE_NAME) {
-            console.log('[PWA SW] Removendo cache antigo:', cache);
+            console.log('[PWA SW] Limpando cache legado para atualizar ícone:', cache);
             return caches.delete(cache);
           }
         })
@@ -36,10 +38,8 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch event - Network-First strategy for static assets & HTML
-// Garante que o PWA SEMPRE busque a versão mais recente da rede quando online
+// Fetch event - Network-First strategy para garantir que arquivos atualizados sejam servidos
 self.addEventListener('fetch', (event) => {
-  // Ignorar chamadas de API ou requisições não-GET
   if (event.request.method !== 'GET' || event.request.url.includes('/api/')) {
     return;
   }
@@ -47,7 +47,6 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
-        // Se a rede respondeu com sucesso (200 OK), atualiza a cópia em cache
         if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -57,8 +56,6 @@ self.addEventListener('fetch', (event) => {
         return networkResponse;
       })
       .catch(() => {
-        // Se estiver verdadeiramente offline ou a rede falhar, usa o cache como fallback
-        console.log('[PWA SW] Offline: servindo do cache fallback:', event.request.url);
         return caches.match(event.request).then((cachedResponse) => {
           if (cachedResponse) {
             return cachedResponse;
@@ -70,4 +67,3 @@ self.addEventListener('fetch', (event) => {
       })
   );
 });
-

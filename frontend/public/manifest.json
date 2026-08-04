@@ -2,19 +2,20 @@
   "short_name": "NOVA Medicina",
   "name": "NOVA - Sistema de Homologação de Atestados",
   "description": "Sistema de Homologação e Validação de Atestados Médicos Digitais",
+  "version": "2.0.1",
   "icons": [
     {
-      "src": "/icons/icon-192x192.png",
+      "src": "/icons/icon-192x192.png?v=2.0.1",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/icons/icon-512x512.png",
+      "src": "/icons/icon-512x512.png?v=2.0.1",
       "type": "image/png",
       "sizes": "512x512"
     },
     {
-      "src": "/icons/maskable-icon-512x512.png",
+      "src": "/icons/maskable-icon-512x512.png?v=2.0.1",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
@@ -32,7 +33,7 @@
       "short_name": "Homologação",
       "description": "Gerar Atestado Médico",
       "url": "/",
-      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/icons/icon-192x192.png?v=2.0.1", "sizes": "192x192" }]
     }
   ]
 }
