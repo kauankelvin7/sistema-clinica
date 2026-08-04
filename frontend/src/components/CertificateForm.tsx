@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { CertificateFormProps } from '../types'
 import AutocompleteInput from './AutocompleteInput'
 import { searchCID } from '../data/cids'
-import { Calendar, AlertCircle, Clock, ShieldCheck, FileSpreadsheet, Stethoscope } from 'lucide-react'
+import { Calendar, AlertCircle, Clock, ShieldCheck } from 'lucide-react'
 
 interface CidOption {
   label: string
@@ -28,7 +28,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
 
   // Função auxiliar para calcular data prevista de retorno ao trabalho
   const calculateReturnInfo = () => {
-    if (!formData.dataAtestado || !formData.diasAfastamento || formData.tipoAtestado === 'fisico') return null
+    if (!formData.dataAtestado || !formData.diasAfastamento) return null
     const days = parseInt(formData.diasAfastamento, 10)
     if (isNaN(days) || days <= 0) return null
 
@@ -66,41 +66,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
     <div className="space-y-4 flex flex-col h-full justify-between">
       <div className="space-y-4">
 
-        {/* 1. Modalidade / Tipo de Atestado */}
-        <div>
-          <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
-            Tipo de Atestado / Finalidade
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => updateFormData('tipoAtestado', 'saude')}
-              className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-all duration-200 ${
-                formData.tipoAtestado === 'saude'
-                  ? 'bg-orange-500/10 border-orange-500/40 text-orange-600 dark:text-orange-400 shadow-xs'
-                  : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/80'
-              }`}
-            >
-              <Stethoscope className="w-3.5 h-3.5" />
-              <span>Saúde / Afastamento</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => updateFormData('tipoAtestado', 'fisico')}
-              className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-all duration-200 ${
-                formData.tipoAtestado === 'fisico'
-                  ? 'bg-orange-500/10 border-orange-500/40 text-orange-600 dark:text-orange-400 shadow-xs'
-                  : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/80'
-              }`}
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5" />
-              <span>Comparecimento / Físico</span>
-            </button>
-          </div>
-        </div>
-
-        {/* 2. Data e Dias de Afastamento em linha */}
+        {/* Data e Dias de Afastamento em linha */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
@@ -123,14 +89,13 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
               className="input-field"
               placeholder="Ex: 3 dias"
               min="1"
-              disabled={formData.tipoAtestado === 'fisico'}
-              value={formData.tipoAtestado === 'fisico' ? '' : formData.diasAfastamento}
+              value={formData.diasAfastamento}
               onChange={(e) => updateFormData('diasAfastamento', e.target.value)}
             />
           </div>
         </div>
 
-        {/* 3. Código CID */}
+        {/* Código CID */}
         <div>
           <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
             Código CID (Classificação Internacional de Doenças)
@@ -138,7 +103,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
           <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
             <div className="w-full flex-1">
               <AutocompleteInput
-                value={formData.cidNaoInformado || formData.tipoAtestado === 'fisico' ? '' : formData.cid}
+                value={formData.cidNaoInformado ? '' : formData.cid}
                 onChange={(value) => {
                   updateFormData('cid', value)
                   handleCidSearch(value)
@@ -150,13 +115,9 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
                   }
                 }}
                 options={cidOptions}
-                placeholder={
-                  formData.tipoAtestado === 'fisico'
-                    ? 'Atestado de comparecimento (CID Isento)'
-                    : 'Digite o código ou descrição (Ex: J00, gripe, dor)'
-                }
+                placeholder="Digite o código ou descrição (Ex: J00, gripe, dor)"
                 minChars={1}
-                disabled={formData.cidNaoInformado || formData.tipoAtestado === 'fisico'}
+                disabled={formData.cidNaoInformado}
               />
             </div>
 
@@ -165,7 +126,6 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
                 type="checkbox"
                 className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-orange-500 bg-white dark:bg-surface-input focus:ring-2 focus:ring-orange-500/20 transition-all cursor-pointer"
                 checked={formData.cidNaoInformado}
-                disabled={formData.tipoAtestado === 'fisico'}
                 onChange={(e) => updateFormData('cidNaoInformado', e.target.checked)}
               />
               <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-200 transition-colors">
@@ -175,7 +135,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
           </div>
         </div>
 
-        {/* 4. Painel Informativo Inteligente de Retorno e Regra do INSS (CLT) */}
+        {/* Painel Informativo Inteligente de Retorno e Regra do INSS (CLT) */}
         {returnInfo ? (
           <div className={`p-3.5 rounded-2xl border transition-all duration-200 ${
             returnInfo.requiresINSS
@@ -205,9 +165,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
           <div className="p-3.5 rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/20 text-zinc-500 dark:text-zinc-400 text-xs flex items-center gap-2.5">
             <Calendar className="w-4 h-4 text-orange-500 flex-shrink-0" />
             <span className="text-[11px]">
-              {formData.tipoAtestado === 'fisico'
-                ? 'Atestado de Comparecimento: sem necessidade de afastamento das atividades laborais.'
-                : 'Preencha a data e os dias de afastamento para calcular a previsão de retorno ao trabalho.'}
+              Preencha a data e os dias de afastamento para calcular a previsão de retorno ao trabalho.
             </span>
           </div>
         )}

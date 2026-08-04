@@ -111,10 +111,8 @@ function App() {
 
     // Validar Atestado
     if (!formData.dataAtestado) missing.push('Data do Atestado')
-    if (formData.tipoAtestado !== 'fisico') {
-      if (!formData.diasAfastamento || parseInt(formData.diasAfastamento) <= 0) missing.push('Dias de Afastamento')
-      if (!formData.cidNaoInformado && !formData.cid.trim()) missing.push('Código CID')
-    }
+    if (!formData.diasAfastamento || parseInt(formData.diasAfastamento) <= 0) missing.push('Dias de Afastamento')
+    if (!formData.cidNaoInformado && !formData.cid.trim()) missing.push('Código CID')
 
     // Validar Médico
     if (!formData.nomeMedico.trim()) missing.push('Nome do Médico')
@@ -146,9 +144,9 @@ function App() {
         },
         atestado: {
           data_atestado: formData.dataAtestado,
-          dias_afastamento: formData.tipoAtestado === 'fisico' ? 0 : (parseInt(formData.diasAfastamento) || 0),
-          cid: formData.tipoAtestado === 'fisico' ? "" : formData.cid,
-          cid_nao_informado: formData.tipoAtestado === 'fisico' ? true : formData.cidNaoInformado,
+          dias_afastamento: parseInt(formData.diasAfastamento) || 0,
+          cid: formData.cid,
+          cid_nao_informado: formData.cidNaoInformado,
           tipo_atestado: formData.tipoAtestado,
         },
         medico: {
