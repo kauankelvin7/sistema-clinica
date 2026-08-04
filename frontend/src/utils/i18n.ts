@@ -154,7 +154,7 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     consultCroCfo: 'Consultar CRO no Portal do CFO',
 
     // Action Buttons
-    btnGenerateHTML: 'Gerar Declaração em HTML',
+    btnGenerateHTML: 'Gerar Declaração',
     btnGenerating: 'Gerando...',
     btnClearForm: 'Limpar Formulário',
     msgFormCleared: 'Formulário limpo com sucesso!',
@@ -250,7 +250,7 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     consultCroCfo: 'Check CRO on CFO Portal',
 
     // Action Buttons
-    btnGenerateHTML: 'Generate HTML Certificate',
+    btnGenerateHTML: 'Generate Declaration',
     btnGenerating: 'Generating...',
     btnClearForm: 'Clear Form',
     msgFormCleared: 'Form cleared successfully!',
@@ -346,7 +346,7 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     consultCroCfo: 'Consultar CRO en Portal CFO',
 
     // Action Buttons
-    btnGenerateHTML: 'Generar Declaración en HTML',
+    btnGenerateHTML: 'Generar Declaración',
     btnGenerating: 'Generando...',
     btnClearForm: 'Limpiar Formulario',
     msgFormCleared: '¡Formulario limpiado con éxito!',

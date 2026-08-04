@@ -18,7 +18,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
       return localStorage.getItem('theme') === 'dark' ? 'dark' : 'light'
-    } catch {}
+    } catch { }
     return 'dark'
   })
 
@@ -67,7 +67,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         showFeedback('Modo Claro ativado')
       }
       themeManager.updateThemeColor()
-    } catch {}
+    } catch { }
   }
 
   // Trata auto-instalação PWA
@@ -151,11 +151,10 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     key={pal.name}
                     type="button"
                     onClick={() => handlePaletteSelect(pal.name as PaletteName)}
-                    className={`group relative flex items-center justify-between p-3.5 rounded-2xl border text-xs font-bold transition-all duration-200 text-left ${
-                      isSelected
-                        ? 'bg-garnet-500/15 border-garnet-500 text-zinc-900 dark:text-zinc-50 shadow-md ring-2 ring-garnet-500/20'
-                        : 'bg-zinc-50/80 dark:bg-surface-input border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-garnet-500/40 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
-                    }`}
+                    className={`group relative flex items-center justify-between p-3.5 rounded-2xl border text-xs font-bold transition-all duration-200 text-left ${isSelected
+                      ? 'bg-garnet-500/15 border-garnet-500 text-zinc-900 dark:text-zinc-50 shadow-md ring-2 ring-garnet-500/20'
+                      : 'bg-zinc-50/80 dark:bg-surface-input border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-garnet-500/40 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       {/* Amostra Tríplice de Cores da Paleta */}
@@ -207,11 +206,10 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     key={item.code}
                     type="button"
                     onClick={() => handleLanguageSelect(item.code as Language)}
-                    className={`flex items-center justify-between p-3.5 rounded-2xl border text-xs font-bold transition-all duration-200 ${
-                      isSelected
-                        ? 'bg-garnet-500/15 border-garnet-500 text-zinc-900 dark:text-zinc-50 shadow-md ring-2 ring-garnet-500/20'
-                        : 'bg-zinc-50/80 dark:bg-surface-input border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-garnet-500/40 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
-                    }`}
+                    className={`flex items-center justify-between p-3.5 rounded-2xl border text-xs font-bold transition-all duration-200 ${isSelected
+                      ? 'bg-garnet-500/15 border-garnet-500 text-zinc-900 dark:text-zinc-50 shadow-md ring-2 ring-garnet-500/20'
+                      : 'bg-zinc-50/80 dark:bg-surface-input border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-garnet-500/40 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
+                      }`}
                   >
                     <div className="flex items-center gap-2.5">
                       {item.flag}
@@ -236,16 +234,16 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-xs font-extrabold text-zinc-400 uppercase tracking-widest">
                   <Download className="w-4 h-4 text-garnet-500" />
-                  <span>Aplicativo do Sistema (PWA)</span>
+                  <span>Instalar Aplicativo no Dispositivo</span>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-garnet-500/10 dark:bg-garnet-500/15 border border-garnet-500/25 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="space-y-1 text-center sm:text-left">
                     <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-50">
-                      {installed ? 'App Instalado no Dispositivo' : 'Instalar NOVA no Dispositivo'}
+                      {installed ? 'App Instalado no Dispositivo' : 'Instalar sistema no seu Dispositivo'}
                     </h4>
                     <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                      {installed 
+                      {installed
                         ? 'O aplicativo já está pronto para uso no seu sistema.'
                         : 'Acesse o sistema diretamente da sua área de trabalho como um app nativo.'
                       }
@@ -285,11 +283,10 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               <button
                 type="button"
                 onClick={() => handleThemeToggle('light')}
-                className={`flex items-center justify-center gap-3 p-3.5 rounded-2xl border text-xs font-bold transition-all duration-200 ${
-                  theme === 'light'
-                    ? 'bg-garnet-500/15 border-garnet-500 text-zinc-900 dark:text-zinc-50 shadow-md ring-2 ring-garnet-500/20'
-                    : 'bg-zinc-50/80 dark:bg-surface-input border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-garnet-500/40'
-                }`}
+                className={`flex items-center justify-center gap-3 p-3.5 rounded-2xl border text-xs font-bold transition-all duration-200 ${theme === 'light'
+                  ? 'bg-garnet-500/15 border-garnet-500 text-zinc-900 dark:text-zinc-50 shadow-md ring-2 ring-garnet-500/20'
+                  : 'bg-zinc-50/80 dark:bg-surface-input border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-garnet-500/40'
+                  }`}
               >
                 <Sun className="w-4.5 h-4.5 text-amber-500" />
                 <span>Modo Claro</span>
@@ -298,11 +295,10 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               <button
                 type="button"
                 onClick={() => handleThemeToggle('dark')}
-                className={`flex items-center justify-center gap-3 p-3.5 rounded-2xl border text-xs font-bold transition-all duration-200 ${
-                  theme === 'dark'
-                    ? 'bg-garnet-500/15 border-garnet-500 text-zinc-900 dark:text-zinc-50 shadow-md ring-2 ring-garnet-500/20'
-                    : 'bg-zinc-50/80 dark:bg-surface-input border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-garnet-500/40'
-                }`}
+                className={`flex items-center justify-center gap-3 p-3.5 rounded-2xl border text-xs font-bold transition-all duration-200 ${theme === 'dark'
+                  ? 'bg-garnet-500/15 border-garnet-500 text-zinc-900 dark:text-zinc-50 shadow-md ring-2 ring-garnet-500/20'
+                  : 'bg-zinc-50/80 dark:bg-surface-input border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-garnet-500/40'
+                  }`}
               >
                 <Moon className="w-4.5 h-4.5 text-indigo-400" />
                 <span>Modo Escuro</span>
