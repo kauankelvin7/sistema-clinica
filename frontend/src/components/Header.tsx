@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Sun, Moon, LogOut, Download, CheckCircle2, Monitor, Smartphone } from 'lucide-react'
 import LanguageSelector from './LanguageSelector'
+import PaletteSelector from './PaletteSelector'
 import { getSavedLanguage, TRANSLATIONS, Language } from '../utils/i18n'
 
 interface HeaderProps {
@@ -122,11 +123,14 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
           </div>
         </div>
 
-        {/* CENTRO: Seletor de Idiomas com Animação Fluida + Alternador de Layout */}
+        {/* CENTRO: Seletor de Idiomas + Seletor de Tema/Paletas + Alternador de Layout */}
         <div className="flex items-center gap-3">
           
           {/* Seletor de Idioma Local com Bandeiras Animadas */}
           <LanguageSelector />
+
+          {/* Seletor de Paleta Dinâmico inspirada no ThemeManager */}
+          <PaletteSelector />
 
           {/* Botão de Alternar Modo de Layout */}
           {onToggleLayout && (

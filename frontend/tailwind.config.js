@@ -12,69 +12,68 @@ export default {
         display: ['Sora', 'sans-serif'],
       },
       colors: {
-        // Paleta Garnet / Burgundy basada na imagem fornecida pelo usuário:
-        // #170000 (Hex 1) | #350a06 (Hex 2) | #56070c (Hex 3) | #8f3d38 (Hex 4) | #cb7169 (Hex 5)
+        // Paleta Garnet / Burgundy escurecida em 1 tom:
+        // #0d0000 | #230503 | #3d0407 | #6e2d29 | #a6544d
         garnet: {
-          50: '#fdf4f4',
-          100: '#fbe6e5',
-          200: '#f6cecb',
-          300: '#eba7a2',
-          400: '#cb7169', // #cb7169 (Hex 5)
-          500: '#8f3d38', // #8f3d38 (Hex 4)
-          600: '#56070c', // #56070c (Hex 3)
-          700: '#350a06', // #350a06 (Hex 2)
-          800: '#260404',
-          900: '#170000', // #170000 (Hex 1)
-          950: '#0c0000',
+          50: '#f9eaea',
+          100: '#f0cecd',
+          200: '#e19d9a',
+          300: '#ca756f',
+          400: '#a6544d', // Escurecido (antes #cb7169)
+          500: '#6e2d29', // Escurecido (antes #8f3d38)
+          600: '#3d0407', // Escurecido (antes #56070c)
+          700: '#230503', // Escurecido (antes #350a06)
+          800: '#170202',
+          900: '#0d0000', // Escurecido (antes #170000)
+          950: '#050000',
         },
-        // Mapeamento direto de 'orange' para a nova paleta Garnet/Burgundy
+        // Mapeamento direto de 'orange' para a nova paleta Garnet/Burgundy escurecida
         orange: {
-          50: '#fdf4f4',
-          100: '#fbe6e5',
-          200: '#f6cecb',
-          300: '#eba7a2',
-          400: '#cb7169',
-          500: '#8f3d38',
-          600: '#56070c',
-          700: '#350a06',
-          800: '#260404',
-          900: '#170000',
-          950: '#0c0000',
+          50: '#f9eaea',
+          100: '#f0cecd',
+          200: '#e19d9a',
+          300: '#ca756f',
+          400: '#a6544d',
+          500: '#6e2d29',
+          600: '#3d0407',
+          700: '#230503',
+          800: '#170202',
+          900: '#0d0000',
+          950: '#050000',
         },
-        // Mapeamento de 'amber' para tons complementares rosa-terracota
         amber: {
-          50: '#fdf4f4',
-          100: '#fbe6e5',
-          200: '#f6cecb',
-          300: '#eba7a2',
-          400: '#d98279',
-          500: '#cb7169',
-          600: '#a84e49',
-          700: '#8f3d38',
-          800: '#56070c',
-          900: '#350a06',
-          950: '#170000',
+          50: '#f9eaea',
+          100: '#f0cecd',
+          200: '#e19d9a',
+          300: '#ca756f',
+          400: '#b8665f',
+          500: '#a6544d',
+          600: '#8c3d37',
+          700: '#6e2d29',
+          800: '#3d0407',
+          900: '#230503',
+          950: '#0d0000',
         },
         surface: {
-          page: '#170000',
-          card: '#270707',
-          input: '#1f0404',
+          page: '#0d0000',
+          card: '#1a0303',
+          input: '#120202',
         },
         accent: {
-          DEFAULT: '#8f3d38',
-          soft: 'rgba(143,61,56,0.15)',
-          softer: 'rgba(203,113,105,0.08)',
+          DEFAULT: '#6e2d29',
+          soft: 'rgba(110,45,41,0.18)',
+          softer: 'rgba(166,84,77,0.10)',
         },
       },
       backgroundImage: {
-        'gradient-primary': 'linear-gradient(135deg, #8f3d38 0%, #56070c 100%)',
-        'gradient-dark': 'linear-gradient(135deg, #350a06 0%, #170000 100%)',
-        'gradient-garnet': 'linear-gradient(135deg, #cb7169 0%, #8f3d38 50%, #56070c 100%)',
+        'gradient-primary': 'linear-gradient(135deg, #6e2d29 0%, #3d0407 100%)',
+        'gradient-dark': 'linear-gradient(135deg, #230503 0%, #0d0000 100%)',
+        'gradient-garnet': 'linear-gradient(135deg, #a6544d 0%, #6e2d29 50%, #3d0407 100%)',
       },
       boxShadow: {
-        'focus-ring': '0 0 0 3px rgba(143,61,56,0.25)',
-        'garnet': '0 10px 25px -5px rgba(143, 61, 56, 0.3)',
-        'garnet-lg': '0 20px 40px -10px rgba(86, 7, 12, 0.4)',
+        'focus-ring': '0 0 0 3px rgba(110,45,41,0.25)',
+        'garnet': '0 10px 25px -5px rgba(110, 45, 41, 0.3)',
+        'garnet-lg': '0 20px 40px -10px rgba(61, 4, 7, 0.4)',
       },
     },
   },
