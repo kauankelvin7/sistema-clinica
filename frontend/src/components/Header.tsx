@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Sun, Moon, LogOut, Download, CheckCircle2, Monitor, Smartphone, Settings } from 'lucide-react'
+import { Sun, Moon, LogOut, Monitor, Smartphone, Settings } from 'lucide-react'
 import { getSavedLanguage, TRANSLATIONS, Language } from '../utils/i18n'
 import SettingsModal from './SettingsModal'
 import PaletteSelector from './PaletteSelector'
-import { usePWA } from '../utils/usePWA'
 
 interface HeaderProps {
   onLogout?: () => void
@@ -14,7 +13,6 @@ interface HeaderProps {
 export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLayout }: HeaderProps) {
   const [lang, setLang] = useState<Language>(getSavedLanguage)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const { isStandalone, installed, installApp } = usePWA()
 
   useEffect(() => {
     const handleLangChange = (e: Event) => {
@@ -120,31 +118,6 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
             <Settings className="w-4 h-4 text-garnet-500 group-hover:rotate-90 transition-transform duration-300" />
             <span className="hidden sm:inline">Configurações</span>
           </button>
-
-          {/* Botão de Instalação PWA Desktop */}
-          {!isStandalone && (
-            <button
-              onClick={() => installApp()}
-              className={`flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl border transition-all duration-200 shadow-xs ${
-                installed 
-                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400' 
-                  : 'bg-gradient-to-r from-garnet-500 to-garnet-600 hover:from-garnet-600 hover:to-garnet-700 text-white border-transparent shadow-md shadow-garnet-500/20'
-              }`}
-              title="Instalar Sistema no Dispositivo"
-            >
-              {installed ? (
-                <>
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{t.appInstalled}</span>
-                </>
-              ) : (
-                <>
-                  <Download className="w-3.5 h-3.5 animate-bounce" />
-                  <span>{t.installApp}</span>
-                </>
-              )}
-            </button>
-          )}
 
           {/* Alternador Rápido de Tema Claro/Escuro */}
           <button
