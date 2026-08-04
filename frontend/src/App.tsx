@@ -232,48 +232,54 @@ function App() {
 
         {/* Grid dos Três Formulários com Auto-fit Fluido */}
         <div
-          className={`grid gap-[clamp(12px,1.5vw,24px)] items-start transition-all duration-300 ${
+          className={`grid gap-[clamp(12px,1.5vw,24px)] items-stretch transition-all duration-300 ${
             layoutMode === 'vertical' ? 'max-w-3xl mx-auto w-full' : 'w-full'
           }`}
           style={{ gridTemplateColumns: layoutMode === 'horizontal' ? 'repeat(auto-fit, minmax(320px, 1fr))' : '1fr' }}
         >
           {/* Seção: Dados do Paciente */}
-          <article className="card-orange group">
-            <header className="flex items-center gap-3 mb-4 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
-              <div className="w-9 h-9 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform duration-200">
-                <User className="w-4 h-4" />
-              </div>
-              <h2 className="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
-                Dados do Paciente
-              </h2>
-            </header>
-            <PatientForm formData={formData} updateFormData={updateFormData} />
+          <article className="card-orange group h-full flex flex-col justify-between">
+            <div>
+              <header className="flex items-center gap-3 mb-4 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
+                <div className="w-9 h-9 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform duration-200">
+                  <User className="w-4 h-4" />
+                </div>
+                <h2 className="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
+                  Dados do Paciente
+                </h2>
+              </header>
+              <PatientForm formData={formData} updateFormData={updateFormData} />
+            </div>
           </article>
 
           {/* Seção: Dados do Atestado */}
-          <article className="card-orange group">
-            <header className="flex items-center gap-3 mb-4 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
-              <div className="w-9 h-9 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform duration-200">
-                <FileText className="w-4 h-4" />
-              </div>
-              <h2 className="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
-                Dados do Atestado
-              </h2>
-            </header>
-            <CertificateForm formData={formData} updateFormData={updateFormData} />
+          <article className="card-orange group h-full flex flex-col justify-between">
+            <div>
+              <header className="flex items-center gap-3 mb-4 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
+                <div className="w-9 h-9 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform duration-200">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <h2 className="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
+                  Dados do Atestado
+                </h2>
+              </header>
+              <CertificateForm formData={formData} updateFormData={updateFormData} />
+            </div>
           </article>
 
           {/* Seção: Dados do Médico */}
-          <article className="card-orange group">
-            <header className="flex items-center gap-3 mb-4 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
-              <div className="w-9 h-9 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform duration-200">
-                <Stethoscope className="w-4 h-4" />
-              </div>
-              <h2 className="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
-                Dados do Médico
-              </h2>
-            </header>
-            <DoctorForm formData={formData} updateFormData={updateFormData} />
+          <article className="card-orange group h-full flex flex-col justify-between">
+            <div>
+              <header className="flex items-center gap-3 mb-4 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
+                <div className="w-9 h-9 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform duration-200">
+                  <Stethoscope className="w-4 h-4" />
+                </div>
+                <h2 className="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
+                  Dados do Médico
+                </h2>
+              </header>
+              <DoctorForm formData={formData} updateFormData={updateFormData} />
+            </div>
           </article>
 
         </div>

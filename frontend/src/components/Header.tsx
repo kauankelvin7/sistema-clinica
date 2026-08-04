@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Sun, Moon, LogOut, Download, CheckCircle2, User, Monitor, Smartphone } from 'lucide-react'
+import { Sun, Moon, LogOut, Download, CheckCircle2, Monitor, Smartphone } from 'lucide-react'
 
 interface HeaderProps {
   onLogout?: () => void
@@ -135,14 +135,8 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
           )}
         </div>
 
-        {/* LADO DIREITO: Perfil do Operador + PWA + Tema + Sair */}
+        {/* LADO DIREITO: PWA + Tema + Sair */}
         <div className="flex items-center gap-2.5">
-          
-          {/* Indicador do Usuário/Operador */}
-          <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-100/80 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-700/50 text-xs text-zinc-600 dark:text-zinc-300 font-medium">
-            <User className="w-3.5 h-3.5 text-orange-500" />
-            <span>Operador Clínico</span>
-          </div>
 
           {/* Botão de Instalação PWA Desktop */}
           {!isStandalone && (
