@@ -1,4 +1,4 @@
-export type PaletteName = 'garnet' | 'emerald' | 'sapphire' | 'amber'
+export type PaletteName = 'garnet' | 'emerald' | 'sapphire' | 'amber' | 'graphite'
 
 export interface ColorPalette {
   name: PaletteName
@@ -100,6 +100,26 @@ export const THEME_PALETTES: Record<PaletteName, ColorPalette> = {
       bgPage: '28 20 10',
       bgCard: '42 30 15',
       bgInput: '35 25 12',
+    },
+  },
+  graphite: {
+    name: 'graphite',
+    label: 'Graphite Dark',
+    colors: {
+      50:  '250 250 250',
+      100: '244 244 245',
+      200: '228 228 231',
+      300: '212 212 216',
+      400: '161 161 170',
+      500: '113 113 122',
+      600: '82  82  91',
+      700: '63  63  70',
+      800: '39  39  42',
+      900: '15  15  17',
+      950: '7   7   8',
+      bgPage: '9   9   11',
+      bgCard: '20  20  23',
+      bgInput: '14  14  16',
     },
   },
 }

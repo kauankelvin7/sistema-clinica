@@ -145,6 +145,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 { name: 'emerald', label: 'Emerald Health', desc: 'Verde Esmeralda Clínico', colors: ['#059669', '#047857', '#34d399'] },
                 { name: 'sapphire', label: 'Sapphire Clinical', desc: 'Azul Safira Hospitalar', colors: ['#1d4ed8', '#1e3a8a', '#60a5fa'] },
                 { name: 'amber', label: 'Amber Gold', desc: 'Dourado Ambar & Nobre', colors: ['#d97706', '#b45309', '#fbbf24'] },
+                { name: 'graphite', label: 'Graphite Dark', desc: 'Cinza Neutro até o Preto', colors: ['#71717a', '#27272a', '#a1a1aa'] },
               ].map((pal) => {
                 const isSelected = currentPalette === pal.name
                 return (
