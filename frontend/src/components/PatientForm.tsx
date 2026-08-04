@@ -4,6 +4,7 @@ import { Users, Eye, AlertCircle } from 'lucide-react'
 import { searchPatients, checkDuplicate } from '../services/api'
 import PatientsListModal from './PatientsListModal'
 import AutocompleteInput from './AutocompleteInput'
+import { useTranslation } from '../utils/i18n'
 
 // Função para aplicar máscara de CPF
 function maskCPF(value: string) {
@@ -16,6 +17,7 @@ function maskCPF(value: string) {
 }
 
 export default function PatientForm({ formData, updateFormData }: PatientFormProps) {
+  const { t } = useTranslation()
   const [totalPacientes, setTotalPacientes] = useState<number>(0)
   const [showListModal, setShowListModal] = useState(false)
   const [pacientesOptions, setPacientesOptions] = useState<Array<{label: string, value: string, data: any}>>([])
@@ -109,15 +111,15 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
           </div>
           <div className="text-left flex-1 min-w-0">
             <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wide">
-              Pacientes Cadastrados
+              {t.searchPatientsBtn}
             </p>
             {totalPacientes > 0 ? (
               <p className="text-lg font-bold text-zinc-900 dark:text-zinc-50 leading-tight group-hover:text-orange-500 transition-colors">
-                {totalPacientes} paciente{totalPacientes > 1 ? 's' : ''} registrado{totalPacientes > 1 ? 's' : ''}
+                {totalPacientes} {t.modalPatientsTitle}
               </p>
             ) : (
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Nenhum paciente salvo na base • Clique para consultar
+                {t.modalPatientsSubtitle}
               </p>
             )}
           </div>
@@ -128,7 +130,7 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
       {/* Nome Completo com Autocomplete Assíncrono */}
       <div>
         <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
-          Nome Completo
+          {t.patientNameLabel}
         </label>
         <AutocompleteInput
           value={formData.nomePaciente}
@@ -145,7 +147,7 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
           }}
           options={pacientesOptions}
           isLoading={isSearching}
-          placeholder="Digite o nome completo do paciente"
+          placeholder={t.patientNamePlaceholder}
           minChars={2}
         />
       </div>
@@ -153,7 +155,7 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
       {/* Documento (CPF/RG) */}
       <div>
         <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
-          Documento
+          {t.docNumberLabel}
         </label>
         <div className="flex gap-2">
           <select
@@ -167,7 +169,7 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
           <input
             type="text"
             className={`input-field flex-1 ${isDuplicate ? 'border-amber-500/80 bg-amber-500/5 focus:border-amber-500' : ''}`}
-            placeholder={formData.tipoDocumento === 'CPF' ? '000.000.000-00' : 'Digite o RG'}
+            placeholder={formData.tipoDocumento === 'CPF' ? t.docNumberPlaceholder : 'ID'}
             value={formData.numeroDocumento}
             onChange={handleDocumentoChange}
             maxLength={formData.tipoDocumento === 'CPF' ? 14 : 20}
@@ -186,12 +188,12 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
-            Cargo
+            {t.positionLabel}
           </label>
           <input
             type="text"
             className="input-field"
-            placeholder="Ex: Analista de Sistemas"
+            placeholder={t.positionPlaceholder}
             value={formData.cargo}
             onChange={(e) => updateFormData('cargo', e.target.value)}
           />
@@ -199,12 +201,12 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
 
         <div>
           <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
-            Empresa
+            {t.companyLabel}
           </label>
           <input
             type="text"
             className="input-field"
-            placeholder="Nome da empresa"
+            placeholder={t.companyPlaceholder}
             value={formData.empresa}
             onChange={(e) => updateFormData('empresa', e.target.value)}
           />

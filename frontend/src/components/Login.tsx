@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import { Lock, User as UserIcon, Loader2 } from 'lucide-react'
 import { loginUser } from '../services/api'
+import { useTranslation } from '../utils/i18n'
+import LanguageSelector from './LanguageSelector'
 
 interface LoginProps {
   onLoginSuccess: (token: string) => void;
 }
 
 export default function Login({ onLoginSuccess }: LoginProps) {
+  const { t } = useTranslation()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
@@ -28,7 +31,12 @@ export default function Login({ onLoginSuccess }: LoginProps) {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-colors duration-300">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-colors duration-300 relative">
+      {/* Seletor de Idioma no Topo Direito da Tela de Login */}
+      <div className="absolute top-6 right-6 z-20">
+        <LanguageSelector />
+      </div>
+
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
           <div className="w-14 h-14 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-2xl flex items-center justify-center text-orange-500 flex-shrink-0 shadow-lg shadow-orange-500/10">
@@ -39,11 +47,11 @@ export default function Login({ onLoginSuccess }: LoginProps) {
             </svg>
           </div>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-zinc-900 dark:text-zinc-50 tracking-tight">
-          Acesso Restrito
+        <h2 className="mt-6 text-center text-2xl font-extrabold text-zinc-900 dark:text-zinc-50 tracking-tight transition-all duration-300">
+          {t.loginAppTitle}
         </h2>
-        <p className="mt-2 text-center text-sm text-zinc-600 dark:text-zinc-400">
-          Sistema de Homologação de Atestados Digitais
+        <p className="mt-2 text-center text-xs text-zinc-600 dark:text-zinc-400 transition-all duration-300">
+          {t.loginAppSubtitle}
         </p>
       </div>
 
@@ -52,7 +60,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
-                Usuário
+                {t.loginUserLabel}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -64,14 +72,14 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="block w-full pl-10 pr-3 py-3 border border-zinc-300 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all sm:text-sm"
-                  placeholder="Seu usuário"
+                  placeholder={t.loginUserPlaceholder}
                 />
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
-                Senha
+                {t.loginPassLabel}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -83,7 +91,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="block w-full pl-10 pr-3 py-3 border border-zinc-300 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all sm:text-sm"
-                  placeholder="••••••••"
+                  placeholder={t.loginPassPlaceholder}
                 />
               </div>
             </div>
@@ -98,7 +106,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                 className="h-4 w-4 text-orange-500 focus:ring-orange-500 border-zinc-300 rounded cursor-pointer"
               />
               <label htmlFor="remember-me" className="ml-2 block text-sm text-zinc-900 dark:text-zinc-100 cursor-pointer">
-                Lembrar de mim (30 dias)
+                {t.loginDemoCredentials}
               </label>
             </div>
 
@@ -128,15 +136,15 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                 {loading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
-                  'Entrar no Sistema'
+                  t.btnEnterSystem
                 )}
               </button>
             </div>
           </form>
         </div>
         
-        <p className="mt-8 text-center text-xs text-zinc-500">
-          Esta área é restrita para profissionais autorizados. Todo acesso é monitorado.
+        <p className="mt-8 text-center text-xs text-zinc-500 transition-all duration-300">
+          {t.loginRestrictedNotice}
         </p>
       </div>
     </div>

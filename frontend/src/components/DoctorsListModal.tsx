@@ -2,6 +2,7 @@ import { X, Stethoscope, MapPin, Award, Search, Filter } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { searchDoctors } from '../services/api'
 import { normalizeText } from '../utils/normalize'
+import { useTranslation } from '../utils/i18n'
 
 interface Medico {
   id: number
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export default function DoctorsListModal({ isOpen, onClose }: Props) {
+  const { t } = useTranslation()
   const [medicos, setMedicos] = useState<Medico[]>([])
   const [filteredMedicos, setFilteredMedicos] = useState<Medico[]>([])
   const [loading, setLoading] = useState(true)
@@ -34,15 +36,12 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
   useEffect(() => {
     if (isOpen) {
       setLoading(true)
-      console.log('[DoctorsListModal] Carregando médicos...')
       searchDoctors()
         .then(data => {
-          console.log('[DoctorsListModal] Dados recebidos:', data)
           const doctorsList = (data as any).doctors || (Array.isArray(data) ? data : []);
           setMedicos(doctorsList)
           setFilteredMedicos(doctorsList)
           
-          // Extrair lista única de UFs
           const uniqueUFs = Array.from(new Set(
             doctorsList.map((m: Medico) => m.uf_crm)
           )) as string[]
@@ -50,8 +49,7 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
           
           setLoading(false)
         })
-        .catch(err => {
-          console.error('[DoctorsListModal] Erro ao carregar médicos:', err)
+        .catch(() => {
           setMedicos([])
           setFilteredMedicos([])
           setLoading(false)
@@ -83,12 +81,6 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
     setFilteredMedicos(filtered)
   }, [searchTerm, filterTipoCRM, filterUF, medicos])
 
-  const clearFilters = () => {
-    setSearchTerm('')
-    setFilterTipoCRM('TODOS')
-    setFilterUF('TODAS')
-  }
-
   if (!isOpen) return null
 
   return (
@@ -103,10 +95,10 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
             </div>
             <div>
               <h2 className="font-display text-base sm:text-xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight leading-tight">
-                Médicos Cadastrados
+                {t.modalDoctorsTitle}
               </h2>
               <p className="text-[11px] sm:text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">
-                {filteredMedicos.length} de {medicos.length} registro{medicos.length !== 1 ? 's' : ''}
+                {filteredMedicos.length} / {medicos.length}
               </p>
             </div>
           </div>
@@ -125,7 +117,7 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
             <input
               type="text"
-              placeholder="Buscar por nome, CRM ou especialidade..."
+              placeholder={t.searchDoctorsPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="input-field pl-10 py-2 text-xs sm:text-sm bg-white dark:bg-surface-input border border-zinc-200 dark:border-zinc-800 rounded-xl"
@@ -140,7 +132,7 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
                 onChange={(e) => setFilterTipoCRM(e.target.value as 'TODOS' | 'CRM' | 'CRO' | 'RMS')}
                 className="bg-transparent text-xs font-semibold text-zinc-700 dark:text-zinc-300 focus:outline-none cursor-pointer pr-2"
               >
-                <option value="TODOS" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">Todos Registros</option>
+                <option value="TODOS" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">CRM / CRO / RMS</option>
                 <option value="CRM" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">CRM</option>
                 <option value="CRO" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">CRO</option>
                 <option value="RMS" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">RMS</option>
@@ -153,20 +145,11 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
                 onChange={(e) => setFilterUF(e.target.value)}
                 className="bg-white dark:bg-surface-input border border-zinc-200 dark:border-zinc-800 px-3 py-1.5 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-orange-500 shadow-xs cursor-pointer"
               >
-                <option value="TODAS" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">Todas UFs</option>
+                <option value="TODAS" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">UF (Todas)</option>
                 {ufs.map(uf => (
                   <option key={uf} value={uf} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">{uf}</option>
                 ))}
               </select>
-            )}
-
-            {(searchTerm || filterTipoCRM !== 'TODOS' || filterUF !== 'TODAS') && (
-              <button
-                onClick={clearFilters}
-                className="px-3 py-1.5 bg-zinc-100 hover:bg-rose-50 dark:bg-zinc-800 dark:hover:bg-rose-500/10 text-zinc-600 hover:text-rose-600 dark:text-zinc-300 dark:hover:text-rose-400 text-xs font-semibold rounded-xl transition-all border border-zinc-200 dark:border-zinc-700 ml-auto"
-              >
-                Limpar Filtros
-              </button>
             )}
           </div>
         </div>
@@ -176,18 +159,14 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
           {loading ? (
             <div className="flex flex-col items-center justify-center py-16">
               <div className="animate-spin w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full mb-3"></div>
-              <p className="text-xs text-zinc-500 font-medium">Buscando base de médicos...</p>
             </div>
           ) : filteredMedicos.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="w-14 h-14 bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl flex items-center justify-center mb-4 text-zinc-400">
                 <Stethoscope className="w-7 h-7" />
               </div>
-              <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 mb-1">Nenhum médico encontrado</h3>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-xs">
-                {medicos.length === 0 
-                  ? 'A base de dados de médicos está vazia no momento.' 
-                  : 'Nenhum médico corresponde aos filtros de busca aplicados.'}
+                {t.noDoctorsFound}
               </p>
             </div>
           ) : (
@@ -198,7 +177,6 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
                   className="bg-white dark:bg-surface-card border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-4 sm:p-4.5 hover:border-orange-500/40 hover:shadow-md transition-all duration-200 group"
                 >
                   <div className="flex items-start gap-3.5">
-                    {/* Badge numérica compacta */}
                     <div className="w-8 h-8 sm:w-9 sm:h-9 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-orange-500 transition-colors duration-200">
                       <span className="text-orange-600 dark:text-orange-400 font-bold text-xs sm:text-sm group-hover:text-white transition-colors">
                         {index + 1}
@@ -220,12 +198,6 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
                           <span className="font-semibold text-zinc-700 dark:text-zinc-300">UF:</span>
                           <span className="font-bold text-zinc-800 dark:text-zinc-200">{medico.uf_crm}</span>
                         </div>
-                        {medico.especialidade && (
-                          <div className="flex items-center gap-1.5 bg-zinc-100/70 dark:bg-zinc-800/60 px-2.5 py-1 rounded-md border border-zinc-200/50 dark:border-zinc-700/50">
-                            <Stethoscope className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-                            <span className="font-medium text-zinc-800 dark:text-zinc-200">{medico.especialidade}</span>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>

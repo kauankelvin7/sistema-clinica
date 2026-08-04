@@ -3,6 +3,7 @@ import type { CertificateFormProps } from '../types'
 import AutocompleteInput from './AutocompleteInput'
 import { searchCID } from '../data/cids'
 import { Calendar, AlertCircle, Clock, ShieldCheck } from 'lucide-react'
+import { useTranslation } from '../utils/i18n'
 
 interface CidOption {
   label: string
@@ -12,6 +13,7 @@ interface CidOption {
 }
 
 export default function CertificateForm({ formData, updateFormData }: CertificateFormProps) {
+  const { t, lang } = useTranslation()
   const [cidOptions, setCidOptions] = useState<CidOption[]>([])
 
   // Atualiza opções de CID conforme o usuário digita (busca dinâmica)
@@ -43,13 +45,15 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
     const endDate = new Date(startDate)
     endDate.setDate(startDate.getDate() + days)
 
-    const formattedDate = endDate.toLocaleDateString('pt-BR', {
+    const locale = lang === 'en' ? 'en-US' : lang === 'es' ? 'es-ES' : 'pt-BR'
+
+    const formattedDate = endDate.toLocaleDateString(locale, {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
     })
 
-    const rawWeekDay = endDate.toLocaleDateString('pt-BR', { weekday: 'long' })
+    const rawWeekDay = endDate.toLocaleDateString(locale, { weekday: 'long' })
     const weekDay = rawWeekDay.charAt(0).toUpperCase() + rawWeekDay.slice(1)
 
     return {
@@ -70,7 +74,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
-              Data do Atestado
+              {t.certificateDateLabel}
             </label>
             <input
               type="date"
@@ -82,12 +86,12 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
 
           <div>
             <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
-              Dias de Afastamento
+              {t.leaveDaysLabel}
             </label>
             <input
               type="number"
               className="input-field"
-              placeholder="Ex: 3 dias"
+              placeholder={t.leaveDaysPlaceholder}
               min="1"
               value={formData.diasAfastamento}
               onChange={(e) => updateFormData('diasAfastamento', e.target.value)}
@@ -98,7 +102,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
         {/* Código CID */}
         <div>
           <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
-            Código CID (Classificação Internacional de Doenças)
+            {t.cidLabel}
           </label>
           <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
             <div className="w-full flex-1">
@@ -115,7 +119,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
                   }
                 }}
                 options={cidOptions}
-                placeholder="Digite o código ou descrição (Ex: J00, gripe, dor)"
+                placeholder={t.cidPlaceholder}
                 minChars={1}
                 disabled={formData.cidNaoInformado}
               />
@@ -129,7 +133,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
                 onChange={(e) => updateFormData('cidNaoInformado', e.target.checked)}
               />
               <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-200 transition-colors">
-                Não Informado
+                {t.cidNotProvided}
               </span>
             </label>
           </div>
@@ -151,12 +155,12 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
               <div className="space-y-1 text-xs">
                 <div className="flex items-center gap-2 font-bold tracking-tight">
                   <Clock className="w-3.5 h-3.5" />
-                  <span>Retorno Previsto: {returnInfo.formattedDate} ({returnInfo.weekDay})</span>
+                  <span>{t.expectedReturnTitle}: {returnInfo.formattedDate} ({returnInfo.weekDay})</span>
                 </div>
                 <p className="text-[11px] opacity-90 leading-snug">
                   {returnInfo.requiresINSS
-                    ? `⚠️ Afastamento de ${returnInfo.days} dias excede o limite CLT de 15 dias. Requer encaminhamento para perícia médica do INSS a partir do 16º dia.`
-                    : `✓ Afastamento de ${returnInfo.days} dias dentro do limite legal de 15 dias. Homologação direta e custeada pela empresa.`}
+                    ? `⚠️ ${t.cltExceededWarning}`
+                    : `✓ ${t.cltNormalNotice}`}
                 </p>
               </div>
             </div>
@@ -165,7 +169,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
           <div className="p-3.5 rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/20 text-zinc-500 dark:text-zinc-400 text-xs flex items-center gap-2.5">
             <Calendar className="w-4 h-4 text-orange-500 flex-shrink-0" />
             <span className="text-[11px]">
-              Preencha a data e os dias de afastamento para calcular a previsão de retorno ao trabalho.
+              {t.fillDateNotice}
             </span>
           </div>
         )}

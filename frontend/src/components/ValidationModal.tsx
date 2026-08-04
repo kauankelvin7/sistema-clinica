@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlertCircle, X } from 'lucide-react';
+import { useTranslation } from '../utils/i18n';
 
 interface ValidationModalProps {
   isOpen: boolean;
@@ -8,6 +9,8 @@ interface ValidationModalProps {
 }
 
 export const ValidationModal: React.FC<ValidationModalProps> = ({ isOpen, onClose, missingFields }) => {
+  const { t } = useTranslation();
+
   if (!isOpen) return null;
 
   return (
@@ -22,10 +25,10 @@ export const ValidationModal: React.FC<ValidationModalProps> = ({ isOpen, onClos
             </div>
             <div>
               <h3 className="font-display text-base font-bold text-zinc-900 dark:text-zinc-50 leading-tight">
-                Campos Pendentes
+                {t.modalValidationTitle}
               </h3>
               <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-0.5">
-                Preencha os dados obrigatórios para prosseguir
+                {t.modalValidationSubtitle}
               </p>
             </div>
           </div>
@@ -59,7 +62,7 @@ export const ValidationModal: React.FC<ValidationModalProps> = ({ isOpen, onClos
             onClick={onClose}
             className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold text-white bg-orange-500 hover:bg-orange-600 rounded-xl shadow-xs transition-all"
           >
-            Compreendi, vou preencher
+            {t.btnGotIt}
           </button>
         </div>
       </div>

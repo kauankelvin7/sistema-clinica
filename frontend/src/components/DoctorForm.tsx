@@ -4,8 +4,8 @@ import type { DoctorFormProps } from '../types'
 import { searchDoctors, checkDuplicate } from '../services/api'
 import DoctorsListModal from './DoctorsListModal'
 import AutocompleteInput from './AutocompleteInput'
-// Importação do novo Modal
 import ConsultaOnlineModal from './ConsultaOnlineModal' 
+import { useTranslation } from '../utils/i18n'
 
 const UFS = [
   'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
@@ -14,6 +14,7 @@ const UFS = [
 ]
 
 export default function DoctorForm({ formData, updateFormData }: DoctorFormProps) {
+  const { t } = useTranslation()
   const [totalMedicos, setTotalMedicos] = useState<number>(0)
   const [showListModal, setShowListModal] = useState(false)
   const [medicosOptions, setMedicosOptions] = useState<Array<{label: string, value: string, data: any}>>([])
@@ -26,11 +27,9 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
     // Buscar total de médicos salvos e criar options para autocomplete
     searchDoctors()
       .then(data => {
-        // searchDoctors retorna PaginatedDoctors { total, doctors, ... }
         const doctorsList = (data as any).doctors || data;
         setTotalMedicos(doctorsList.length)
         
-        // Criar options para autocomplete
         const options = doctorsList.map((m: any) => ({
           label: `${m.nome_completo} - ${m.tipo_crm} ${m.crm}/${m.uf_crm}`,
           value: m.nome_completo,
@@ -55,7 +54,6 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
   }, [formData.numeroRegistro])
 
   const handleConsultar = () => {
-    // Em vez de fazer fetch estático ou alert, abre o modal direto com o tipo atual
     if (formData.tipoRegistro) {
       setIsConsultaModalOpen(true)
     } else {
@@ -87,15 +85,15 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
           </div>
           <div className="text-left flex-1 min-w-0">
             <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wide">
-              Médicos Cadastrados
+              {t.searchDoctorsBtn}
             </p>
             {totalMedicos > 0 ? (
               <p className="text-lg font-bold text-zinc-900 dark:text-zinc-50 leading-tight group-hover:text-orange-500 transition-colors">
-                {totalMedicos} médico{totalMedicos > 1 ? 's' : ''} registrado{totalMedicos > 1 ? 's' : ''}
+                {totalMedicos} {t.modalDoctorsTitle}
               </p>
             ) : (
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Nenhum médico salvo na base • Clique para consultar
+                {t.modalDoctorsSubtitle}
               </p>
             )}
           </div>
@@ -106,7 +104,7 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
       {/* Nome Completo com Autocomplete */}
       <div>
         <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
-          Nome Completo do Médico
+          {t.doctorNameLabel}
         </label>
         <AutocompleteInput
           value={formData.nomeMedico}
@@ -120,7 +118,7 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
             }
           }}
           options={medicosOptions}
-          placeholder="Digite o nome completo do profissional"
+          placeholder={t.doctorNamePlaceholder}
           minChars={2}
         />
       </div>
@@ -128,7 +126,7 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
       {/* Registro Profissional */}
       <div>
         <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
-          Registro Profissional
+          {t.regNumberLabel}
         </label>
         <div className="grid grid-cols-1 gap-2.5">
           {/* Linha 1: Tipo, Número e UF */}
@@ -148,7 +146,7 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
             <input
               type="text"
               className={`input-field flex-1 ${isDuplicate ? 'border-amber-500/80 bg-amber-500/5 focus:border-amber-500' : ''}`}
-              placeholder="Número do registro"
+              placeholder={t.regNumberPlaceholder}
               value={formData.numeroRegistro}
               onChange={(e) => updateFormData('numeroRegistro', e.target.value)}
             />
@@ -172,13 +170,13 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
             </div>
           )}
 
-          {/* Linha 2: Botão Consultar CRM - Estilo Secondary/Outline conforme especificação */}
+          {/* Linha 2: Botão Consultar CRM */}
           <button
             type="button"
             onClick={handleConsultar}
             className="w-full px-3.5 py-2 text-xs font-semibold rounded-xl border border-zinc-300 dark:border-zinc-700/80 bg-zinc-100/60 dark:bg-zinc-800/40 text-zinc-700 dark:text-zinc-300 hover:border-orange-500/40 hover:text-orange-500 dark:hover:text-orange-400 flex items-center justify-center gap-2 transition-all duration-200 group"
           >
-            <span>Consultar {formData.tipoRegistro} Online</span>
+            <span>{t.consultRegister} {formData.tipoRegistro}</span>
             <ExternalLink className="w-3.5 h-3.5 group-hover:text-orange-500 transition-colors" />
           </button>
         </div>
