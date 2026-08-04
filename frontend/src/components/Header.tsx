@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Sun, Moon, LogOut, Download, CheckCircle2, Monitor, Smartphone } from 'lucide-react'
+import LanguageSelector from './LanguageSelector'
+import { getSavedLanguage, TRANSLATIONS, Language } from '../utils/i18n'
 
 interface HeaderProps {
   onLogout?: () => void
@@ -8,6 +10,19 @@ interface HeaderProps {
 }
 
 export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLayout }: HeaderProps) {
+  const [lang, setLang] = useState<Language>(getSavedLanguage)
+
+  useEffect(() => {
+    const handleLangChange = (e: Event) => {
+      const customEvent = e as CustomEvent<Language>
+      setLang(customEvent.detail || getSavedLanguage())
+    }
+    window.addEventListener('language_changed', handleLangChange)
+    return () => window.removeEventListener('language_changed', handleLangChange)
+  }, [])
+
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.pt
+
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
       const saved = localStorage.getItem('theme');
@@ -94,29 +109,24 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
           
           <div className="space-y-0.5">
             <div className="flex items-center gap-2">
-              <h1 className="font-display text-base sm:text-xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight leading-none">
-                Sistema de Homologação
+              <h1 className="font-display text-base sm:text-xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight leading-none transition-all duration-300">
+                {t.headerTitle}
               </h1>
               <span className="px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded-md bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 hidden xs:inline-block">
                 v2.0
               </span>
             </div>
-            <p className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-widest leading-none hidden sm:block">
-              Atestados Médicos Digitais
+            <p className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-widest leading-none hidden sm:block transition-all duration-300">
+              {t.headerSubtitle}
             </p>
           </div>
         </div>
 
-        {/* CENTRO: Status do Sistema + Alternador de Layout */}
+        {/* CENTRO: Seletor de Idiomas com Animação Fluida + Alternador de Layout */}
         <div className="flex items-center gap-3">
-          {/* Badge de Status Online */}
-          <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span>Sistema Operacional</span>
-          </div>
+          
+          {/* Seletor de Idioma Local com Bandeiras Animadas */}
+          <LanguageSelector />
 
           {/* Botão de Alternar Modo de Layout */}
           {onToggleLayout && (
@@ -130,7 +140,7 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
               ) : (
                 <Smartphone className="w-4 h-4 text-orange-500" />
               )}
-              <span>Modo {layoutMode === 'horizontal' ? 'Lado a Lado' : 'Coluna'}</span>
+              <span>{layoutMode === 'horizontal' ? t.modeSideBySide : t.modeColumn}</span>
             </button>
           )}
         </div>
@@ -152,12 +162,12 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
               {installed ? (
                 <>
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">App Instalado</span>
+                  <span className="hidden sm:inline">{t.appInstalled}</span>
                 </>
               ) : (
                 <>
                   <Download className="w-3.5 h-3.5 animate-bounce" />
-                  <span>Instalar App</span>
+                  <span>{t.installApp}</span>
                 </>
               )}
             </button>
@@ -168,7 +178,7 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
             onClick={toggleTheme}
             aria-label="Alternar tema"
             className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60 hover:border-orange-500/40 text-zinc-500 dark:text-zinc-300 hover:text-orange-500 transition-all duration-200 flex items-center justify-center group shadow-xs"
-            title="Alternar Tema Claro/Escuro"
+            title={t.toggleTheme}
           >
             {theme === 'dark' ? (
               <Sun className="w-4 h-4 group-hover:rotate-45 transition-transform duration-300" />
@@ -185,7 +195,7 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
               title="Sair do Sistema"
             >
               <LogOut className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Sair</span>
+              <span className="hidden sm:inline">{t.logout}</span>
             </button>
           )}
         </div>

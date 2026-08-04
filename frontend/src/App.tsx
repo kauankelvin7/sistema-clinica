@@ -9,8 +9,22 @@ import { ValidationModal } from './components/ValidationModal'
 import Login from './components/Login'
 import api from './services/api'
 import type { AppFormData } from './types'
+import { getSavedLanguage, TRANSLATIONS, Language } from './utils/i18n'
 
 function App() {
+  const [lang, setLang] = useState<Language>(getSavedLanguage)
+
+  useEffect(() => {
+    const handleLangChange = (e: Event) => {
+      const customEvent = e as CustomEvent<Language>
+      setLang(customEvent.detail || getSavedLanguage())
+    }
+    window.addEventListener('language_changed', handleLangChange)
+    return () => window.removeEventListener('language_changed', handleLangChange)
+  }, [])
+
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.pt
+
   // Autenticação
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!localStorage.getItem('auth_token'))
 
@@ -242,8 +256,8 @@ function App() {
                 <div className="w-9 h-9 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform duration-200">
                   <User className="w-4 h-4" />
                 </div>
-                <h2 className="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
-                  Dados do Paciente
+                <h2 className="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight transition-all duration-300">
+                  {t.patientDataTitle}
                 </h2>
               </header>
               <PatientForm formData={formData} updateFormData={updateFormData} />
@@ -257,8 +271,8 @@ function App() {
                 <div className="w-9 h-9 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform duration-200">
                   <FileText className="w-4 h-4" />
                 </div>
-                <h2 className="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
-                  Dados do Atestado
+                <h2 className="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight transition-all duration-300">
+                  {t.certificateDataTitle}
                 </h2>
               </header>
               <CertificateForm formData={formData} updateFormData={updateFormData} />
@@ -272,8 +286,8 @@ function App() {
                 <div className="w-9 h-9 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform duration-200">
                   <Stethoscope className="w-4 h-4" />
                 </div>
-                <h2 className="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight">
-                  Dados do Médico
+                <h2 className="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight transition-all duration-300">
+                  {t.doctorDataTitle}
                 </h2>
               </header>
               <DoctorForm formData={formData} updateFormData={updateFormData} />
