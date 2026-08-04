@@ -14,6 +14,8 @@ interface HeaderProps {
 export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLayout }: HeaderProps) {
   const [lang, setLang] = useState<Language>(getSavedLanguage)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  // Versão de paleta: força re-render quando a paleta muda
+  const [paletteVersion, setPaletteVersion] = useState(0)
 
   useEffect(() => {
     const handleLangChange = (e: Event) => {
@@ -24,7 +26,17 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
     return () => window.removeEventListener('language_changed', handleLangChange)
   }, [])
 
+  useEffect(() => {
+    const handlePaletteChange = () => setPaletteVersion(v => v + 1)
+    window.addEventListener('palette_changed', handlePaletteChange)
+    return () => window.removeEventListener('palette_changed', handlePaletteChange)
+  }, [])
+
   const t = TRANSLATIONS[lang] || TRANSLATIONS.pt
+  // Cor primária dinâmica via CSS variable (reflete paleta atual)
+  const primaryColor = `rgb(var(--color-primary-500))`
+  const primaryColorLight = `rgba(var(--color-primary-500) / 0.12)`
+  void paletteVersion // garante reatividade
 
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
@@ -57,14 +69,26 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
       {/* Modal de Configurações Unificado */}
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
 
-      {/* Linha de Destaque Superior em Gradiente Dinâmico */}
-      <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-slate-600 via-zinc-400 to-slate-500 transition-all duration-500" />
+      {/* Linha de Destaque Superior em Gradiente Dinâmico — cor da paleta ativa */}
+      <div
+        className="absolute top-0 left-0 right-0 h-[3px] transition-all duration-500"
+        style={{
+          background: `linear-gradient(to right, ${primaryColor}, rgba(var(--color-primary-300) / 0.6), ${primaryColor})`
+        }}
+      />
 
       <div className="max-w-[1800px] mx-auto flex items-center justify-between gap-4">
         
         {/* LADO ESQUERDO: Logo + Título + Subtítulo */}
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-slate-400/20 via-zinc-400/10 to-slate-500/10 dark:from-slate-400/25 dark:via-zinc-400/15 border border-slate-400/30 rounded-2xl flex items-center justify-center text-slate-300 dark:text-slate-200 flex-shrink-0 shadow-sm shadow-slate-500/10 transition-transform hover:scale-105 duration-200">
+          <div
+            className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm transition-transform hover:scale-105 duration-200"
+            style={{
+              background: primaryColorLight,
+              border: `1px solid rgba(var(--color-primary-500) / 0.30)`,
+              color: primaryColor,
+            }}
+          >
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3" />
               <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4" />
@@ -99,9 +123,9 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
               title="Alternar entre visualização lado a lado e coluna"
             >
               {layoutMode === 'horizontal' ? (
-                <Monitor className="w-4 h-4 text-garnet-500" />
+                <Monitor className="w-4 h-4" style={{ color: primaryColor }} />
               ) : (
-                <Smartphone className="w-4 h-4 text-garnet-500" />
+                <Smartphone className="w-4 h-4" style={{ color: primaryColor }} />
               )}
               <span>{layoutMode === 'horizontal' ? t.modeSideBySide : t.modeColumn}</span>
             </button>
@@ -117,7 +141,7 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
             className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-100/90 dark:bg-zinc-800/60 hover:bg-zinc-200/80 dark:hover:bg-zinc-700/60 border border-zinc-200/80 dark:border-zinc-700/60 text-xs font-semibold text-zinc-800 dark:text-zinc-200 transition-all duration-200 shadow-xs group"
             title="Configurações do Sistema"
           >
-            <Settings className="w-4 h-4 text-garnet-500 group-hover:rotate-90 transition-transform duration-300" />
+            <Settings className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" style={{ color: primaryColor }} />
             <span className="hidden sm:inline">Configurações</span>
           </button>
 
