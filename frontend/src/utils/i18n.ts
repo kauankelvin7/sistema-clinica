@@ -194,7 +194,7 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     btnEnterSystem: 'Entrar no Sistema',
     btnAuthenticating: 'Autenticando...',
     loginRestrictedNotice: 'Acesso Restrito a Colaboradores Autorizados',
-    loginDemoCredentials: 'Acesso padrão: admin / admin123',
+    loginDemoCredentials: 'Lembrar de mim neste dispositivo',
   },
   en: {
     // Header
@@ -290,7 +290,7 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     btnEnterSystem: 'Sign In to System',
     btnAuthenticating: 'Authenticating...',
     loginRestrictedNotice: 'Restricted Access for Authorized Personnel Only',
-    loginDemoCredentials: 'Default credentials: admin / admin123',
+    loginDemoCredentials: 'Remember me on this device',
   },
   es: {
     // Header
@@ -386,7 +386,7 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     btnEnterSystem: 'Ingresar al Sistema',
     btnAuthenticating: 'Autenticando...',
     loginRestrictedNotice: 'Acceso Restringido a Personal Autorizado',
-    loginDemoCredentials: 'Credenciales por defecto: admin / admin123',
+    loginDemoCredentials: 'Recordar sesión en este dispositivo',
   },
 }
 
