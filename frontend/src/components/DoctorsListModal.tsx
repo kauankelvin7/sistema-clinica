@@ -90,7 +90,7 @@ export default function DoctorsListModal({ isOpen, onClose }: Props) {
         {/* Header Adaptativo Glassmorphism */}
         <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md px-5 sm:px-6 py-4 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800/80 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-2xl flex items-center justify-center text-orange-500 flex-shrink-0 shadow-xs">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 bg-zinc-500/10 dark:bg-zinc-400/15 border border-zinc-500/20 dark:border-zinc-400/25 rounded-2xl flex items-center justify-center text-zinc-600 dark:text-zinc-300 flex-shrink-0 shadow-xs">
               <Stethoscope className="w-5 h-5" />
             </div>
             <div>

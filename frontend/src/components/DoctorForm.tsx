@@ -80,7 +80,7 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
         className="w-full bg-zinc-50 dark:bg-surface-input border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 hover:border-orange-500/30 group transition-all duration-200"
       >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-lg flex items-center justify-center text-orange-500 flex-shrink-0">
+          <div className="w-8 h-8 bg-zinc-500/10 dark:bg-zinc-400/15 border border-zinc-500/20 dark:border-zinc-400/25 rounded-lg flex items-center justify-center text-zinc-600 dark:text-zinc-300 flex-shrink-0">
             <Stethoscope className="w-4 h-4" />
           </div>
           <div className="text-left flex-1 min-w-0">

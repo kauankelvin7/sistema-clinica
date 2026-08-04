@@ -104,6 +104,14 @@ export const THEME_PALETTES: Record<PaletteName, ColorPalette> = {
   },
 }
 
+function rgbToHex(rgbStr: string): string {
+  if (!rgbStr) return '#6e2d29'
+  const parts = rgbStr.split(' ').map(Number)
+  if (parts.length < 3 || parts.some(isNaN)) return '#6e2d29'
+  const [r, g, b] = parts
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`
+}
+
 class ThemeManager {
   private currentPalette: PaletteName = 'garnet'
 
@@ -123,6 +131,33 @@ class ThemeManager {
 
   public getPalette(): PaletteName {
     return this.currentPalette
+  }
+
+  public updateThemeColor() {
+    if (typeof document === 'undefined') return
+    const isDark =
+      document.documentElement.classList.contains('dark') ||
+      (typeof localStorage !== 'undefined' && localStorage.getItem('theme') === 'dark')
+
+    const palette = THEME_PALETTES[this.currentPalette]?.colors
+    if (!palette) return
+
+    let hexColor: string
+    if (isDark) {
+      // No modo escuro, utiliza a cor escura de fundo (#18181b - zinc 900)
+      hexColor = '#18181b'
+    } else {
+      // No modo claro, utiliza a cor primária de destaque (500) da paleta ativa
+      hexColor = rgbToHex(palette[500])
+    }
+
+    let meta = document.querySelector('meta[name="theme-color"]')
+    if (!meta) {
+      meta = document.createElement('meta')
+      meta.setAttribute('name', 'theme-color')
+      document.head.appendChild(meta)
+    }
+    meta.setAttribute('content', hexColor)
   }
 
   public applyPalette(name: PaletteName) {
@@ -151,8 +186,11 @@ class ThemeManager {
     root.style.setProperty('--color-dark-bg-card', palette.bgCard)
     root.style.setProperty('--color-dark-bg-input', palette.bgInput)
 
+    this.updateThemeColor()
+
     window.dispatchEvent(new CustomEvent('palette_changed', { detail: name }))
   }
 }
 
 export const themeManager = new ThemeManager()
+

@@ -3,6 +3,7 @@ import { Sun, Moon, LogOut, Monitor, Smartphone, Settings } from 'lucide-react'
 import { getSavedLanguage, TRANSLATIONS, Language } from '../utils/i18n'
 import SettingsModal from './SettingsModal'
 import PaletteSelector from './PaletteSelector'
+import { themeManager } from '../utils/themeManager'
 
 interface HeaderProps {
   onLogout?: () => void
@@ -45,6 +46,7 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
         document.documentElement.classList.remove('dark')
         localStorage.setItem('theme', 'light')
       }
+      themeManager.updateThemeColor()
     } catch {}
   }, [theme])
 

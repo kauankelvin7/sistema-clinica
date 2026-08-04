@@ -283,7 +283,7 @@ function App() {
           <article className="card-orange group h-full flex flex-col justify-between">
             <div>
               <header className="flex items-center gap-3 mb-4 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
-                <div className="w-9 h-9 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform duration-200">
+                <div className="w-9 h-9 bg-zinc-500/10 dark:bg-zinc-400/15 border border-zinc-500/20 dark:border-zinc-400/25 rounded-xl flex items-center justify-center text-zinc-600 dark:text-zinc-300 group-hover:scale-105 transition-transform duration-200">
                   <Stethoscope className="w-4 h-4" />
                 </div>
                 <h2 className="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight transition-all duration-300">

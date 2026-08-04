@@ -66,6 +66,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         localStorage.setItem('theme', 'light')
         showFeedback('Modo Claro ativado')
       }
+      themeManager.updateThemeColor()
     } catch {}
   }
 
