@@ -18,21 +18,13 @@ export default function DocumentPreviewModal({
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [iframeLoaded, setIframeLoaded] = useState(false)
-  const blobUrlRef = useRef<string | null>(null)
+  const autoPrintFiredRef = useRef(false)
 
-  // Criar e limpar Blob URL
+  // Resetar estado de carregamento e auto-impressão quando o modal abre
   useEffect(() => {
-    if (isOpen && htmlContent) {
-      const blob = new Blob([htmlContent], { type: 'text/html; charset=utf-8' })
-      blobUrlRef.current = URL.createObjectURL(blob)
+    if (isOpen) {
       setIframeLoaded(false)
-    }
-
-    return () => {
-      if (blobUrlRef.current) {
-        URL.revokeObjectURL(blobUrlRef.current)
-        blobUrlRef.current = null
-      }
+      autoPrintFiredRef.current = false
     }
   }, [isOpen, htmlContent])
 
@@ -61,10 +53,27 @@ export default function DocumentPreviewModal({
   const handlePrint = useCallback(() => {
     const iframe = iframeRef.current
     if (iframe?.contentWindow) {
-      iframe.contentWindow.focus()
-      iframe.contentWindow.print()
+      try {
+        iframe.contentWindow.focus()
+        iframe.contentWindow.print()
+      } catch (err) {
+        console.error('Erro ao acionar a impressão do iframe:', err)
+        window.print()
+      }
     }
   }, [])
+
+  // Callback chamado quando o iframe termina de carregar o HTML via srcDoc
+  const handleIframeLoad = useCallback(() => {
+    setIframeLoaded(true)
+    if (!autoPrintFiredRef.current) {
+      autoPrintFiredRef.current = true
+      // Pequeno timeout para garantir renderização do estilo antes de abrir o diálogo de impressão
+      setTimeout(() => {
+        handlePrint()
+      }, 300)
+    }
+  }, [handlePrint])
 
   const handleDownload = useCallback(() => {
     const blob = new Blob([htmlContent], { type: 'text/html; charset=utf-8' })
@@ -179,11 +188,10 @@ export default function DocumentPreviewModal({
 
           <iframe
             ref={iframeRef}
-            src={blobUrlRef.current || undefined}
-            onLoad={() => setIframeLoaded(true)}
+            srcDoc={htmlContent}
+            onLoad={handleIframeLoad}
             className="w-full h-full border-0"
             title="Pré-visualização do documento"
-            sandbox="allow-same-origin allow-scripts allow-modals"
           />
         </div>
       </div>
