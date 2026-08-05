@@ -6,6 +6,7 @@ import CertificateForm from './components/CertificateForm'
 import DoctorForm from './components/DoctorForm'
 import ActionButtons from './components/ActionButtons'
 import { ValidationModal } from './components/ValidationModal'
+import DocumentPreviewModal from './components/DocumentPreviewModal'
 import Login from './components/Login'
 import api from './services/api'
 import type { AppFormData } from './types'
@@ -102,6 +103,7 @@ function App() {
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [showValidationModal, setShowValidationModal] = useState(false)
   const [missingFields, setMissingFields] = useState<string[]>([])
+  const [previewHtml, setPreviewHtml] = useState<string | null>(null)
 
   // Salvar dados automaticamente quando mudar
   useEffect(() => {
@@ -172,10 +174,7 @@ function App() {
       })
 
       const htmlContent = response.data
-      const blob = new Blob([htmlContent], { type: 'text/html' })
-      const url = window.URL.createObjectURL(blob)
-      window.open(url, '_blank')
-      window.URL.revokeObjectURL(url)
+      setPreviewHtml(htmlContent)
 
       setMessage({ type: 'success', text: 'Documento gerado com sucesso!' })
     } catch (error) {
@@ -315,6 +314,14 @@ function App() {
         isOpen={showValidationModal}
         onClose={() => setShowValidationModal(false)}
         missingFields={missingFields}
+      />
+
+      {/* Modal de Pré-visualização do Documento */}
+      <DocumentPreviewModal
+        isOpen={!!previewHtml}
+        onClose={() => setPreviewHtml(null)}
+        htmlContent={previewHtml || ''}
+        fileName={`atestado_${formData.nomePaciente.replace(/\s+/g, '_') || 'documento'}.html`}
       />
 
     </div>
