@@ -33,6 +33,26 @@ export const fetchDirectory = async (): Promise<DirectoryPayload> => {
   return response.data
 }
 
+export interface DirectorySyncPayload {
+  paciente: {
+    nome: string
+    tipo_documento: string
+    numero_documento: string
+    cargo: string
+    empresa: string
+  }
+  medico: {
+    nome: string
+    tipo_registro: string
+    numero_registro: string
+    uf_registro: string
+  }
+}
+
+export const syncDirectoryEntry = async (payload: DirectorySyncPayload): Promise<void> => {
+  await api.post('/api/directory/sync', payload, { timeout: 8000 })
+}
+
 export const checkDuplicate = async (
   tipo: 'paciente' | 'medico',
   valor: string,
