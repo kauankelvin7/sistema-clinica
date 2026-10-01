@@ -40,6 +40,7 @@ export interface Medico {
 export interface PatientFormProps {
   formData: AppFormData
   updateFormData: (field: keyof AppFormData, value: string | boolean) => void
+  patients: Paciente[]
   onLoadPatient?: (patient: Paciente) => void
 }
 
@@ -51,6 +52,7 @@ export interface CertificateFormProps {
 export interface DoctorFormProps {
   formData: AppFormData
   updateFormData: (field: keyof AppFormData, value: string | boolean) => void
+  doctors: Medico[]
   onLoadDoctor?: (doctor: Medico) => void
 }
 
