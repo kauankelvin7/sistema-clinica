@@ -294,7 +294,11 @@ export function useClinicDirectory(enabled: boolean) {
     stateRef.current = next
     setState(next)
     void persist(next)
-    void flushPending()
+    void Promise.resolve(flushPending()).then(() => {
+      if (stateRef.current.pending.length > 0 && navigator.onLine !== false) {
+        void flushPending()
+      }
+    })
   }, [flushPending, persist])
 
   const clear = useCallback(async () => {
