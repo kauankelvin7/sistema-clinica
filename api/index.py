@@ -98,11 +98,11 @@ async def startup_event():
 # [CAMADA 5] Modelos com Sanitização Robusta
 # ==========================================
 class PacienteData(BaseModel):
-    nome: str
-    tipo_documento: str
-    numero_documento: str
-    cargo: str
-    empresa: str
+    nome: str = Field(min_length=2, max_length=160)
+    tipo_documento: str = Field(min_length=2, max_length=10)
+    numero_documento: str = Field(min_length=3, max_length=32)
+    cargo: str = Field(max_length=120)
+    empresa: str = Field(max_length=160)
 
     @validator("nome")
     def sanitize_nome(cls, v):
@@ -111,27 +111,57 @@ class PacienteData(BaseModel):
             raise ValueError("Nome inválido")
         return cleaned
 
+    @validator("tipo_documento")
+    def validate_document_type(cls, v):
+        value = v.strip().upper()
+        if value not in {"CPF", "RG"}:
+            raise ValueError("Tipo de documento inválido")
+        return value
+
     @validator("numero_documento")
     def sanitize_doc(cls, v):
-        return re.sub(r"[^\d.\-/]", "", v)
+        cleaned = re.sub(r"[^\d.\-/]", "", v)
+        if len(cleaned) < 3:
+            raise ValueError("Número de documento inválido")
+        return cleaned
 
 class AtestadoData(BaseModel):
-    data_atestado: str
-    dias_afastamento: Optional[int] = 0
-    cid: Optional[str] = ""
+    data_atestado: str = Field(min_length=10, max_length=10)
+    dias_afastamento: Optional[int] = Field(default=0, ge=0, le=3650)
+    cid: Optional[str] = Field(default="", max_length=32)
     cid_nao_informado: bool = False
-    tipo_atestado: Optional[str] = "saude"
+    tipo_atestado: Optional[str] = Field(default="saude", max_length=20)
 
 class MedicoData(BaseModel):
-    nome: str
-    tipo_registro: str
-    numero_registro: str
-    uf_registro: str
+    nome: str = Field(min_length=2, max_length=160)
+    tipo_registro: str = Field(min_length=2, max_length=10)
+    numero_registro: str = Field(min_length=1, max_length=32)
+    uf_registro: str = Field(min_length=2, max_length=2)
 
     @validator("nome")
     def sanitize_nome(cls, v):
-        cleaned = re.sub(r"[^a-zA-ZÀ-ÿ\s\-.]", "", v).strip() # Permite '.' para "Dr."
+        cleaned = re.sub(r"[^a-zA-ZÀ-ÿ\s\-.]", "", v).strip()
+        if len(cleaned) < 2:
+            raise ValueError("Nome inválido")
         return cleaned
+
+    @validator("tipo_registro")
+    def validate_register_type(cls, v):
+        value = v.strip().upper()
+        if value not in {"CRM", "CRO", "RMS"}:
+            raise ValueError("Tipo de registro inválido")
+        return value
+
+    @validator("uf_registro")
+    def validate_register_state(cls, v):
+        value = v.strip().upper()
+        if value not in {
+            "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
+            "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
+            "RS", "RO", "RR", "SC", "SP", "SE", "TO",
+        }:
+            raise ValueError("UF inválida")
+        return value
 
 class DocumentoRequest(BaseModel):
     paciente: PacienteData
