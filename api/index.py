@@ -3,7 +3,7 @@ Sistema de Homologação de Atestados Médicos - Backend API (Vercel Serverless)
 ══════════════════════════════════════════════════════════════════════════════
 """
 
-from fastapi import FastAPI, HTTPException, Query, Depends, APIRouter, Response, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Query, Depends, APIRouter, Response
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.gzip import GZipMiddleware
@@ -136,6 +136,10 @@ class MedicoData(BaseModel):
 class DocumentoRequest(BaseModel):
     paciente: PacienteData
     atestado: AtestadoData
+    medico: MedicoData
+
+class DirectorySyncRequest(BaseModel):
+    paciente: PacienteData
     medico: MedicoData
 
 class LoginRequest(BaseModel):
@@ -372,7 +376,6 @@ def _persist_directory_records(paciente: PacienteData, medico: MedicoData) -> bo
 @api_router.post("/generate-html")
 async def generate_html_endpoint(
     data: DocumentoRequest,
-    background_tasks: BackgroundTasks,
     _=Depends(rate_limit),
     __=Depends(require_auth),
 ):
@@ -396,11 +399,22 @@ async def generate_html_endpoint(
         }
 
         html_content = generate_html(documento_data)
-        background_tasks.add_task(_persist_directory_records, data.paciente, data.medico)
         return HTMLResponse(content=html_content, status_code=200)
     except Exception:
         logger.exception("Erro geral ao gerar HTML")
         raise HTTPException(status_code=500, detail="Não foi possível gerar o documento. Tente novamente.")
+
+
+@api_router.post("/directory/sync")
+async def sync_directory(
+    data: DirectorySyncRequest,
+    _=Depends(rate_limit),
+    __=Depends(require_auth),
+):
+    """Sincroniza o cadastro sem bloquear a geração/visualização do documento."""
+    if not _persist_directory_records(data.paciente, data.medico):
+        raise HTTPException(status_code=503, detail="Não foi possível sincronizar o cadastro agora.")
+    return {"synced": True}
 
 
 @api_router.get("/directory")
