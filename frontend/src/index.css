@@ -65,12 +65,12 @@
   }
 
   .app-container {
-    @apply mx-auto w-full max-w-[1540px] px-4 sm:px-6 lg:px-8;
+    @apply mx-auto w-full max-w-[1680px] px-3 sm:px-5 lg:px-7 2xl:px-10;
   }
 
   .workspace-panel {
     @apply rounded-2xl border border-zinc-200/90 bg-white p-5 shadow-sm;
-    @apply dark:border-zinc-800 dark:bg-surface-card sm:p-6;
+    @apply dark:border-zinc-800 dark:bg-surface-card sm:p-5;
   }
 
   .workspace-kicker {
@@ -125,7 +125,7 @@
   }
 
   .section-shell__body {
-    @apply flex-1 p-5;
+    @apply flex-1 p-4 sm:p-5;
   }
 
   .field-label {
@@ -184,6 +184,154 @@
     @apply inline-flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-2.5 py-1.5;
     @apply text-xs font-medium text-emerald-700 dark:text-emerald-300;
   }
+  .brand-mark {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-garnet-500/15 bg-garnet-500/10 text-garnet-500;
+    @apply shadow-[inset_0_1px_0_rgb(255_255_255/0.08)];
+  }
+
+  .workspace-grid {
+    @apply grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3;
+  }
+
+  .workspace-grid > :nth-child(3) {
+    @apply md:col-span-2 xl:col-span-1;
+  }
+
+  .field-hint {
+    @apply mt-1.5 text-[11px] leading-4 text-zinc-500 dark:text-zinc-500;
+  }
+
+  .field-warning {
+    @apply mt-1.5 flex items-center gap-1.5 text-[11px] font-medium text-amber-600 dark:text-amber-400;
+  }
+
+  .select-shell {
+    @apply relative min-w-0;
+  }
+
+  .select-shell__icon {
+    @apply pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400;
+  }
+
+  .btn-tertiary {
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-2;
+    @apply text-xs font-semibold text-zinc-700 transition-[border-color,background-color,color] duration-150;
+    @apply hover:border-garnet-500/30 hover:bg-garnet-500/5 hover:text-garnet-500;
+    @apply focus-visible:ring-4 focus-visible:ring-garnet-500/10 dark:border-zinc-800 dark:bg-zinc-900/35 dark:text-zinc-300;
+  }
+
+  .directory-status {
+    @apply flex min-w-0 items-center gap-2.5 rounded-xl border border-zinc-200 bg-zinc-50/80 px-3 py-2.5;
+    @apply dark:border-zinc-800 dark:bg-zinc-900/35;
+  }
+
+  .directory-status__icon {
+    @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-garnet-500 ring-1 ring-zinc-200;
+    @apply dark:bg-zinc-900 dark:ring-zinc-800;
+  }
+
+  .directory-status__title {
+    @apply text-xs font-semibold text-zinc-800 dark:text-zinc-200;
+  }
+
+  .directory-status__time {
+    @apply text-[10px] font-medium tabular-nums text-zinc-400;
+  }
+
+  .directory-status__meta {
+    @apply mt-0.5 flex items-center gap-1 text-[10px] leading-4 text-zinc-500 dark:text-zinc-400;
+  }
+
+  .directory-status__refresh {
+    @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-zinc-400 transition-colors;
+    @apply hover:bg-white hover:text-garnet-500 disabled:cursor-wait disabled:opacity-50 dark:hover:bg-zinc-800;
+  }
+
+  .modal-backdrop {
+    @apply fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto bg-zinc-950/75 p-3 backdrop-blur-sm sm:p-6;
+  }
+
+  .directory-modal {
+    @apply my-auto flex h-[min(820px,88dvh)] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl;
+    @apply dark:border-zinc-800 dark:bg-surface-card;
+  }
+
+  .directory-modal__header {
+    @apply flex shrink-0 items-center justify-between gap-3 border-b border-zinc-200 px-4 py-3.5 sm:px-6 dark:border-zinc-800;
+  }
+
+  .directory-modal__hero-icon {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-garnet-500/15 bg-garnet-500/10 text-garnet-500;
+  }
+
+  .directory-modal__title {
+    @apply truncate font-display text-base font-bold tracking-tight text-zinc-950 dark:text-white sm:text-xl;
+  }
+
+  .directory-modal__subtitle {
+    @apply mt-0.5 truncate text-[11px] text-zinc-500 dark:text-zinc-400 sm:text-xs;
+  }
+
+  .directory-modal__toolbar {
+    @apply grid shrink-0 grid-cols-1 gap-2 border-b border-zinc-200 bg-zinc-50/70 p-3 sm:grid-cols-[minmax(0,1fr)_180px] sm:px-6;
+    @apply dark:border-zinc-800 dark:bg-zinc-900/25;
+  }
+
+  .directory-modal__content {
+    @apply flex-1 overflow-y-auto bg-zinc-50/45 p-3 sm:p-5 dark:bg-surface-page/35;
+  }
+
+  .directory-modal__footer {
+    @apply flex shrink-0 items-center justify-between gap-3 border-t border-zinc-200 px-4 py-3 text-xs font-medium text-zinc-500;
+    @apply dark:border-zinc-800 dark:text-zinc-400 sm:px-6;
+  }
+
+  .search-field {
+    @apply relative block min-w-0;
+  }
+
+  .search-field__icon {
+    @apply pointer-events-none absolute left-3.5 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-zinc-400;
+  }
+
+  .directory-grid {
+    @apply grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-3;
+  }
+
+  .directory-card {
+    @apply flex min-w-0 items-start gap-3 rounded-xl border border-zinc-200 bg-white p-3.5 text-left shadow-sm;
+    @apply transition-[border-color,box-shadow,transform] duration-150 hover:border-garnet-500/35 hover:shadow-md active:translate-y-px;
+    @apply focus-visible:ring-4 focus-visible:ring-garnet-500/10 dark:border-zinc-800 dark:bg-surface-card;
+  }
+
+  .directory-card__avatar {
+    @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-garnet-500/10 text-garnet-500;
+  }
+
+  .directory-card__title {
+    @apply truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100;
+  }
+
+  .directory-card__meta {
+    @apply mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-zinc-500 dark:text-zinc-400;
+  }
+
+  .directory-card__meta span {
+    @apply flex min-w-0 items-center gap-1 truncate;
+  }
+
+  .empty-state {
+    @apply flex h-full min-h-56 flex-col items-center justify-center gap-2 text-center text-zinc-400;
+  }
+
+  .empty-state h3 {
+    @apply text-sm font-semibold text-zinc-700 dark:text-zinc-200;
+  }
+
+  .empty-state p {
+    @apply text-xs text-zinc-500 dark:text-zinc-400;
+  }
+
 }
 
 ::-webkit-scrollbar {

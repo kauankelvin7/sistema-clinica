@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Eye, EyeOff, Loader2, Lock, Settings, ShieldCheck, User as UserIcon } from 'lucide-react'
+import { Eye, EyeOff, HeartPulse, Loader2, Lock, Settings, ShieldCheck, User as UserIcon } from 'lucide-react'
 import { loginUser } from '../services/api'
 import { useTranslation } from '../utils/i18n'
 import SettingsModal from './SettingsModal'
@@ -52,20 +52,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
           <div className="absolute -right-16 -top-16 h-52 w-52 rounded-full bg-garnet-500/20 blur-3xl" />
           <div className="relative">
             <div className="mb-8 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-garnet-300">
-              <svg
-                className="h-6 w-6"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.1"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 12 0V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3" />
-                <path d="M8 15v1a6 6 0 0 0 12 0v-4" />
-                <circle cx="20" cy="10" r="2" />
-              </svg>
+              <HeartPulse className="h-6 w-6" strokeWidth={1.9} aria-hidden="true" />
             </div>
 
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-garnet-300">NOVA Medicina</p>

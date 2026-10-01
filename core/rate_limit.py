@@ -1,48 +1,56 @@
-from collections import defaultdict
+from collections import defaultdict, deque
 import os
 import time
 
 from fastapi import HTTPException, Request
 
-_requests: dict[str, list[float]] = defaultdict(list)
-WINDOW = 60
-MAX_REQUESTS = 30
-MAX_TRACKED_CLIENTS = 5000
+_Buckets = dict[tuple[str, str], deque[float]]
+_requests: _Buckets = defaultdict(deque)
+MAX_TRACKED_BUCKETS = 5000
 
 
 def _client_key(request: Request) -> str:
-    # Na Vercel, o cabe?alho abaixo ? definido pela borda da plataforma.
-    # Fora desse ambiente, use o peer real da conex?o para n?o aceitar
-    # um IP arbitr?rio fornecido pelo pr?prio cliente.
+    """Usa o IP confiável da borda apenas quando executando na Vercel."""
     if os.getenv("VERCEL"):
         forwarded = request.headers.get("x-vercel-forwarded-for")
         if forwarded:
             return forwarded.split(",", 1)[0].strip()
-
     return request.client.host if request.client else "unknown"
 
 
-def rate_limit(request: Request):
-    ip = _client_key(request)
+def _enforce(request: Request, *, scope: str, limit: int, window: int) -> None:
     now = time.monotonic()
+    key = (scope, _client_key(request))
+    bucket = _requests[key]
 
-    recent = [timestamp for timestamp in _requests[ip] if now - timestamp < WINDOW]
-    if len(recent) >= MAX_REQUESTS:
+    while bucket and now - bucket[0] >= window:
+        bucket.popleft()
+
+    if len(bucket) >= limit:
+        retry_after = max(1, int(window - (now - bucket[0])))
         raise HTTPException(
             status_code=429,
             detail="Muitas requisições. Aguarde um momento.",
-            headers={"Retry-After": str(WINDOW)},
+            headers={"Retry-After": str(retry_after)},
         )
 
-    recent.append(now)
-    _requests[ip] = recent
+    bucket.append(now)
 
-    # Evita crescimento ilimitado do dicionário em processos de longa duração.
-    if len(_requests) > MAX_TRACKED_CLIENTS:
-        stale_keys = [
-            key
-            for key, timestamps in _requests.items()
-            if not timestamps or now - timestamps[-1] >= WINDOW
+    if len(_requests) > MAX_TRACKED_BUCKETS:
+        stale = [
+            bucket_key
+            for bucket_key, values in _requests.items()
+            if not values or now - values[-1] > 600
         ]
-        for key in stale_keys[: len(_requests) - MAX_TRACKED_CLIENTS]:
-            _requests.pop(key, None)
+        for bucket_key in stale[: max(0, len(_requests) - MAX_TRACKED_BUCKETS)]:
+            _requests.pop(bucket_key, None)
+
+
+def rate_limit(request: Request) -> None:
+    """Limite geral: amplo o suficiente para a UI, restrito contra abuso simples."""
+    _enforce(request, scope="general", limit=90, window=60)
+
+
+def rate_limit_login(request: Request) -> None:
+    """Login recebe uma janela mais restrita contra brute force."""
+    _enforce(request, scope="login", limit=8, window=300)

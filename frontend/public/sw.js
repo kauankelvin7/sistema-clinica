@@ -1,69 +1,63 @@
-const CACHE_NAME = 'nova-homologacao-v4-stethoscope';
-const ASSETS_TO_CACHE = [
+const CACHE_NAME = 'nova-homologacao-v5-shell';
+const SHELL_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/stethoscope.svg?v=2.0.1',
   '/icons/icon-192x192.png?v=2.0.1',
   '/icons/icon-512x512.png?v=2.0.1',
-  '/icons/maskable-icon-512x512.png?v=2.0.1',
-  '/icons/apple-touch-icon.png?v=2.0.1',
-  '/favicon.ico?v=2.0.1'
+  '/favicon.ico?v=2.0.1',
 ];
 
-// Install event - Forçar ativação imediata sem esperar o usuário fechar abas
 self.addEventListener('install', (event) => {
   self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[PWA SW] Atualizando silenciosamente os ativos e o novo ícone do Estetoscópio');
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_ASSETS)));
 });
 
-// Activate event - Limpar caches antigos imediatamente e assumir controle dos clientes
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            console.log('[PWA SW] Limpando cache legado para atualizar ícone:', cache);
-            return caches.delete(cache);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
+    caches.keys()
+      .then((names) => Promise.all(
+        names.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name))
+      ))
+      .then(() => self.clients.claim())
   );
 });
 
-// Fetch event - Network-First strategy para garantir que arquivos atualizados sejam servidos
+async function networkFirst(request) {
+  try {
+    const response = await fetch(request);
+    if (response.ok && response.type === 'basic') {
+      const cache = await caches.open(CACHE_NAME);
+      void cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    return (await caches.match(request)) || (await caches.match('/index.html'));
+  }
+}
+
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cached = await cache.match(request);
+  const network = fetch(request)
+    .then((response) => {
+      if (response.ok && response.type === 'basic') void cache.put(request, response.clone());
+      return response;
+    })
+    .catch(() => undefined);
+  return cached || (await network) || Response.error();
+}
+
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET' || event.request.url.includes('/api/')) {
+  const request = event.request;
+  if (request.method !== 'GET' || request.url.includes('/api/')) return;
+
+  if (request.mode === 'navigate') {
+    event.respondWith(networkFirst(request));
     return;
   }
 
-  event.respondWith(
-    fetch(event.request)
-      .then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-        }
-        return networkResponse;
-      })
-      .catch(() => {
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          if (event.request.mode === 'navigate') {
-            return caches.match('/index.html');
-          }
-        });
-      })
-  );
+  if (['script', 'style', 'image', 'font'].includes(request.destination)) {
+    event.respondWith(staleWhileRevalidate(request));
+  }
 });

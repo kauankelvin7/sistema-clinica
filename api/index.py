@@ -6,8 +6,9 @@ Sistema de Homologação de Atestados Médicos - Backend API (Vercel Serverless)
 from fastapi import FastAPI, HTTPException, Query, Depends, APIRouter, Response
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
-from fastapi.responses import HTMLResponse
-from pydantic import BaseModel, validator
+from starlette.middleware.gzip import GZipMiddleware
+from fastapi.responses import HTMLResponse, JSONResponse
+from pydantic import BaseModel, validator, Field
 from typing import Optional
 from datetime import datetime
 import sys
@@ -25,7 +26,7 @@ from core.database import sanitizar_entrada
 from core.html_generator import generate_html
 from core.crypto import encrypt, decrypt, generate_hash
 from core.auth import require_auth, create_access_token
-from core.rate_limit import rate_limit
+from core.rate_limit import rate_limit, rate_limit_login
 from core.audit import audit_middleware
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -39,7 +40,7 @@ api_router = APIRouter()
 # Sessão via cookie HttpOnly. O token continua aceito via Bearer para compatibilidade
 # com clientes externos, mas o frontend não precisa mais expô-lo ao JavaScript.
 _IS_PRODUCTION = bool(os.getenv("VERCEL") or os.getenv("RENDER") or os.getenv("RAILWAY_ENVIRONMENT"))
-_COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "none" if _IS_PRODUCTION else "lax").lower()
+_COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "lax").lower()
 if _COOKIE_SAMESITE not in {"lax", "strict", "none"}:
     _COOKIE_SAMESITE = "lax"
 _COOKIE_SECURE = os.getenv(
@@ -50,6 +51,7 @@ _SESSION_COOKIE = "session_token"
 
 # [CAMADA 6] Middleware de Auditoria
 app.add_middleware(BaseHTTPMiddleware, dispatch=audit_middleware)
+app.add_middleware(GZipMiddleware, minimum_size=1024, compresslevel=5)
 
 # CORS — somente origens e cabeçalhos necessários ao frontend.
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173').rstrip('/')
@@ -67,8 +69,26 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
 )
 
+@app.middleware("http")
+async def protect_cookie_authenticated_writes(request, call_next):
+    """Bloqueia escritas cross-origin quando o navegador envia cookie de sessão."""
+    if request.method in {"POST", "PUT", "PATCH", "DELETE"}:
+        origin = request.headers.get("origin")
+        if origin and origin.rstrip("/") not in ALLOWED_ORIGINS:
+            return JSONResponse(status_code=403, content={"detail": "Origem não autorizada."})
+    return await call_next(request)
+
 @app.on_event("startup")
 async def startup_event():
+    # DDL em cada cold start aumenta latência e pode gerar locks.
+    # Em produção, migrações devem ser explícitas durante manutenção/deploy.
+    run_schema_migrations = (
+        not _IS_PRODUCTION
+        or os.getenv("RUN_SCHEMA_MIGRATIONS", "false").lower() == "true"
+    )
+    if not run_schema_migrations:
+        logger.info("Migração de schema ignorada no cold start de produção.")
+        return
     try:
         create_tables()
     except Exception as e:
@@ -78,11 +98,11 @@ async def startup_event():
 # [CAMADA 5] Modelos com Sanitização Robusta
 # ==========================================
 class PacienteData(BaseModel):
-    nome: str
-    tipo_documento: str
-    numero_documento: str
-    cargo: str
-    empresa: str
+    nome: str = Field(min_length=2, max_length=160)
+    tipo_documento: str = Field(min_length=2, max_length=10)
+    numero_documento: str = Field(min_length=3, max_length=32)
+    cargo: str = Field(max_length=120)
+    empresa: str = Field(max_length=160)
 
     @validator("nome")
     def sanitize_nome(cls, v):
@@ -91,36 +111,70 @@ class PacienteData(BaseModel):
             raise ValueError("Nome inválido")
         return cleaned
 
+    @validator("tipo_documento")
+    def validate_document_type(cls, v):
+        value = v.strip().upper()
+        if value not in {"CPF", "RG"}:
+            raise ValueError("Tipo de documento inválido")
+        return value
+
     @validator("numero_documento")
     def sanitize_doc(cls, v):
-        return re.sub(r"[^\d.\-/]", "", v)
+        cleaned = re.sub(r"[^\d.\-/]", "", v)
+        if len(cleaned) < 3:
+            raise ValueError("Número de documento inválido")
+        return cleaned
 
 class AtestadoData(BaseModel):
-    data_atestado: str
-    dias_afastamento: Optional[int] = 0
-    cid: Optional[str] = ""
+    data_atestado: str = Field(min_length=10, max_length=10)
+    dias_afastamento: Optional[int] = Field(default=0, ge=0, le=3650)
+    cid: Optional[str] = Field(default="", max_length=32)
     cid_nao_informado: bool = False
-    tipo_atestado: Optional[str] = "saude"
+    tipo_atestado: Optional[str] = Field(default="saude", max_length=20)
 
 class MedicoData(BaseModel):
-    nome: str
-    tipo_registro: str
-    numero_registro: str
-    uf_registro: str
+    nome: str = Field(min_length=2, max_length=160)
+    tipo_registro: str = Field(min_length=2, max_length=10)
+    numero_registro: str = Field(min_length=1, max_length=32)
+    uf_registro: str = Field(min_length=2, max_length=2)
 
     @validator("nome")
     def sanitize_nome(cls, v):
-        cleaned = re.sub(r"[^a-zA-ZÀ-ÿ\s\-.]", "", v).strip() # Permite '.' para "Dr."
+        cleaned = re.sub(r"[^a-zA-ZÀ-ÿ\s\-.]", "", v).strip()
+        if len(cleaned) < 2:
+            raise ValueError("Nome inválido")
         return cleaned
+
+    @validator("tipo_registro")
+    def validate_register_type(cls, v):
+        value = v.strip().upper()
+        if value not in {"CRM", "CRO", "RMS"}:
+            raise ValueError("Tipo de registro inválido")
+        return value
+
+    @validator("uf_registro")
+    def validate_register_state(cls, v):
+        value = v.strip().upper()
+        if value not in {
+            "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
+            "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
+            "RS", "RO", "RR", "SC", "SP", "SE", "TO",
+        }:
+            raise ValueError("UF inválida")
+        return value
 
 class DocumentoRequest(BaseModel):
     paciente: PacienteData
     atestado: AtestadoData
     medico: MedicoData
 
+class DirectorySyncRequest(BaseModel):
+    paciente: PacienteData
+    medico: MedicoData
+
 class LoginRequest(BaseModel):
-    username: str
-    password: str
+    username: str = Field(min_length=1, max_length=128)
+    password: str = Field(min_length=1, max_length=256)
     remember_me: bool = False
 
 # ==========================================
@@ -149,7 +203,7 @@ if not _admin_user or not _admin_pass:
 
 
 @api_router.post("/auth/token")
-async def login(credentials: LoginRequest, response: Response, _=Depends(rate_limit)):
+async def login(credentials: LoginRequest, response: Response, _=Depends(rate_limit_login)):
     """
     Rota para o frontend obter o JWT.
 
@@ -242,99 +296,217 @@ async def consultar_profissional(
 
     return { "tipo_registro": tipo_registro, "numero_registro": numero_registro, "uf_registro": uf_registro, "consulta_url": url, "info": info }
 
+def _persist_directory_records(paciente: PacienteData, medico: MedicoData) -> bool:
+    """Persiste paciente e médico sem bloquear a geração do documento."""
+    try:
+        from core.db_manager import IS_PRODUCTION as is_postgres
+
+        encrypted_patient_name = encrypt(paciente.nome)
+        encrypted_patient_doc = encrypt(paciente.numero_documento)
+        patient_doc_hash = generate_hash(paciente.numero_documento)
+        encrypted_doctor_name = encrypt(medico.nome)
+        doctor_reg_hash = generate_hash(medico.numero_registro)
+
+        patient_type = sanitizar_entrada(paciente.tipo_documento)
+        patient_role = sanitizar_entrada(paciente.cargo)
+        patient_company = sanitizar_entrada(paciente.empresa)
+        doctor_type = sanitizar_entrada(medico.tipo_registro)
+        doctor_reg = sanitizar_entrada(medico.numero_registro)
+        doctor_uf = sanitizar_entrada(medico.uf_registro)
+
+        with get_db_connection() as conn:
+            if is_postgres:
+                from sqlalchemy import text
+
+                patient_exists = conn.execute(
+                    text("SELECT id FROM pacientes WHERE numero_doc_hash = :hash_doc"),
+                    {"hash_doc": patient_doc_hash},
+                ).fetchone()
+                patient_values = {
+                    "nome": encrypted_patient_name,
+                    "tipo_doc": patient_type,
+                    "numero_doc": encrypted_patient_doc,
+                    "hash_doc": patient_doc_hash,
+                    "cargo": patient_role,
+                    "empresa": patient_company,
+                }
+                if patient_exists:
+                    conn.execute(text(
+                        "UPDATE pacientes SET nome_completo=:nome, tipo_doc=:tipo_doc, "
+                        "numero_doc=:numero_doc, cargo=:cargo, empresa=:empresa, "
+                        "data_atualizacao=CURRENT_TIMESTAMP WHERE numero_doc_hash=:hash_doc"
+                    ), patient_values)
+                else:
+                    conn.execute(text(
+                        "INSERT INTO pacientes "
+                        "(nome_completo, tipo_doc, numero_doc, numero_doc_hash, cargo, empresa) "
+                        "VALUES (:nome, :tipo_doc, :numero_doc, :hash_doc, :cargo, :empresa)"
+                    ), patient_values)
+
+                doctor_exists = conn.execute(
+                    text("SELECT id FROM medicos WHERE crm_hash=:crm_hash AND tipo_crm=:tipo_crm"),
+                    {"crm_hash": doctor_reg_hash, "tipo_crm": doctor_type},
+                ).fetchone()
+                doctor_values = {
+                    "nome": encrypted_doctor_name,
+                    "tipo_crm": doctor_type,
+                    "crm": doctor_reg,
+                    "crm_hash": doctor_reg_hash,
+                    "uf_crm": doctor_uf,
+                }
+                if doctor_exists:
+                    conn.execute(text(
+                        "UPDATE medicos SET nome_completo=:nome, crm=:crm, uf_crm=:uf_crm, "
+                        "data_atualizacao=CURRENT_TIMESTAMP "
+                        "WHERE crm_hash=:crm_hash AND tipo_crm=:tipo_crm"
+                    ), doctor_values)
+                else:
+                    conn.execute(text(
+                        "INSERT INTO medicos (nome_completo, tipo_crm, crm, crm_hash, uf_crm) "
+                        "VALUES (:nome, :tipo_crm, :crm, :crm_hash, :uf_crm)"
+                    ), doctor_values)
+            else:
+                cursor = conn.cursor()
+                cursor.execute("SELECT id FROM pacientes WHERE numero_doc_hash = ?", (patient_doc_hash,))
+                if cursor.fetchone():
+                    cursor.execute(
+                        "UPDATE pacientes SET nome_completo=?, tipo_doc=?, numero_doc=?, cargo=?, empresa=?, "
+                        "data_atualizacao=CURRENT_TIMESTAMP WHERE numero_doc_hash=?",
+                        (encrypted_patient_name, patient_type, encrypted_patient_doc, patient_role, patient_company, patient_doc_hash),
+                    )
+                else:
+                    cursor.execute(
+                        "INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, numero_doc_hash, cargo, empresa) "
+                        "VALUES (?, ?, ?, ?, ?, ?)",
+                        (encrypted_patient_name, patient_type, encrypted_patient_doc, patient_doc_hash, patient_role, patient_company),
+                    )
+
+                cursor.execute("SELECT id FROM medicos WHERE crm_hash=? AND tipo_crm=?", (doctor_reg_hash, doctor_type))
+                if cursor.fetchone():
+                    cursor.execute(
+                        "UPDATE medicos SET nome_completo=?, crm=?, uf_crm=?, data_atualizacao=CURRENT_TIMESTAMP "
+                        "WHERE crm_hash=? AND tipo_crm=?",
+                        (encrypted_doctor_name, doctor_reg, doctor_uf, doctor_reg_hash, doctor_type),
+                    )
+                else:
+                    cursor.execute(
+                        "INSERT INTO medicos (nome_completo, tipo_crm, crm, crm_hash, uf_crm) VALUES (?, ?, ?, ?, ?)",
+                        (encrypted_doctor_name, doctor_type, doctor_reg, doctor_reg_hash, doctor_uf),
+                    )
+
+        logger.info("Diretório de paciente/médico sincronizado em segundo plano.")
+        return True
+    except Exception:
+        logger.exception("Falha ao sincronizar diretório em segundo plano")
+        return False
+
+
 @api_router.post("/generate-document")
 @api_router.post("/generate-pdf")
 @api_router.post("/generate-html")
-async def generate_html_endpoint(data: DocumentoRequest, _=Depends(rate_limit), __=Depends(require_auth)):
+async def generate_html_endpoint(
+    data: DocumentoRequest,
+    _=Depends(rate_limit),
+    __=Depends(require_auth),
+):
     try:
-        is_postgres = bool(os.getenv('DATABASE_URL')) or os.getenv('RENDER') or os.getenv('RAILWAY_ENVIRONMENT') or os.getenv('VERCEL')
-        
-        # [CAMADA 2] Criptografa e gera hashes para os dados sensíveis
-        enc_nome_paciente = encrypt(data.paciente.nome)
-        enc_doc_paciente = encrypt(data.paciente.numero_documento)
-        hash_doc_paciente = generate_hash(data.paciente.numero_documento)
-        
-        enc_nome_medico = encrypt(data.medico.nome)
-        hash_crm_medico = generate_hash(data.medico.numero_registro)
-        
-        try:
-            with get_db_connection() as conn:
-                if is_postgres:
-                    from sqlalchemy import text
-                    # [UPSERT] Tenta inserir. Se já existir (por hash do documento), não faz nada (mantém original)
-                    result_paciente = conn.execute(text("SELECT id FROM pacientes WHERE numero_doc_hash = :hash_doc"), {
-                        "hash_doc": hash_doc_paciente
-                    })
-                    if not result_paciente.fetchone():
-                        insert_query = """
-                            INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, numero_doc_hash, cargo, empresa) 
-                            VALUES (:nome, :tipo_doc, :numero_doc, :hash_doc, :cargo, :empresa)
-                        """
-                        conn.execute(text(insert_query), {
-                            "nome": enc_nome_paciente, "tipo_doc": sanitizar_entrada(data.paciente.tipo_documento),
-                            "numero_doc": enc_doc_paciente, "hash_doc": hash_doc_paciente,
-                            "cargo": sanitizar_entrada(data.paciente.cargo), "empresa": sanitizar_entrada(data.paciente.empresa)
-                        })
-                    
-                    # Para médicos, mantemos o comportamento original de atualização se já existir (conflito por CRM)
-                    result_medico = conn.execute(text("SELECT id FROM medicos WHERE crm_hash = :crm_hash AND tipo_crm = :tipo_crm"), {
-                        "crm_hash": hash_crm_medico, "tipo_crm": sanitizar_entrada(data.medico.tipo_registro)
-                    })
-                    if not result_medico.fetchone():
-                        conn.execute(text("INSERT INTO medicos (nome_completo, tipo_crm, crm, crm_hash, uf_crm) VALUES (:nome, :tipo_crm, :crm, :crm_hash, :uf_crm)"), {
-                            "nome": enc_nome_medico, "tipo_crm": sanitizar_entrada(data.medico.tipo_registro),
-                            "crm": sanitizar_entrada(data.medico.numero_registro), "crm_hash": hash_crm_medico,
-                            "uf_crm": sanitizar_entrada(data.medico.uf_registro)
-                        })
-                    else:
-                        conn.execute(text("UPDATE medicos SET nome_completo = :nome, uf_crm = :uf_crm, crm = :crm WHERE crm_hash = :crm_hash AND tipo_crm = :tipo_crm"), {
-                            "nome": enc_nome_medico, "uf_crm": sanitizar_entrada(data.medico.uf_registro),
-                            "crm": sanitizar_entrada(data.medico.numero_registro), "crm_hash": hash_crm_medico,
-                            "tipo_crm": sanitizar_entrada(data.medico.tipo_registro)
-                        })
-                    conn.commit()
-                    logger.info("✅ Paciente e Médico salvos/atualizados com sucesso no banco de dados!")
-                else:
-                    cursor = conn.cursor()
-                    # SQLite fallback para o comportamento original (manual upsert)
-                    cursor.execute("SELECT id FROM pacientes WHERE numero_doc_hash = ? AND empresa = ?", (hash_doc_paciente, sanitizar_entrada(data.paciente.empresa)))
-                    if not cursor.fetchone():
-                        cursor.execute("INSERT INTO pacientes (nome_completo, tipo_doc, numero_doc, numero_doc_hash, cargo, empresa) VALUES (?, ?, ?, ?, ?, ?)", (
-                            enc_nome_paciente, sanitizar_entrada(data.paciente.tipo_documento), enc_doc_paciente, hash_doc_paciente, sanitizar_entrada(data.paciente.cargo), sanitizar_entrada(data.paciente.empresa)
-                        ))
-                    
-                    cursor.execute("SELECT id FROM medicos WHERE crm_hash = ? AND tipo_crm = ?", (hash_crm_medico, sanitizar_entrada(data.medico.tipo_registro)))
-                    if not cursor.fetchone():
-                        cursor.execute("INSERT INTO medicos (nome_completo, tipo_crm, crm, crm_hash, uf_crm) VALUES (?, ?, ?, ?, ?)", (
-                            enc_nome_medico, sanitizar_entrada(data.medico.tipo_registro), sanitizar_entrada(data.medico.numero_registro), hash_crm_medico, sanitizar_entrada(data.medico.uf_registro)
-                        ))
-                    else:
-                        cursor.execute("UPDATE medicos SET nome_completo = ?, uf_crm = ?, crm = ? WHERE crm_hash = ? AND tipo_crm = ?", (
-                            enc_nome_medico, sanitizar_entrada(data.medico.uf_registro), sanitizar_entrada(data.medico.numero_registro), hash_crm_medico, sanitizar_entrada(data.medico.tipo_registro)
-                        ))
-                    conn.commit()
-                    logger.info("✅ Paciente e Médico salvos no SQLite!")
-        except Exception as db_error:
-            logger.error(f"❌ Erro ao salvar no banco de dados: {str(db_error)}", exc_info=True)
-        
         documento_data = {
-            "nome_paciente": data.paciente.nome, "tipo_doc_paciente": data.paciente.tipo_documento,
-            "numero_doc_paciente": data.paciente.numero_documento, "cargo_paciente": data.paciente.cargo,
-            "empresa_paciente": data.paciente.empresa, "data_atestado": data.atestado.data_atestado,
-            "data_atual": datetime.now().strftime("%d/%m/%Y"), "qtd_dias_atestado": data.atestado.dias_afastamento,
+            "nome_paciente": data.paciente.nome,
+            "tipo_doc_paciente": data.paciente.tipo_documento,
+            "numero_doc_paciente": data.paciente.numero_documento,
+            "cargo_paciente": data.paciente.cargo,
+            "empresa_paciente": data.paciente.empresa,
+            "data_atestado": data.atestado.data_atestado,
+            "data_atual": datetime.now().strftime("%d/%m/%Y"),
+            "qtd_dias_atestado": data.atestado.dias_afastamento,
             "codigo_cid": "NÃO INFORMADO" if data.atestado.cid_nao_informado else data.atestado.cid,
-            "cid_nao_informado": data.atestado.cid_nao_informado, "nome_medico": data.medico.nome,
-            "tipo_registro_medico": data.medico.tipo_registro, "crm_medico": data.medico.numero_registro,
+            "cid_nao_informado": data.atestado.cid_nao_informado,
+            "nome_medico": data.medico.nome,
+            "tipo_registro_medico": data.medico.tipo_registro,
+            "crm_medico": data.medico.numero_registro,
             "uf_crm_medico": data.medico.uf_registro,
             "tipo_atestado": data.atestado.tipo_atestado or "saude",
         }
-        
+
         html_content = generate_html(documento_data)
         return HTMLResponse(content=html_content, status_code=200)
-    
-    except Exception as e:
-        logger.error(f"Erro geral ao gerar HTML: {str(e)}")
+    except Exception:
+        logger.exception("Erro geral ao gerar HTML")
         raise HTTPException(status_code=500, detail="Não foi possível gerar o documento. Tente novamente.")
+
+
+@api_router.post("/directory/sync")
+async def sync_directory(
+    data: DirectorySyncRequest,
+    _=Depends(rate_limit),
+    __=Depends(require_auth),
+):
+    """Sincroniza o cadastro sem bloquear a geração/visualização do documento."""
+    if not _persist_directory_records(data.paciente, data.medico):
+        raise HTTPException(status_code=503, detail="Não foi possível sincronizar o cadastro agora.")
+    return {"synced": True}
+
+
+@api_router.get("/directory")
+async def get_directory(response: Response, _=Depends(rate_limit), __=Depends(require_auth)):
+    """
+    Carrega pacientes e médicos em uma única ida ao banco.
+    O navegador mantém um snapshot privado em IndexedDB e pesquisa localmente.
+    """
+    try:
+        from core.db_manager import IS_PRODUCTION as is_postgres
+
+        with get_db_connection() as conn:
+            if is_postgres:
+                from sqlalchemy import text
+                patients_result = conn.execute(text(
+                    "SELECT id, nome_completo, tipo_doc, numero_doc, cargo, empresa "
+                    "FROM pacientes ORDER BY data_criacao DESC"
+                )).fetchall()
+                doctors_result = conn.execute(text(
+                    "SELECT id, nome_completo, tipo_crm, crm, uf_crm "
+                    "FROM medicos ORDER BY data_criacao DESC"
+                )).fetchall()
+            else:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT id, nome_completo, tipo_doc, numero_doc, cargo, empresa "
+                    "FROM pacientes ORDER BY data_criacao DESC"
+                )
+                patients_result = cursor.fetchall()
+                cursor.execute(
+                    "SELECT id, nome_completo, tipo_crm, crm, uf_crm "
+                    "FROM medicos ORDER BY data_criacao DESC"
+                )
+                doctors_result = cursor.fetchall()
+
+        patients = [{
+            "id": row[0],
+            "nome_completo": decrypt(row[1]),
+            "tipo_doc": row[2],
+            "numero_doc": decrypt(row[3]),
+            "cargo": row[4] or "",
+            "empresa": row[5] or "",
+        } for row in patients_result]
+        doctors = [{
+            "id": row[0],
+            "nome_completo": decrypt(row[1]),
+            "tipo_crm": row[2],
+            "crm": row[3],
+            "uf_crm": row[4],
+        } for row in doctors_result]
+
+        response.headers["Cache-Control"] = "private, no-store, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        return {
+            "patients": patients,
+            "doctors": doctors,
+            "synced_at": datetime.utcnow().isoformat() + "Z",
+        }
+    except Exception:
+        logger.exception("Erro ao sincronizar diretório local")
+        raise HTTPException(status_code=503, detail="Base de cadastros temporariamente indisponível.")
+
 
 @api_router.get("/patients")
 async def get_patients(
@@ -546,15 +718,16 @@ async def check_duplicate(tipo: str, valor: str, empresa: Optional[str] = None, 
 # uma query mínima (SELECT 1), sem retornar nenhum dado de negócio.
 @api_router.get("/health")
 async def health_check():
-    """
-    Verificação de saúde da API.
-    Retorna apenas o status operacional — sem dados de negócio.
-    Público e sem autenticação (apenas para health probes de plataforma).
-    """
+    """Liveness leve: não acorda o banco nem expõe dados internos."""
+    return {"status": "ok"}
+
+
+@api_router.get("/health/database")
+async def database_health(_=Depends(rate_limit), __=Depends(require_auth)):
+    """Readiness autenticada para diagnóstico manual da conexão com o banco."""
     try:
         from core.db_manager import IS_PRODUCTION as is_postgres
         with get_db_connection() as conn:
-            # Verifica conectividade com o banco via query mínima, sem expor dados
             if is_postgres:
                 from sqlalchemy import text
                 conn.execute(text("SELECT 1"))
@@ -562,12 +735,11 @@ async def health_check():
                 conn.execute("SELECT 1")
         return {"status": "ok"}
     except Exception:
-        # Não expõe detalhes do erro ao exterior — apenas indica degradação
-        return {"status": "degraded"}
+        logger.exception("Falha no health check do banco")
+        raise HTTPException(status_code=503, detail="Banco temporariamente indisponível.")
 
-# Incluímos o router duas vezes para garantir compatibilidade
-# 1. Com o prefixo /api (para chamadas diretas ou ambientes que não removem o prefixo)
-# 2. Sem o prefixo (para ambientes como Vercel que podem consumir o /api)
+
+# O prefixo /api atende a Vercel; o segundo router mantém compatibilidade local.
 app.include_router(api_router, prefix="/api")
 app.include_router(api_router)
 

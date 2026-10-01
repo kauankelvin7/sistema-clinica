@@ -45,7 +45,6 @@ if IS_PRODUCTION:
     # Produção: PostgreSQL com SQLAlchemy
     from sqlalchemy import create_engine, text
     from sqlalchemy.orm import sessionmaker, Session
-    from sqlalchemy.pool import NullPool
     
     DATABASE_URL = os.getenv('DATABASE_URL', '')
     
@@ -83,13 +82,17 @@ if IS_PRODUCTION:
         
         engine = create_engine(
             DATABASE_URL,
-            poolclass=NullPool,
             pool_pre_ping=True,
+            pool_size=int(os.getenv("DB_POOL_SIZE", "1")),
+            max_overflow=int(os.getenv("DB_MAX_OVERFLOW", "1")),
+            pool_timeout=int(os.getenv("DB_POOL_TIMEOUT", "3")),
+            pool_recycle=int(os.getenv("DB_POOL_RECYCLE", "180")),
+            pool_use_lifo=True,
             connect_args={
-                "connect_timeout": 15,  # Aumentado para conexões entre regiões (BR -> EUA)
-                "options": "-c statement_timeout=30000" # 30 segundos de limite para queries
+                "connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT", "5")),
+                "options": f"-c statement_timeout={int(os.getenv('DB_STATEMENT_TIMEOUT_MS', '8000'))}",
             },
-            echo=False
+            echo=False,
         )
         SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     else:
@@ -106,8 +109,9 @@ if IS_PRODUCTION:
             
         session = SessionLocal()
         try:
-            # Forçar um check de conexão rápido
-            session.execute(text("SELECT 1"))
+            # pool_pre_ping valida conexões reaproveitadas quando necessário.
+            # Não fazemos SELECT 1 nem dispose() por operação: ambos recriavam
+            # handshakes com o PostgreSQL e ampliavam o freeze em cold/warm starts.
             yield session
             session.commit()
         except Exception as e:
@@ -116,8 +120,6 @@ if IS_PRODUCTION:
             raise
         finally:
             session.close()
-            # Garante que a conexão seja devolvida ao pool/encerrada imediatamente
-            engine.dispose()
     
     def execute_query(query: str, params: Dict = None):
         """Executa query no PostgreSQL"""
