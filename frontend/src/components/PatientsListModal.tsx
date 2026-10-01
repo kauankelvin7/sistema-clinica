@@ -1,281 +1,167 @@
-import { X, User, Briefcase, Building2, Search, Filter, Hash, ChevronLeft, ChevronRight } from 'lucide-react'
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { Briefcase, Building2, ChevronLeft, ChevronRight, Hash, Search, User, X } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { searchPatients } from '../services/api'
+import type { Paciente } from '../types'
 import { useTranslation } from '../utils/i18n'
-
-interface Paciente {
-  id: number
-  nome_completo: string
-  tipo_doc: string
-  numero_doc: string
-  cargo?: string
-  empresa?: string
-  telefone?: string
-  email?: string
-}
+import { normalizeText } from '../utils/normalize'
 
 interface Props {
   isOpen: boolean
   onClose: () => void
-  onSelect?: (paciente: Paciente) => void
+  onSelect?: (patient: Paciente) => void
+  patients: Paciente[]
 }
 
-const PAGE_SIZE = 25
+const PAGE_SIZE = 30
 
-export default function PatientsListModal({ isOpen, onClose, onSelect }: Props) {
+export default function PatientsListModal({ isOpen, onClose, onSelect, patients }: Props) {
   const { t } = useTranslation()
-  const [pacientes, setPacientes] = useState<Paciente[]>([])
-  const [total, setTotal] = useState(0)
-  const [page, setPage] = useState(1)
-  const [loading, setLoading] = useState(true)
-
-  // Filtros locais (operam sobre a página atual)
   const [searchTerm, setSearchTerm] = useState('')
-  const [filterTipoDoc, setFilterTipoDoc] = useState<'TODOS' | 'CPF' | 'RG'>('TODOS')
+  const [documentType, setDocumentType] = useState<'TODOS' | 'CPF' | 'RG'>('TODOS')
+  const [page, setPage] = useState(1)
 
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
-
-  const fetchPage = useCallback((search: string, targetPage: number) => {
-    setLoading(true)
-    searchPatients(search || undefined, targetPage, PAGE_SIZE)
-      .then(data => {
-        setPacientes(data.patients || [])
-        setTotal(data.total || 0)
-        setLoading(false)
-      })
-      .catch(() => {
-        setPacientes([])
-        setTotal(0)
-        setLoading(false)
-      })
-  }, [])
-
-  // Carregar ao abrir o modal
   useEffect(() => {
-    if (isOpen) {
-      setPage(1)
-      setSearchTerm('')
-      setFilterTipoDoc('TODOS')
-      fetchPage('', 1)
-    }
-  }, [isOpen, fetchPage])
-
-  // Trancar scroll do body enquanto aberto
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
-    return () => {
-      document.body.style.overflow = ''
-    }
+    if (!isOpen) return
+    setSearchTerm('')
+    setDocumentType('TODOS')
+    setPage(1)
   }, [isOpen])
 
-  // Fechar com tecla ESC
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) onClose()
+    if (!isOpen) return
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKeyDown = (event: KeyboardEvent) => event.key === 'Escape' && onClose()
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.body.style.overflow = previous
+      window.removeEventListener('keydown', onKeyDown)
     }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, onClose])
 
-  // Busca com debounce de 400ms
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setSearchTerm(value)
-    setPage(1)
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => {
-      fetchPage(value, 1)
-    }, 400)
-  }
+  const filtered = useMemo(() => {
+    const query = normalizeText(searchTerm.trim())
+    return patients.filter((patient) => {
+      if (documentType !== 'TODOS' && patient.tipo_doc !== documentType) return false
+      if (!query) return true
+      const searchable = normalizeText([
+        patient.nome_completo,
+        patient.numero_doc,
+        patient.cargo,
+        patient.empresa,
+      ].join(' '))
+      return searchable.includes(query)
+    })
+  }, [documentType, patients, searchTerm])
 
-  // Troca de página
-  const goToPage = (newPage: number) => {
-    setPage(newPage)
-    fetchPage(searchTerm, newPage)
-  }
+  useEffect(() => setPage(1), [searchTerm, documentType])
 
-  // Filtro local por tipo de documento
-  const filteredPacientes = filterTipoDoc === 'TODOS'
-    ? pacientes
-    : pacientes.filter(p => p.tipo_doc === filterTipoDoc)
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const safePage = Math.min(page, totalPages)
+  const visible = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
 
   if (!isOpen) return null
 
   return createPortal(
-    <div
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-zinc-950/80 dark:bg-black/90 backdrop-blur-md pt-16 sm:pt-20 pb-4 sm:pb-6 px-3 sm:px-6 overflow-y-auto animate-in fade-in duration-200"
-    >
-      <div className="bg-white dark:bg-surface-card rounded-3xl shadow-2xl w-full max-w-5xl h-[82vh] max-h-[760px] overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col transform transition-all animate-in zoom-in-95 duration-200 my-auto">
-
-        {/* Header Adaptativo Glassmorphism */}
-        <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md px-4 sm:px-8 py-3.5 sm:py-4 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800/80 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 bg-garnet-500/10 dark:bg-garnet-500/15 border border-garnet-500/20 rounded-2xl flex items-center justify-center text-garnet-500 flex-shrink-0 shadow-xs">
-              <User className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="font-display text-base sm:text-2xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight leading-tight">
-                {t.modalPatientsTitle}
-              </h2>
-              <p className="text-[11px] sm:text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-0.5">
-                {loading
-                  ? 'Carregando...'
-                  : `${filteredPacientes.length} exibidos nesta página · ${total} no total`
-                }
+    <div className="modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <section className="directory-modal" role="dialog" aria-modal="true" aria-label={t.modalPatientsTitle}>
+        <header className="directory-modal__header">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="directory-modal__hero-icon"><User className="h-5 w-5" /></div>
+            <div className="min-w-0">
+              <h2 className="directory-modal__title">{t.modalPatientsTitle}</h2>
+              <p className="directory-modal__subtitle">
+                {filtered.length} encontrados · {patients.length} disponíveis no cache local
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="w-9 h-9 sm:w-10 sm:h-10 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 rounded-xl flex items-center justify-center transition-all border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
-            title="Fechar"
-          >
-            <X className="w-5 h-5" />
+          <button type="button" onClick={onClose} className="icon-button" aria-label="Fechar">
+            <X className="h-4 w-4" />
           </button>
-        </div>
+        </header>
 
-        {/* Filtros Modernizados */}
-        <div className="bg-zinc-50/80 dark:bg-zinc-900/40 border-b border-zinc-200/80 dark:border-zinc-800/80 p-3 sm:px-8 space-y-3 shrink-0">
-          <div className="relative group">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-garnet-500 transition-colors" />
+        <div className="directory-modal__toolbar">
+          <label className="search-field">
+            <Search className="search-field__icon" />
             <input
-              type="text"
+              autoFocus
+              className="input-field pl-10"
               placeholder={t.searchPatientsPlaceholder}
               value={searchTerm}
-              onChange={handleSearchChange}
-              className="input-field pl-10 py-2.5 text-xs sm:text-sm bg-white dark:bg-surface-input border border-zinc-200 dark:border-zinc-800 rounded-xl"
+              onChange={(event) => setSearchTerm(event.target.value)}
             />
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2.5">
-            <div className="flex items-center gap-2 bg-white dark:bg-surface-input border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-1.5 shadow-xs">
-              <Filter className="w-3.5 h-3.5 text-garnet-500 shrink-0" />
-              <select
-                value={filterTipoDoc}
-                onChange={(e) => setFilterTipoDoc(e.target.value as 'TODOS' | 'CPF' | 'RG')}
-                className="bg-transparent text-xs font-semibold text-zinc-700 dark:text-zinc-300 focus:outline-none cursor-pointer pr-2"
-              >
-                <option value="TODOS" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">Todos Documentos (CPF / RG)</option>
-                <option value="CPF" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">CPF</option>
-                <option value="RG" className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">RG</option>
-              </select>
-            </div>
-          </div>
+          </label>
+          <select
+            className="input-field max-w-48"
+            value={documentType}
+            onChange={(event) => setDocumentType(event.target.value as typeof documentType)}
+          >
+            <option value="TODOS">CPF e RG</option>
+            <option value="CPF">CPF</option>
+            <option value="RG">RG</option>
+          </select>
         </div>
 
-        {/* Lista de Pacientes - Layout Responsivo Fluido */}
-        <div className="p-3 sm:p-6 overflow-y-auto flex-1 bg-zinc-50/40 dark:bg-surface-page/40">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <div className="animate-spin w-9 h-9 border-3 border-garnet-500 border-t-transparent rounded-full mb-3"></div>
-              <p className="text-xs text-zinc-500 font-medium">Buscando lista de pacientes...</p>
-            </div>
-          ) : filteredPacientes.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl flex items-center justify-center mb-4 text-zinc-400">
-                <User className="w-8 h-8" />
-              </div>
-              <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 mb-1">Nenhum paciente encontrado</h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-xs">
-                {t.noPatientsFound}
-              </p>
+        <div className="directory-modal__content">
+          {visible.length === 0 ? (
+            <div className="empty-state">
+              <User className="h-7 w-7" />
+              <h3>Nenhum paciente encontrado</h3>
+              <p>Altere a busca ou atualize a base local.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-3 sm:gap-4">
-              {filteredPacientes.map((paciente, index) => (
-                <div
-                  key={paciente.id}
+            <div className="directory-grid">
+              {visible.map((patient) => (
+                <button
+                  key={patient.id}
+                  type="button"
                   onClick={() => {
-                    if (onSelect) {
-                      onSelect(paciente)
-                      onClose()
-                    }
+                    onSelect?.(patient)
+                    onClose()
                   }}
-                  className={`bg-white dark:bg-surface-card border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-3.5 sm:p-4.5 transition-all duration-200 group ${
-                    onSelect ? 'cursor-pointer hover:border-garnet-500/60 hover:shadow-lg active:scale-[0.995]' : 'hover:border-garnet-500/40'
-                  }`}
+                  className="directory-card"
                 >
-                  <div className="flex items-start gap-3 min-w-0">
-                    <div className="w-8 h-8 sm:w-9 sm:h-9 bg-garnet-500/10 dark:bg-garnet-500/15 border border-garnet-500/20 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-garnet-500 transition-colors duration-200 mt-0.5">
-                      <span className="text-garnet-600 dark:text-garnet-400 font-bold text-xs group-hover:text-white transition-colors">
-                        {(page - 1) * PAGE_SIZE + index + 1}
-                      </span>
-                    </div>
-
-                    <div className="flex-1 min-w-0 overflow-hidden">
-                      <h3
-                        className="text-sm sm:text-base font-bold text-garnet-600 dark:text-garnet-400 leading-snug truncate min-w-0 mb-2 group-hover:text-garnet-500 transition-colors"
-                        title={paciente.nome_completo}
-                      >
-                        {paciente.nome_completo}
-                      </h3>
-                      
-                      <div className="flex flex-wrap items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 max-w-full">
-                        <div className="flex items-center gap-1.5 bg-zinc-100/70 dark:bg-zinc-800/60 px-2.5 py-1 rounded-md border border-zinc-200/50 dark:border-zinc-700/50 max-w-full min-w-0">
-                          <Hash className="w-3.5 h-3.5 text-garnet-500 shrink-0" />
-                          <span className="font-semibold text-zinc-700 dark:text-zinc-300 shrink-0">{paciente.tipo_doc}:</span>
-                          <span className="font-mono font-bold text-zinc-800 dark:text-zinc-200 truncate min-w-0">{paciente.numero_doc}</span>
-                        </div>
-
-                        {paciente.cargo && (
-                          <div className="flex items-center gap-1.5 bg-zinc-100/70 dark:bg-zinc-800/60 px-2.5 py-1 rounded-md border border-zinc-200/50 dark:border-zinc-700/50 max-w-full min-w-0">
-                            <Briefcase className="w-3.5 h-3.5 text-garnet-500 shrink-0" />
-                            <span className="font-medium text-zinc-800 dark:text-zinc-200 truncate min-w-0" title={paciente.cargo}>{paciente.cargo}</span>
-                          </div>
-                        )}
-
-                        {paciente.empresa && (
-                          <div className="flex items-center gap-1.5 bg-zinc-100/70 dark:bg-zinc-800/60 px-2.5 py-1 rounded-md border border-zinc-200/50 dark:border-zinc-700/50 max-w-full min-w-0">
-                            <Building2 className="w-3.5 h-3.5 text-garnet-500 shrink-0" />
-                            <span className="font-medium text-zinc-800 dark:text-zinc-200 truncate min-w-0" title={paciente.empresa}>{paciente.empresa}</span>
-                          </div>
-                        )}
-                      </div>
+                  <div className="directory-card__avatar"><User className="h-4 w-4" /></div>
+                  <div className="min-w-0 flex-1 text-left">
+                    <h3 className="directory-card__title" title={patient.nome_completo}>
+                      {patient.nome_completo}
+                    </h3>
+                    <div className="directory-card__meta">
+                      <span><Hash className="h-3 w-3" /> {patient.tipo_doc} {patient.numero_doc}</span>
+                      {patient.cargo && <span><Briefcase className="h-3 w-3" /> {patient.cargo}</span>}
+                      {patient.empresa && <span><Building2 className="h-3 w-3" /> {patient.empresa}</span>}
                     </div>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )}
         </div>
 
-        {/* Paginação */}
-        {!loading && total > PAGE_SIZE && (
-          <div className="shrink-0 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-6 py-3.5 flex items-center justify-between">
-            <span className="text-xs text-zinc-500 dark:text-zinc-400 font-semibold">
-              Página <span className="text-zinc-800 dark:text-zinc-200 font-bold">{page}</span> de <span className="text-zinc-800 dark:text-zinc-200 font-bold">{totalPages}</span>
-            </span>
-
-            <div className="flex items-center gap-2">
+        {totalPages > 1 && (
+          <footer className="directory-modal__footer">
+            <span>Página {safePage} de {totalPages}</span>
+            <div className="flex gap-2">
               <button
-                onClick={() => goToPage(page - 1)}
-                disabled={page <= 1}
-                className="flex items-center gap-1 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed bg-zinc-100 hover:bg-garnet-500 dark:bg-zinc-800 dark:hover:bg-garnet-500 text-zinc-700 hover:text-white dark:text-zinc-300 dark:hover:text-white border border-zinc-200 dark:border-zinc-700 hover:border-garnet-500"
+                type="button"
+                className="btn-secondary min-h-9 px-3 py-1.5"
+                disabled={safePage === 1}
+                onClick={() => setPage((value) => Math.max(1, value - 1))}
               >
-                <ChevronLeft className="w-4 h-4" />
-                <span>Anterior</span>
+                <ChevronLeft className="h-4 w-4" /> Anterior
               </button>
               <button
-                onClick={() => goToPage(page + 1)}
-                disabled={page >= totalPages}
-                className="flex items-center gap-1 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed bg-zinc-100 hover:bg-garnet-500 dark:bg-zinc-800 dark:hover:bg-garnet-500 text-zinc-700 hover:text-white dark:text-zinc-300 dark:hover:text-white border border-zinc-200 dark:border-zinc-700 hover:border-garnet-500"
+                type="button"
+                className="btn-secondary min-h-9 px-3 py-1.5"
+                disabled={safePage === totalPages}
+                onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
               >
-                <span>Próximo</span>
-                <ChevronRight className="w-4 h-4" />
+                Próximo <ChevronRight className="h-4 w-4" />
               </button>
             </div>
-          </div>
+          </footer>
         )}
-      </div>
+      </section>
     </div>,
     document.body
   )
