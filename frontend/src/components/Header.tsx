@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Columns3, LogOut, Moon, Rows3, Settings, Sun } from 'lucide-react'
+import { Columns3, HeartPulse, LogOut, Moon, Rows3, Settings, Sun } from 'lucide-react'
 import { getSavedLanguage, TRANSLATIONS, Language } from '../utils/i18n'
 import PaletteSelector from './PaletteSelector'
 import SettingsModal from './SettingsModal'
@@ -48,23 +48,10 @@ export default function Header({ onLogout, layoutMode = 'horizontal', onToggleLa
     <header className="sticky top-0 z-40 border-b border-zinc-200/90 bg-white/95 backdrop-blur-md dark:border-zinc-800 dark:bg-surface-page/95">
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
 
-      <div className="app-container flex min-h-[68px] items-center justify-between gap-3 py-3">
+      <div className="app-container flex min-h-[64px] items-center justify-between gap-3 py-3">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-garnet-500/15 bg-garnet-500/10 text-garnet-500">
-            <svg
-              className="h-5 w-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.1"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 12 0V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3" />
-              <path d="M8 15v1a6 6 0 0 0 12 0v-4" />
-              <circle cx="20" cy="10" r="2" />
-            </svg>
+          <div className="brand-mark" aria-hidden="true">
+            <HeartPulse className="h-5 w-5" strokeWidth={1.9} />
           </div>
 
           <div className="min-w-0">
