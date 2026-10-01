@@ -45,14 +45,14 @@ export default function AutocompleteInput({
     if (value.length >= minChars) {
       if (onSearch) {
         // Modo assíncrono: usa as options diretamente (já vieram filtradas da API)
-        setFilteredOptions(options)
+        setFilteredOptions(options.slice(0, 8))
         setShowSuggestions(options.length > 0 || isLoading)
       } else {
         // Modo local: filtra as options em memória (comportamento original)
         const normalizedSearch = normalizeText(value)
-        const filtered = options.filter(option =>
-          normalizeText(option.label).includes(normalizedSearch)
-        )
+        const filtered = options
+          .filter(option => normalizeText(option.label).includes(normalizedSearch))
+          .slice(0, 8)
         setFilteredOptions(filtered)
         setShowSuggestions(filtered.length > 0)
       }
@@ -126,12 +126,12 @@ export default function AutocompleteInput({
       </div>
 
       {showSuggestions && (
-        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-zinc-900 border-2 border-orange-200 dark:border-orange-700/40 rounded-xl shadow-xl max-h-60 overflow-y-auto backdrop-blur-md">
+        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl max-h-60 overflow-y-auto backdrop-blur-md">
           <div className="p-1">
             {isLoading ? (
               <div className="flex items-center gap-3 px-3 py-3 text-sm text-zinc-500 dark:text-zinc-400">
                 <Loader2 className="w-4 h-4 animate-spin text-garnet-500 shrink-0" />
-                Buscando pacientes...
+                Buscando cadastros...
               </div>
             ) : filteredOptions.length === 0 ? (
               <div className="px-3 py-3 text-sm text-zinc-400 dark:text-zinc-500 text-center">
@@ -145,8 +145,8 @@ export default function AutocompleteInput({
                   onClick={() => handleSelect(option)}
                   className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors
                     ${index === selectedIndex
-                      ? 'bg-orange-100 dark:bg-garnet-500/20 text-orange-900 dark:text-orange-100'
-                      : 'hover:bg-orange-50 dark:hover:bg-garnet-500/10 text-zinc-700 dark:text-zinc-200'
+                      ? 'bg-garnet-500/10 text-garnet-700 dark:bg-garnet-500/20 dark:text-garnet-200'
+                      : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/80 text-zinc-700 dark:text-zinc-200'
                     }`}
                 >
                   <div className="flex items-center gap-2">
