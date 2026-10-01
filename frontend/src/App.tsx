@@ -4,12 +4,15 @@ import ActionButtons from './components/ActionButtons'
 import CertificateForm from './components/CertificateForm'
 import DoctorForm from './components/DoctorForm'
 import DocumentPreviewModal from './components/DocumentPreviewModal'
+import DirectoryStatus from './components/DirectoryStatus'
 import Header from './components/Header'
 import Login from './components/Login'
 import PatientForm from './components/PatientForm'
 import SectionCard from './components/SectionCard'
 import { ValidationModal } from './components/ValidationModal'
+import { useClinicDirectory } from './hooks/useClinicDirectory'
 import api, { checkSession, logoutUser } from './services/api'
+import { clearDirectoryCache } from './services/directoryCache'
 import type { AppFormData } from './types'
 import { getSavedLanguage, Language, TRANSLATIONS } from './utils/i18n'
 
@@ -50,6 +53,7 @@ function App() {
   const [showValidationModal, setShowValidationModal] = useState(false)
   const [missingFields, setMissingFields] = useState<string[]>([])
   const [previewHtml, setPreviewHtml] = useState<string | null>(null)
+  const directory = useClinicDirectory(authState === 'authenticated')
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.pt
 
@@ -65,7 +69,9 @@ function App() {
   useEffect(() => {
     let active = true
     checkSession().then((authenticated) => {
-      if (active) setAuthState(authenticated ? 'authenticated' : 'anonymous')
+      if (!active) return
+      setAuthState(authenticated ? 'authenticated' : 'anonymous')
+      if (!authenticated) void clearDirectoryCache()
     })
     return () => {
       active = false
@@ -73,7 +79,10 @@ function App() {
   }, [])
 
   useEffect(() => {
-    const handleAuthLogout = () => setAuthState('anonymous')
+    const handleAuthLogout = () => {
+      void clearDirectoryCache()
+      setAuthState('anonymous')
+    }
     window.addEventListener('auth_logout', handleAuthLogout)
     return () => window.removeEventListener('auth_logout', handleAuthLogout)
   }, [])
@@ -162,9 +171,10 @@ function App() {
           numero_registro: formData.numeroRegistro,
           uf_registro: formData.ufRegistro,
         },
-      })
+      }, { timeout: 20000 })
 
       setPreviewHtml(response.data)
+      directory.rememberForm(formData)
       setMessage({ type: 'success', text: 'Declaração pronta para revisão.' })
     } catch {
       setMessage({
@@ -184,6 +194,7 @@ function App() {
 
   const handleLogout = async () => {
     await logoutUser()
+    await directory.clear()
     setFormData(getDefaultFormData())
     setAuthState('anonymous')
   }
@@ -251,7 +262,15 @@ function App() {
               <p className="workspace-description">{t.workspaceDescription}</p>
             </div>
 
-            <div className="w-full max-w-sm lg:w-[320px]">
+            <div className="w-full max-w-md space-y-3 lg:w-[390px]">
+              <DirectoryStatus
+                status={directory.status}
+                cachedAt={directory.cachedAt}
+                patientCount={directory.patients.length}
+                doctorCount={directory.doctors.length}
+                onRefresh={() => void directory.refresh()}
+              />
+              <div>
               <div className="mb-2 flex items-center justify-between gap-3 text-xs">
                 <span className="font-semibold text-zinc-600 dark:text-zinc-300">{t.progressLabel}</span>
                 <span className="tabular-nums font-bold text-garnet-500">{completion.percentage}%</span>
@@ -262,6 +281,7 @@ function App() {
               <p className="mt-2 text-right text-[11px] text-zinc-500 dark:text-zinc-400">
                 {completion.completed}/{completion.total}
               </p>
+              </div>
             </div>
           </div>
         </section>
@@ -270,7 +290,7 @@ function App() {
           className={
             layoutMode === 'vertical'
               ? 'mx-auto grid w-full max-w-4xl grid-cols-1 gap-4'
-              : 'grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3'
+              : 'workspace-grid'
           }
         >
           <SectionCard
@@ -279,7 +299,7 @@ function App() {
             description={t.patientSectionHint}
             icon={User}
           >
-            <PatientForm formData={formData} updateFormData={updateFormData} />
+            <PatientForm formData={formData} updateFormData={updateFormData} patients={directory.patients} />
           </SectionCard>
 
           <SectionCard
@@ -297,7 +317,7 @@ function App() {
             description={t.doctorSectionHint}
             icon={Stethoscope}
           >
-            <DoctorForm formData={formData} updateFormData={updateFormData} />
+            <DoctorForm formData={formData} updateFormData={updateFormData} doctors={directory.doctors} />
           </SectionCard>
         </div>
       </main>
