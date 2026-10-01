@@ -6,6 +6,7 @@ interface DirectoryStatusProps {
   cachedAt: number | null
   patientCount: number
   doctorCount: number
+  pendingCount: number
   onRefresh: () => void
 }
 
@@ -22,6 +23,7 @@ export default function DirectoryStatus({
   cachedAt,
   patientCount,
   doctorCount,
+  pendingCount,
   onRefresh,
 }: DirectoryStatusProps) {
   const syncing = status === 'loading' || status === 'syncing'
@@ -60,6 +62,7 @@ export default function DirectoryStatus({
         <p className="directory-status__meta">
           <Database className="h-3 w-3" />
           {patientCount} pacientes · {doctorCount} médicos
+          {pendingCount > 0 && ` · ${pendingCount} sincronização${pendingCount > 1 ? 'ões' : ''} pendente${pendingCount > 1 ? 's' : ''}`}
           {stale && ' · atualização em segundo plano'}
         </p>
       </div>
