@@ -73,7 +73,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
         {/* Data e Dias de Afastamento em linha */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
+            <label className="field-label">
               {t.certificateDateLabel}
             </label>
             <input
@@ -85,7 +85,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
           </div>
 
           <div>
-            <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
+            <label className="field-label">
               {t.leaveDaysLabel}
             </label>
             <input
@@ -101,7 +101,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
 
         {/* Código CID */}
         <div>
-          <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
+          <label className="field-label">
             {t.cidLabel}
           </label>
           <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
@@ -128,7 +128,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
             <label className="flex items-center gap-2 cursor-pointer whitespace-nowrap px-1 py-1 group">
               <input
                 type="checkbox"
-                className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-orange-500 bg-white dark:bg-surface-input focus:ring-2 focus:ring-orange-500/20 transition-all cursor-pointer"
+                className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-garnet-500 bg-white dark:bg-surface-input focus:ring-2 focus:ring-garnet-500/20 transition-all cursor-pointer"
                 checked={formData.cidNaoInformado}
                 onChange={(e) => updateFormData('cidNaoInformado', e.target.checked)}
               />
@@ -167,7 +167,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
           </div>
         ) : (
           <div className="p-3.5 rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/20 text-zinc-500 dark:text-zinc-400 text-xs flex items-center gap-2.5">
-            <Calendar className="w-4 h-4 text-orange-500 flex-shrink-0" />
+            <Calendar className="w-4 h-4 text-garnet-500 flex-shrink-0" />
             <span className="text-[11px]">
               {t.fillDateNotice}
             </span>

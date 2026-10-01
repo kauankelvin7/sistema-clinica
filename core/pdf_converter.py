@@ -13,7 +13,8 @@ Este módulo implementa:
 
 import os
 import logging
-import subprocess
+# subprocess is required for the fixed LibreOffice argv execution below.
+import subprocess  # nosec B404
 import platform
 from pathlib import Path
 from typing import Optional
@@ -86,7 +87,8 @@ def convert_docx_to_pdf_libreoffice(docx_path: str, output_dir: Optional[str] = 
         logger.info(f"Executando conversão PDF: {' '.join(cmd)}")
         
         # Executar conversão
-        result = subprocess.run(
+        # Command is an argv list and shell=False; user paths are not shell-interpreted.
+        result = subprocess.run(  # nosec B603
             cmd,
             capture_output=True,
             text=True,

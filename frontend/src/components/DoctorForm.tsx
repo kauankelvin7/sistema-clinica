@@ -86,18 +86,18 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
       <button
         type="button"
         onClick={() => setShowListModal(true)}
-        className="w-full bg-zinc-50 dark:bg-surface-input border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 hover:border-orange-500/30 group transition-all duration-200"
+        className="record-picker group"
       >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-zinc-500/10 dark:bg-zinc-400/15 border border-zinc-500/20 dark:border-zinc-400/25 rounded-lg flex items-center justify-center text-zinc-600 dark:text-zinc-300 flex-shrink-0">
+          <div className="record-picker__icon">
             <Stethoscope className="w-4 h-4" />
           </div>
           <div className="text-left flex-1 min-w-0">
-            <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wide">
+            <p className="record-picker__eyebrow">
               {t.searchDoctorsBtn}
             </p>
             {totalMedicos > 0 ? (
-              <p className="text-lg font-bold text-zinc-900 dark:text-zinc-50 leading-tight group-hover:text-orange-500 transition-colors">
+              <p className="record-picker__value">
                 {totalMedicos} {t.modalDoctorsTitle}
               </p>
             ) : (
@@ -106,13 +106,13 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
               </p>
             )}
           </div>
-          <Eye className="w-4 h-4 text-zinc-400 group-hover:text-orange-500 transition-colors flex-shrink-0" />
+          <Eye className="w-4 h-4 text-zinc-400 group-hover:text-garnet-500 transition-colors flex-shrink-0" />
         </div>
       </button>
 
       {/* Nome Completo com Autocomplete */}
       <div>
-        <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
+        <label className="field-label">
           {t.doctorNameLabel}
         </label>
         <AutocompleteInput
@@ -134,7 +134,7 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
 
       {/* Registro Profissional */}
       <div>
-        <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
+        <label className="field-label">
           {t.regNumberLabel}
         </label>
         <div className="grid grid-cols-1 gap-2.5">
@@ -183,10 +183,10 @@ export default function DoctorForm({ formData, updateFormData }: DoctorFormProps
           <button
             type="button"
             onClick={handleConsultar}
-            className="w-full px-3.5 py-2 text-xs font-semibold rounded-xl border border-zinc-300 dark:border-zinc-700/80 bg-zinc-100/60 dark:bg-zinc-800/40 text-zinc-700 dark:text-zinc-300 hover:border-orange-500/40 hover:text-orange-500 dark:hover:text-orange-400 flex items-center justify-center gap-2 transition-all duration-200 group"
+            className="w-full px-3.5 py-2 text-xs font-semibold rounded-xl border border-zinc-300 dark:border-zinc-700/80 bg-zinc-100/60 dark:bg-zinc-800/40 text-zinc-700 dark:text-zinc-300 hover:border-garnet-500/40 hover:text-garnet-500 dark:hover:text-garnet-400 flex items-center justify-center gap-2 transition-all duration-200 group"
           >
             <span>{t.consultRegister} {formData.tipoRegistro}</span>
-            <ExternalLink className="w-3.5 h-3.5 group-hover:text-orange-500 transition-colors" />
+            <ExternalLink className="w-3.5 h-3.5 group-hover:text-garnet-500 transition-colors" />
           </button>
         </div>
       </div>

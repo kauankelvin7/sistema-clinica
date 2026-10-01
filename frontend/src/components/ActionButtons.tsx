@@ -1,4 +1,4 @@
-import { FileText, Trash2, Loader2 } from 'lucide-react'
+import { FileText, Loader2, ShieldCheck, Trash2 } from 'lucide-react'
 import type { ActionButtonsProps } from '../types'
 import { useTranslation } from '../utils/i18n'
 
@@ -6,37 +6,42 @@ export default function ActionButtons({ onGenerateHTML, onClear, loading }: Acti
   const { t } = useTranslation()
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-end gap-3 w-full">
-      {/* Botão Limpar */}
-      <button
-        type="button"
-        onClick={onClear}
-        disabled={!!loading}
-        className="w-full sm:w-auto px-4 py-2.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-xl disabled:opacity-50 transition-all duration-200 flex items-center justify-center gap-2 group"
-      >
-        <Trash2 className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
-        <span>{t.btnClearForm}</span>
-      </button>
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="privacy-chip self-start sm:self-auto">
+        <ShieldCheck className="h-3.5 w-3.5" />
+        <span>{t.secureSessionNotice}</span>
+      </div>
 
-      {/* Botão Gerar Documento */}
-      <button
-        type="button"
-        onClick={onGenerateHTML}
-        disabled={!!loading}
-        className="w-full sm:w-auto px-6 py-2.5 text-xs font-bold font-display text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 active:scale-[0.98] rounded-xl shadow-md shadow-orange-500/20 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 group"
-      >
-        {loading === 'html' ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin text-white" />
-            <span>{t.btnGenerating}</span>
-          </>
-        ) : (
-          <>
-            <FileText className="w-4 h-4 text-white group-hover:scale-105 transition-transform" />
-            <span>{t.btnGenerateHTML}</span>
-          </>
-        )}
-      </button>
+      <div className="flex w-full flex-col-reverse gap-2 sm:w-auto sm:flex-row">
+        <button
+          type="button"
+          onClick={onClear}
+          disabled={!!loading}
+          className="btn-secondary w-full sm:w-auto"
+        >
+          <Trash2 className="h-4 w-4" />
+          <span>{t.btnClearForm}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={onGenerateHTML}
+          disabled={!!loading}
+          className="btn-primary w-full sm:min-w-44"
+        >
+          {loading === 'html' ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>{t.btnGenerating}</span>
+            </>
+          ) : (
+            <>
+              <FileText className="h-4 w-4" />
+              <span>{t.btnGenerateHTML}</span>
+            </>
+          )}
+        </button>
+      </div>
     </div>
   )
 }

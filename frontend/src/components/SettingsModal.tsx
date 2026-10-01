@@ -19,7 +19,9 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
       return localStorage.getItem('theme') === 'dark' ? 'dark' : 'light'
-    } catch { }
+    } catch {
+      // Preferência indisponível: usa o fallback abaixo.
+    }
     return 'dark'
   })
 
@@ -68,7 +70,9 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         showFeedback('Modo Claro ativado')
       }
       themeManager.updateThemeColor()
-    } catch { }
+    } catch {
+      // A troca de tema continua aplicada no DOM mesmo sem persistência.
+    }
   }
 
   // Trata auto-instalação PWA

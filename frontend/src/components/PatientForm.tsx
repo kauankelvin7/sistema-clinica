@@ -113,18 +113,18 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
       <button
         type="button"
         onClick={() => setShowListModal(true)}
-        className="w-full bg-zinc-50 dark:bg-surface-input border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 hover:border-orange-500/30 group transition-all duration-200"
+        className="record-picker group"
       >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-lg flex items-center justify-center text-orange-500 flex-shrink-0">
+          <div className="record-picker__icon">
             <Users className="w-4 h-4" />
           </div>
           <div className="text-left flex-1 min-w-0">
-            <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wide">
+            <p className="record-picker__eyebrow">
               {t.searchPatientsBtn}
             </p>
             {totalPacientes > 0 ? (
-              <p className="text-lg font-bold text-zinc-900 dark:text-zinc-50 leading-tight group-hover:text-orange-500 transition-colors">
+              <p className="record-picker__value">
                 {totalPacientes} {t.modalPatientsTitle}
               </p>
             ) : (
@@ -133,13 +133,13 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
               </p>
             )}
           </div>
-          <Eye className="w-4 h-4 text-zinc-400 group-hover:text-orange-500 transition-colors flex-shrink-0" />
+          <Eye className="w-4 h-4 text-zinc-400 group-hover:text-garnet-500 transition-colors flex-shrink-0" />
         </div>
       </button>
 
       {/* Nome Completo com Autocomplete Assíncrono */}
       <div>
-        <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
+        <label className="field-label">
           {t.patientNameLabel}
         </label>
         <AutocompleteInput
@@ -164,7 +164,7 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
 
       {/* Documento (CPF/RG) */}
       <div>
-        <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
+        <label className="field-label">
           {t.docNumberLabel}
         </label>
         <div className="flex gap-2">
@@ -197,7 +197,7 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
       {/* Cargo e Empresa em linha */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
+          <label className="field-label">
             {t.positionLabel}
           </label>
           <input
@@ -210,7 +210,7 @@ export default function PatientForm({ formData, updateFormData }: PatientFormPro
         </div>
 
         <div>
-          <label className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
+          <label className="field-label">
             {t.companyLabel}
           </label>
           <input

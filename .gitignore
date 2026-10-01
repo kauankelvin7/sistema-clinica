@@ -226,3 +226,15 @@ test_output/
 
 # Documentação gerada
 docs/build/
+
+# Sensitive runtime data / exports
+backups/
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+data/generated_documents/*.html
+backup_*.json
+backup_*.sql
+
+.vercel
+.env*

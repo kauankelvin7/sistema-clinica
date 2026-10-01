@@ -14,6 +14,7 @@ Este módulo implementa:
 import os
 import re
 import base64
+import html
 import logging
 from datetime import datetime
 from pathlib import Path
@@ -66,7 +67,7 @@ def _format_date_brazil(date_input) -> str:
             try:
                 dt = datetime.strptime(s, fmt)
                 return dt.strftime("%d/%m/%Y")
-            except:
+            except (TypeError, ValueError):
                 continue
         
         return s
@@ -601,11 +602,16 @@ def generate_html(data: Dict[str, Any], logo_left: Optional[str] = None,
         # Converter logo para base64 (incorporado no HTML)
         logo_base64 = get_logo_base64()
         
+        # Escapa toda entrada dinâmica antes de inseri-la no HTML.
+        # Isso impede que dados de formulário sejam interpretados como marcação ou script.
+        def safe(value: Any) -> str:
+            return html.escape(str(value or '').strip(), quote=True)
+
         # Preparar dados do médico para formatação
-        nome_medico_completo = str(data.get('nome_medico', '')).strip()
-        tipo_registro = str(data.get('tipo_registro_medico', '')).strip()
-        crm_numero = str(data.get('crm_medico', '')).strip()
-        uf_crm = str(data.get('uf_crm_medico', '')).strip()
+        nome_medico_completo = safe(data.get('nome_medico', ''))
+        tipo_registro = safe(data.get('tipo_registro_medico', ''))
+        crm_numero = safe(data.get('crm_medico', ''))
+        uf_crm = safe(data.get('uf_crm_medico', ''))
         
         # Formatar registro profissional: "CRM 12345" ou apenas número se tipo não informado
         crm_formatado = f"{tipo_registro} {crm_numero}" if tipo_registro else crm_numero
@@ -620,15 +626,18 @@ def generate_html(data: Dict[str, Any], logo_left: Optional[str] = None,
             '{logo_base64}': logo_base64,
             '{titulo_documento}': titulo_documento,
             '{texto_principal}': texto_principal,
-            '{nome_paciente}': str(data.get('nome_paciente', '')).strip(),
-            '{documento_paciente_formatado}': f"{data.get('tipo_doc_paciente', '').upper()} nº: {data.get('numero_doc_paciente', '')}",
-            '{data_atestado}': _format_date_brazil(data.get('data_atestado', '')),
-            '{data_atual}': _format_date_brazil(data_atual_sistema),
-            '___/___/____': _format_date_brazil(data_atual_sistema),
-            '{qtd_dias_atestado}': str(data.get('qtd_dias_atestado', '')),
-            '{codigo_cid}': str(data.get('codigo_cid', '')).strip(),
-            '{cargo_paciente}': str(data.get('cargo_paciente', '')).strip(),
-            '{empresa_paciente}': str(data.get('empresa_paciente', '')).strip(),
+            '{nome_paciente}': safe(data.get('nome_paciente', '')),
+            '{documento_paciente_formatado}': (
+                f"{safe(str(data.get('tipo_doc_paciente', '')).upper())} nº: "
+                f"{safe(data.get('numero_doc_paciente', ''))}"
+            ),
+            '{data_atestado}': safe(_format_date_brazil(data.get('data_atestado', ''))),
+            '{data_atual}': safe(_format_date_brazil(data_atual_sistema)),
+            '___/___/____': safe(_format_date_brazil(data_atual_sistema)),
+            '{qtd_dias_atestado}': safe(data.get('qtd_dias_atestado', '')),
+            '{codigo_cid}': safe(data.get('codigo_cid', '')),
+            '{cargo_paciente}': safe(data.get('cargo_paciente', '')),
+            '{empresa_paciente}': safe(data.get('empresa_paciente', '')),
             '{nome_medico}': nome_medico_completo,
             '{crm_medico}': crm_formatado,
             '{uf_crm_medico}': uf_crm,
@@ -700,32 +709,3 @@ def generate_and_save_html(data: Dict[str, Any], logo_left: Optional[str] = None
     """
     html_content = generate_html(data, logo_left, logo_right)
     return save_html(html_content, output_path)
-
-
-if __name__ == '__main__':
-    # Teste de geração de HTML
-    print("🧪 Testando geração de HTML...")
-    
-    test_data = {
-        'nome_paciente': 'KAUAN KELVIN SANTOS BARBOSA',
-        'tipo_doc_paciente': 'CPF',
-        'numero_doc_paciente': '714.237.091-28',
-        'data_atestado': '09/11/2025',
-        'qtd_dias_atestado': '1',
-        'codigo_cid': 'Não Informado',
-        'cargo_paciente': 'Desenvolvedor de Sistemas',
-        'empresa_paciente': 'Tech Solutions LTDA',
-        'nome_medico': 'SAVIO RIBEIRO DA CRUZ',
-        'tipo_registro_medico': 'CRM',
-        'crm_medico': '25621',
-        'uf_crm_medico': 'DF',
-    }
-
-    try:
-        output = generate_and_save_html(
-            test_data,
-            output_path=Path(__file__).parent.parent / 'data' / 'generated_documents' / 'TESTE_NOVO_TEMPLATE.html'
-        )
-        print(f"✅ HTML de teste gerado: {output}")
-    except Exception as e:
-        print(f"❌ Erro: {e}")

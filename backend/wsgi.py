@@ -1,20 +1,10 @@
 """
-WSGI config for PythonAnywhere deployment
+Compatibility entrypoint for deployments that import the application object.
+
+Runtime secrets must be supplied through environment variables by the hosting
+platform. This module intentionally contains no database credentials.
 """
-import sys
-import os
 
-# Adicionar o diretório do projeto ao path
-path = '/home/SEU_USERNAME/sistema-clinica/backend'
-if path not in sys.path:
-    sys.path.append(path)
+from api.index import app
 
-# Configurar variáveis de ambiente
-os.environ['DATABASE_URL'] = 'postgresql://postgres.gnolsvpefqdkmmaglozw:justinbieber2010adminnova@aws-1-us-west-2.pooler.supabase.com:6543/postgres'
-os.environ['RENDER'] = 'true'
-
-# Importar a aplicação FastAPI
-from main import app
-
-# Wrapper para WSGI
 application = app

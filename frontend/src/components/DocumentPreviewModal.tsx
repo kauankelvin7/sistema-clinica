@@ -119,7 +119,7 @@ export default function DocumentPreviewModal({
               disabled={!iframeLoaded}
               title="Imprimir documento"
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium
-                bg-orange-500 hover:bg-orange-600 text-white
+                bg-garnet-500 hover:bg-garnet-600 text-white
                 disabled:opacity-50 disabled:cursor-not-allowed
                 transition-all duration-150 shadow-sm hover:shadow-md active:scale-95"
             >
@@ -178,7 +178,7 @@ export default function DocumentPreviewModal({
           {!iframeLoaded && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-zinc-100 dark:bg-zinc-950">
               <div className="flex flex-col items-center gap-3">
-                <div className="w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                <div className="w-8 h-8 border-3 border-garnet-500 border-t-transparent rounded-full animate-spin" />
                 <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
                   Carregando documento...
                 </span>
@@ -190,7 +190,9 @@ export default function DocumentPreviewModal({
             ref={iframeRef}
             srcDoc={htmlContent}
             onLoad={handleIframeLoad}
-            className="w-full h-full border-0"
+            sandbox="allow-same-origin allow-modals"
+            referrerPolicy="no-referrer"
+            className="h-full w-full border-0"
             title="Pré-visualização do documento"
           />
         </div>

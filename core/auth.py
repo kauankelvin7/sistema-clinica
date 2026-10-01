@@ -84,9 +84,12 @@ def require_auth(
                 token = parts[1]
 
     if not token:
+        token = request.cookies.get("session_token")
+
+    if not token:
         raise HTTPException(
             status_code=401,
-            detail="Não autenticado. Cabeçalho Authorization ausente ou formato inválido."
+            detail="Não autenticado."
         )
 
     try:

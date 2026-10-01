@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { Lock, User as UserIcon, Loader2, Settings } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Lock, Settings, ShieldCheck, User as UserIcon } from 'lucide-react'
 import { loginUser } from '../services/api'
 import { useTranslation } from '../utils/i18n'
 import SettingsModal from './SettingsModal'
 
 interface LoginProps {
-  onLoginSuccess: (token: string) => void;
+  onLoginSuccess: () => void
 }
 
 export default function Login({ onLoginSuccess }: LoginProps) {
@@ -13,149 +13,170 @@ export default function Login({ onLoginSuccess }: LoginProps) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
     setLoading(true)
     setError(null)
+
     try {
-      const data = await loginUser(username, password, rememberMe)
-      onLoginSuccess(data.access_token)
-    } catch (err: any) {
-      setError('Credenciais inválidas. Tente novamente.')
+      await loginUser(username, password, rememberMe)
+      onLoginSuccess()
+    } catch {
+      setError('Não foi possível entrar. Confira o usuário e a senha.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-surface-page flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-colors duration-300 relative">
+    <div className="app-surface flex min-h-[100dvh] items-center justify-center px-4 py-8 sm:px-6">
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
 
-      {/* Botão de Configurações no Topo Direito da Tela de Login */}
-      <div className="absolute top-6 right-6 z-20">
-        <button
-          onClick={() => setIsSettingsOpen(true)}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/90 dark:bg-zinc-800/80 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 border border-zinc-200 dark:border-zinc-700 text-xs font-semibold text-zinc-800 dark:text-zinc-200 shadow-md transition-all group"
-          title="Configurações (Idioma e Tema)"
-        >
-          <Settings className="w-4 h-4 text-garnet-500 group-hover:rotate-90 transition-transform duration-300" />
-          <span>Configurações</span>
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => setIsSettingsOpen(true)}
+        className="icon-button absolute right-4 top-4 sm:right-6 sm:top-6"
+        aria-label="Abrir configurações"
+        title="Configurações"
+      >
+        <Settings className="h-4 w-4" />
+      </button>
 
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <div className="w-14 h-14 bg-garnet-500/10 dark:bg-garnet-500/15 border border-garnet-500/20 rounded-2xl flex items-center justify-center text-garnet-500 flex-shrink-0 shadow-lg shadow-garnet-500/10">
-            <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"></path>
-              <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"></path>
-              <circle cx="20" cy="10" r="2"></circle>
-            </svg>
-          </div>
-        </div>
-        <h2 className="mt-6 text-center text-2xl font-extrabold text-zinc-900 dark:text-zinc-50 tracking-tight transition-all duration-300">
-          {t.loginAppTitle}
-        </h2>
-        <p className="mt-2 text-center text-xs text-zinc-600 dark:text-zinc-400 transition-all duration-300">
-          {t.loginAppSubtitle}
-        </p>
-      </div>
-
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white dark:bg-surface-card py-10 px-6 sm:rounded-3xl sm:px-12 shadow-[0_0_60px_-15px_rgba(110,45,41,0.2)] border border-zinc-100 dark:border-zinc-800">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
-                {t.loginUserLabel}
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <UserIcon className="h-5 w-5 text-zinc-400" />
-                </div>
-                <input
-                  type="text"
-                  required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-zinc-300 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-surface-input text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-garnet-500 focus:border-transparent transition-all sm:text-sm"
-                  placeholder={t.loginUserPlaceholder}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
-                {t.loginPassLabel}
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-zinc-400" />
-                </div>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-zinc-300 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-surface-input text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-garnet-500 focus:border-transparent transition-all sm:text-sm"
-                  placeholder={t.loginPassPlaceholder}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 text-garnet-500 focus:ring-garnet-500 border-zinc-300 rounded cursor-pointer"
-              />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-zinc-900 dark:text-zinc-100 cursor-pointer">
-                {t.loginDemoCredentials}
-              </label>
-            </div>
-
-            {error && (
-              <div className="bg-rose-50 dark:bg-rose-900/30 border-l-4 border-rose-500 p-4 rounded-md animate-in fade-in slide-in-from-top-2">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-rose-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-rose-700 dark:text-rose-300">
-                      {error}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-gradient-to-r from-garnet-500 to-garnet-600 hover:from-garnet-600 hover:to-garnet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-garnet-500 disabled:opacity-70 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02]"
+      <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-[0_24px_80px_-44px_rgba(0,0,0,0.35)] dark:border-zinc-800 dark:bg-surface-card lg:grid-cols-[1.05fr_0.95fr]">
+        <aside className="relative hidden overflow-hidden bg-zinc-950 p-10 text-white lg:flex lg:flex-col lg:justify-between">
+          <div className="absolute -right-16 -top-16 h-52 w-52 rounded-full bg-garnet-500/20 blur-3xl" />
+          <div className="relative">
+            <div className="mb-8 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-garnet-300">
+              <svg
+                className="h-6 w-6"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.1"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
               >
+                <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 12 0V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3" />
+                <path d="M8 15v1a6 6 0 0 0 12 0v-4" />
+                <circle cx="20" cy="10" r="2" />
+              </svg>
+            </div>
+
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-garnet-300">NOVA Medicina</p>
+            <h1 className="mt-3 max-w-md font-display text-3xl font-bold leading-tight tracking-tight">
+              {t.loginAppTitle}
+            </h1>
+            <p className="mt-4 max-w-md text-sm leading-6 text-zinc-400">{t.loginAppSubtitle}</p>
+          </div>
+
+          <div className="relative space-y-3 text-sm text-zinc-300">
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="h-4 w-4 text-emerald-400" />
+              <span>Sessão protegida por cookie HttpOnly</span>
+            </div>
+            <div className="h-px bg-white/10" />
+            <p className="text-xs leading-5 text-zinc-500">{t.loginRestrictedNotice}</p>
+          </div>
+        </aside>
+
+        <main className="p-6 sm:p-10 lg:p-12">
+          <div className="mx-auto max-w-sm">
+            <div className="mb-8">
+              <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl border border-garnet-500/15 bg-garnet-500/10 text-garnet-500 lg:hidden">
+                <Lock className="h-5 w-5" />
+              </div>
+              <p className="workspace-kicker">Acesso seguro</p>
+              <h2 className="mt-2 font-display text-2xl font-bold tracking-tight text-zinc-950 dark:text-white">
+                Entrar no sistema
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+                Use suas credenciais autorizadas para iniciar um atendimento.
+              </p>
+            </div>
+
+            <form className="space-y-5" onSubmit={handleSubmit}>
+              <div>
+                <label htmlFor="username" className="field-label">{t.loginUserLabel}</label>
+                <div className="relative">
+                  <UserIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                  <input
+                    id="username"
+                    type="text"
+                    autoComplete="username"
+                    required
+                    value={username}
+                    onChange={(event) => setUsername(event.target.value)}
+                    className="input-field pl-10"
+                    placeholder={t.loginUserPlaceholder}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="password" className="field-label">{t.loginPassLabel}</label>
+                <div className="relative">
+                  <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    className="input-field pl-10 pr-11"
+                    placeholder={t.loginPassPlaceholder}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((current) => !current)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-lg p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                    aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <label className="flex cursor-pointer items-center gap-2.5 text-sm text-zinc-600 dark:text-zinc-300">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(event) => setRememberMe(event.target.checked)}
+                  className="h-4 w-4 rounded border-zinc-300 text-garnet-500 focus:ring-garnet-500"
+                />
+                <span>{t.loginDemoCredentials}</span>
+              </label>
+
+              {error && (
+                <div role="alert" className="rounded-xl border border-rose-500/20 bg-rose-500/5 px-3.5 py-3 text-sm text-rose-700 dark:text-rose-300">
+                  {error}
+                </div>
+              )}
+
+              <button type="submit" disabled={loading} className="btn-primary w-full">
                 {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>{t.btnAuthenticating}</span>
+                  </>
                 ) : (
-                  t.btnEnterSystem
+                  <span>{t.btnEnterSystem}</span>
                 )}
               </button>
-            </div>
-          </form>
-        </div>
-        
-        <p className="mt-8 text-center text-xs text-zinc-500 transition-all duration-300">
-          {t.loginRestrictedNotice}
-        </p>
+            </form>
+
+            <p className="mt-6 flex items-center justify-center gap-2 text-center text-xs text-zinc-400">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              {t.loginRestrictedNotice}
+            </p>
+          </div>
+        </main>
       </div>
     </div>
   )

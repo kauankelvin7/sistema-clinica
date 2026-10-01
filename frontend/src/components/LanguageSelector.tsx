@@ -90,7 +90,7 @@ export default function LanguageSelector() {
         type="button"
         onClick={() => setIsOpen(prev => !prev)}
         className={`group relative flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-100/90 dark:bg-zinc-800/60 hover:bg-zinc-200/80 dark:hover:bg-zinc-700/60 border border-zinc-200/80 dark:border-zinc-700/60 text-xs font-semibold text-zinc-800 dark:text-zinc-200 transition-all duration-300 shadow-xs active:scale-95 ${
-          isOpen ? 'ring-2 ring-orange-500/30 border-orange-500/50' : ''
+          isOpen ? 'ring-2 ring-garnet-500/30 border-garnet-500/50' : ''
         }`}
         title="Alterar Idioma / Change Language"
       >
@@ -101,14 +101,14 @@ export default function LanguageSelector() {
 
         <span className="font-bold tracking-wide text-xs">{selectedOption.shortLabel}</span>
 
-        <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 group-hover:text-orange-500 transition-transform duration-300 ${isOpen ? 'rotate-180 text-orange-500' : ''}`} />
+        <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 group-hover:text-garnet-500 transition-transform duration-300 ${isOpen ? 'rotate-180 text-garnet-500' : ''}`} />
       </button>
 
       {/* Popover Dropdown de Seleção de Idioma com Animação Fluida */}
       {isOpen && (
         <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-48 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200/90 dark:border-zinc-800/90 shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-200">
           <div className="px-2.5 py-1.5 border-b border-zinc-100 dark:border-zinc-800/60 mb-1 flex items-center gap-2">
-            <Globe className="w-3.5 h-3.5 text-orange-500" />
+            <Globe className="w-3.5 h-3.5 text-garnet-500" />
             <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Idioma / Language</span>
           </div>
 
@@ -122,7 +122,7 @@ export default function LanguageSelector() {
                   onClick={() => handleSelectLanguage(lang.code)}
                   className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 group ${
                     isSelected
-                      ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/30'
+                      ? 'bg-garnet-500/10 text-garnet-600 dark:text-garnet-400 border border-garnet-500/30'
                       : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/70 border border-transparent'
                   }`}
                 >
@@ -134,7 +134,7 @@ export default function LanguageSelector() {
                   </div>
 
                   {isSelected && (
-                    <Check className="w-3.5 h-3.5 text-orange-500 animate-in zoom-in-50 duration-200" />
+                    <Check className="w-3.5 h-3.5 text-garnet-500 animate-in zoom-in-50 duration-200" />
                   )}
                 </button>
               )

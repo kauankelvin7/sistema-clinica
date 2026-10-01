@@ -3,7 +3,7 @@ Sistema de Homologação de Atestados Médicos - Backend API (Vercel Serverless)
 ══════════════════════════════════════════════════════════════════════════════
 """
 
-from fastapi import FastAPI, HTTPException, Query, Depends, APIRouter
+from fastapi import FastAPI, HTTPException, Query, Depends, APIRouter, Response
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.responses import HTMLResponse
@@ -36,17 +36,35 @@ app = FastAPI(title="Sistema de Homologação de Atestados Médicos", version="2
 # Criamos um router para as rotas da API
 api_router = APIRouter()
 
+# Sessão via cookie HttpOnly. O token continua aceito via Bearer para compatibilidade
+# com clientes externos, mas o frontend não precisa mais expô-lo ao JavaScript.
+_IS_PRODUCTION = bool(os.getenv("VERCEL") or os.getenv("RENDER") or os.getenv("RAILWAY_ENVIRONMENT"))
+_COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "none" if _IS_PRODUCTION else "lax").lower()
+if _COOKIE_SAMESITE not in {"lax", "strict", "none"}:
+    _COOKIE_SAMESITE = "lax"
+_COOKIE_SECURE = os.getenv(
+    "COOKIE_SECURE",
+    "true" if _IS_PRODUCTION else "false",
+).lower() == "true"
+_SESSION_COOKIE = "session_token"
+
 # [CAMADA 6] Middleware de Auditoria
 app.add_middleware(BaseHTTPMiddleware, dispatch=audit_middleware)
 
-# CORS
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
+# CORS — somente origens e cabeçalhos necessários ao frontend.
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173').rstrip('/')
+ALLOWED_ORIGINS = list(dict.fromkeys([
+    FRONTEND_URL,
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://sistema-clinica-seven.vercel.app",
+]))
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL, "http://localhost:3000", "http://localhost:3001", "https://sistema-clinica-seven.vercel.app"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 @app.on_event("startup")
@@ -131,7 +149,7 @@ if not _admin_user or not _admin_pass:
 
 
 @api_router.post("/auth/token")
-async def login(credentials: LoginRequest, _=Depends(rate_limit)):
+async def login(credentials: LoginRequest, response: Response, _=Depends(rate_limit)):
     """
     Rota para o frontend obter o JWT.
 
@@ -165,10 +183,36 @@ async def login(credentials: LoginRequest, _=Depends(rate_limit)):
         from datetime import timedelta
         expires = timedelta(days=30) if credentials.remember_me else timedelta(hours=24)
         token = create_access_token(data={"sub": credentials.username}, expires_delta=expires)
-        return {"access_token": token, "token_type": "bearer"}
+        response.set_cookie(
+            key=_SESSION_COOKIE,
+            value=token,
+            httponly=True,
+            secure=_COOKIE_SECURE,
+            samesite=_COOKIE_SAMESITE,
+            max_age=int(expires.total_seconds()) if credentials.remember_me else None,
+            path="/",
+        )
+        return {"authenticated": True}
 
     # Resposta genérica: não especifica se foi o usuário ou a senha que falhou
     raise HTTPException(status_code=401, detail="Usuário ou senha incorretos")
+
+
+@api_router.get("/auth/session")
+async def auth_session(_=Depends(rate_limit), identity=Depends(require_auth)):
+    return {"authenticated": True, "subject": identity.get("sub", "")}
+
+
+@api_router.post("/auth/logout")
+async def logout(response: Response, _=Depends(rate_limit)):
+    response.delete_cookie(
+        key=_SESSION_COOKIE,
+        path="/",
+        secure=_COOKIE_SECURE,
+        samesite=_COOKIE_SAMESITE,
+    )
+    return {"authenticated": False}
+
 
 # ==========================================
 # ROTAS PROTEGIDAS
@@ -412,16 +456,12 @@ async def get_patients(
                 "page": page,
                 "page_size": page_size,
                 "patients": patients_page,
-                "debug": {
-                    "provider": "PostgreSQL (Supabase)" if is_postgres else "SQLite",
-                    "scanned_db_records": len(result) if is_postgres else len(result)
-                }
             }
-    except Exception as e:
-        logger.error(f"❌ ERRO ao buscar pacientes no Supabase: {str(e)}", exc_info=True)
+    except Exception:
+        logger.exception("Erro ao buscar pacientes")
         raise HTTPException(
             status_code=500,
-            detail=f"Erro de Banco de Dados [Pacientes]: {str(e)}"
+            detail="Não foi possível carregar os pacientes."
         )
 
 @api_router.get("/doctors")
@@ -451,11 +491,11 @@ async def get_doctors(search: Optional[str] = None, _=Depends(rate_limit), __=De
             
             logger.info(f"✅ Sucesso ao buscar médicos! Total encontrados: {len(medicos)}")
             return medicos
-    except Exception as e:
-        logger.error(f"❌ ERRO ao buscar médicos no Supabase: {str(e)}", exc_info=True)
+    except Exception:
+        logger.exception("Erro ao buscar médicos")
         raise HTTPException(
             status_code=500,
-            detail=f"Erro de Banco de Dados [Médicos]: {str(e)}"
+            detail="Não foi possível carregar os médicos."
         )
 
 @api_router.get("/check-duplicate")
@@ -486,68 +526,11 @@ async def check_duplicate(tipo: str, valor: str, empresa: Optional[str] = None, 
                 result = cursor.fetchone()
                 
             return {"existe": bool(result)}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        logger.exception("Erro ao verificar duplicidade")
+        raise HTTPException(status_code=500, detail="Não foi possível verificar o cadastro.")
 
-# [HOTFIX-05] — Blindagem da Rota /debug-db
-#
-# ANTES (VULNERÁVEL):
-#   @api_router.get("/debug-db")
-#   async def debug_db():   ← SEM autenticação!
-#
-# RISCO: Qualquer pessoa na internet poderia chamar GET /api/debug-db sem token
-# e receber informações de infraestrutura (nome do banco, usuário do banco,
-# URL mascarada mas parcialmente legível, status de produção).
-#
-# CORREÇÃO (dupla camada de defesa):
-#   1. A rota SÓ EXISTE se DEBUG_MODE=true estiver definido no ambiente.
-#      Em produção, a rota simplesmente não é registrada no router.
-#   2. Mesmo quando ativa, requer autenticação JWT (require_auth).
-_DEBUG_MODE = os.getenv("DEBUG_MODE", "false").lower() == "true"
-
-if _DEBUG_MODE:
-    @api_router.get("/debug-db")
-    async def debug_db(_=Depends(rate_limit), __=Depends(require_auth)):
-        """
-        Endpoint de diagnóstico de banco de dados.
-        SOMENTE disponível quando DEBUG_MODE=true E com autenticação válida.
-        Nunca ative DEBUG_MODE em produção.
-        """
-        diag: dict = {}
-        try:
-            from core.db_manager import IS_PRODUCTION as is_postgres
-            db_url = os.getenv('DATABASE_URL', 'NÃO DEFINIDA')
-
-            # Mascara a senha da URL antes de qualquer log ou retorno
-            masked_url = db_url
-            if '@' in db_url:
-                parts = db_url.split('@')
-                user_part = parts[0].split(':')
-                if len(user_part) > 2:
-                    masked_url = f"{user_part[0]}:{user_part[1]}:****@{parts[1]}"
-                else:
-                    masked_url = f"{user_part[0]}:****@{parts[1]}"
-
-            diag = {
-                "is_production_detected": bool(os.getenv('VERCEL') or os.getenv('RENDER')),
-                "database_url_masked": masked_url,
-                "url_length": len(db_url),
-                "is_postgres_logic": is_postgres
-            }
-
-            with get_db_connection() as conn:
-                if is_postgres:
-                    from sqlalchemy import text
-                    res = conn.execute(text("SELECT current_user, current_database()")).fetchone()
-                    diag["db_user"] = res[0]
-                    diag["db_name"] = res[1]
-                else:
-                    diag["db_type"] = "SQLite"
-
-            return {"status": "success", "diagnostics": diag}
-        except Exception as e:
-            return {"status": "error", "error_details": str(e), "diagnostics": diag}
-
+# Database diagnostics intentionally omitted from the public API.
 
 # [HOTFIX-06] — Blindagem da Rota /health
 #
@@ -561,55 +544,6 @@ if _DEBUG_MODE:
 # CORREÇÃO: O /health agora retorna apenas um sinal vital limpo ("ok" ou "degraded"),
 # sem expor metadados internos. Ele verifica a conectividade com o banco executando
 # uma query mínima (SELECT 1), sem retornar nenhum dado de negócio.
-@api_router.get("/db-status")
-async def db_status():
-    """
-    Endpoint de diagnóstico público para inspecionar a conexão com o Supabase/PostgreSQL.
-    """
-    status_info: dict = {}
-    try:
-        from core.db_manager import IS_PRODUCTION as is_postgres
-        db_url = os.getenv('DATABASE_URL', '')
-        
-        status_info = {
-            "is_postgres": is_postgres,
-            "has_database_url": bool(db_url),
-            "database_url_length": len(db_url),
-            "environment": "Vercel / Production" if is_postgres else "Local",
-        }
-        
-        with get_db_connection() as conn:
-            if is_postgres:
-                from sqlalchemy import text
-                user_db = conn.execute(text("SELECT current_user, current_database()")).fetchone()
-                pacientes_cnt = conn.execute(text("SELECT COUNT(*) FROM pacientes")).scalar()
-                medicos_cnt = conn.execute(text("SELECT COUNT(*) FROM medicos")).scalar()
-                
-                status_info["db_user"] = user_db[0]
-                status_info["db_name"] = user_db[1]
-                status_info["total_pacientes_bd"] = pacientes_cnt
-                status_info["total_medicos_bd"] = medicos_cnt
-                status_info["connection_status"] = "OK - Conectado ao Supabase PostgreSQL"
-            else:
-                cursor = conn.cursor()
-                cursor.execute("SELECT COUNT(*) FROM pacientes")
-                pacientes_cnt = cursor.fetchone()[0]
-                cursor.execute("SELECT COUNT(*) FROM medicos")
-                medicos_cnt = cursor.fetchone()[0]
-                
-                status_info["total_pacientes_bd"] = pacientes_cnt
-                status_info["total_medicos_bd"] = medicos_cnt
-                status_info["connection_status"] = "OK - Conectado ao SQLite Local"
-                
-        return {"status": "success", "info": status_info}
-    except Exception as e:
-        logger.error(f"Erro de conexão no /db-status: {e}", exc_info=True)
-        return {
-            "status": "error",
-            "error": str(e),
-            "info": status_info
-        }
-
 @api_router.get("/health")
 async def health_check():
     """
@@ -639,4 +573,4 @@ app.include_router(api_router)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(app, host=os.getenv("HOST", "127.0.0.1"), port=int(os.getenv("PORT", "8000")), reload=os.getenv("DEBUG_MODE", "false").lower() == "true")

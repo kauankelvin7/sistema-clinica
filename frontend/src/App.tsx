@@ -1,146 +1,136 @@
-import { useState, useEffect } from 'react'
-import { FileText, User, Stethoscope, CheckCircle, XCircle } from 'lucide-react'
-import Header from './components/Header'
-import PatientForm from './components/PatientForm'
+import { useEffect, useMemo, useState } from 'react'
+import { CheckCircle, FileText, Stethoscope, User, X, XCircle } from 'lucide-react'
+import ActionButtons from './components/ActionButtons'
 import CertificateForm from './components/CertificateForm'
 import DoctorForm from './components/DoctorForm'
-import ActionButtons from './components/ActionButtons'
-import { ValidationModal } from './components/ValidationModal'
 import DocumentPreviewModal from './components/DocumentPreviewModal'
+import Header from './components/Header'
 import Login from './components/Login'
-import api from './services/api'
+import PatientForm from './components/PatientForm'
+import SectionCard from './components/SectionCard'
+import { ValidationModal } from './components/ValidationModal'
+import api, { checkSession, logoutUser } from './services/api'
 import type { AppFormData } from './types'
-import { getSavedLanguage, TRANSLATIONS, Language } from './utils/i18n'
+import { getSavedLanguage, Language, TRANSLATIONS } from './utils/i18n'
+
+type AuthState = 'checking' | 'authenticated' | 'anonymous'
+
+function getDefaultFormData(): AppFormData {
+  return {
+    nomePaciente: '',
+    tipoDocumento: 'CPF',
+    numeroDocumento: '',
+    cargo: '',
+    empresa: '',
+    dataAtestado: new Date().toISOString().split('T')[0],
+    diasAfastamento: '',
+    cid: '',
+    cidNaoInformado: false,
+    tipoAtestado: 'saude',
+    nomeMedico: '',
+    tipoRegistro: 'CRM',
+    numeroRegistro: '',
+    ufRegistro: 'DF',
+  }
+}
 
 function App() {
   const [lang, setLang] = useState<Language>(getSavedLanguage)
+  const [authState, setAuthState] = useState<AuthState>('checking')
+  const [layoutMode, setLayoutMode] = useState<'vertical' | 'horizontal'>(() => {
+    try {
+      return localStorage.getItem('layout_mode') === 'vertical' ? 'vertical' : 'horizontal'
+    } catch {
+      return 'horizontal'
+    }
+  })
+  const [formData, setFormData] = useState<AppFormData>(getDefaultFormData)
+  const [loading, setLoading] = useState<'word' | 'html' | false>(false)
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [showValidationModal, setShowValidationModal] = useState(false)
+  const [missingFields, setMissingFields] = useState<string[]>([])
+  const [previewHtml, setPreviewHtml] = useState<string | null>(null)
+
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.pt
 
   useEffect(() => {
-    const handleLangChange = (e: Event) => {
-      const customEvent = e as CustomEvent<Language>
+    const handleLangChange = (event: Event) => {
+      const customEvent = event as CustomEvent<Language>
       setLang(customEvent.detail || getSavedLanguage())
     }
     window.addEventListener('language_changed', handleLangChange)
     return () => window.removeEventListener('language_changed', handleLangChange)
   }, [])
 
-  const t = TRANSLATIONS[lang] || TRANSLATIONS.pt
-
-  // Autenticação
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!localStorage.getItem('auth_token'))
-
-  const handleLoginSuccess = (token: string) => {
-    localStorage.setItem('auth_token', token)
-    setIsAuthenticated(true)
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem('auth_token')
-    setIsAuthenticated(false)
-  }
-
-  // Ouvir evento global de deslogue (disparado pelo interceptor em caso de 401)
   useEffect(() => {
-    const handleAuthLogout = () => {
-      setIsAuthenticated(false)
-    }
-    window.addEventListener('auth_logout', handleAuthLogout)
+    let active = true
+    checkSession().then((authenticated) => {
+      if (active) setAuthState(authenticated ? 'authenticated' : 'anonymous')
+    })
     return () => {
-      window.removeEventListener('auth_logout', handleAuthLogout)
+      active = false
     }
   }, [])
 
-  // --- 1. LÓGICA DE NEGÓCIO INTACTA ---
-
-  // Estado do layout (vertical = horizontal)
-  const [layoutMode, setLayoutMode] = useState<'vertical' | 'horizontal'>(() => {
-    const saved = localStorage.getItem('layout_mode')
-    return (saved as 'vertical' | 'horizontal') || 'horizontal'
-  })
-
-  // Salvar preferência de layout
   useEffect(() => {
-    localStorage.setItem('layout_mode', layoutMode)
+    const handleAuthLogout = () => setAuthState('anonymous')
+    window.addEventListener('auth_logout', handleAuthLogout)
+    return () => window.removeEventListener('auth_logout', handleAuthLogout)
+  }, [])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('layout_mode', layoutMode)
+    } catch {
+      // Preferência visual não precisa bloquear o uso do sistema.
+    }
   }, [layoutMode])
 
-  const getDefaultFormData = (): AppFormData => ({
-    // Paciente
-    nomePaciente: '',
-    tipoDocumento: 'CPF',
-    numeroDocumento: '',
-    cargo: '',
-    empresa: '',
-
-    // Atestado
-    dataAtestado: new Date().toISOString().split('T')[0],
-    diasAfastamento: '',
-    cid: '',
-    cidNaoInformado: false,
-    tipoAtestado: 'saude',
-
-    // Médico
-    nomeMedico: '',
-    tipoRegistro: 'CRM',
-    numeroRegistro: '',
-    ufRegistro: 'DF',
-  })
-
-  // Carregar dados salvos do localStorage
-  const loadSavedData = (): AppFormData => {
-    const saved = localStorage.getItem('sistema_clinica_data')
-    if (saved) {
-      try {
-        return JSON.parse(saved)
-      } catch {
-        return getDefaultFormData()
-      }
+  const completion = useMemo(() => {
+    const checks = [
+      formData.nomePaciente.trim(),
+      formData.numeroDocumento.trim(),
+      formData.cargo.trim(),
+      formData.empresa.trim(),
+      formData.dataAtestado,
+      Number(formData.diasAfastamento) > 0,
+      formData.cidNaoInformado || formData.cid.trim(),
+      formData.nomeMedico.trim(),
+      formData.numeroRegistro.trim(),
+      formData.ufRegistro.trim(),
+    ]
+    const completed = checks.filter(Boolean).length
+    return {
+      completed,
+      total: checks.length,
+      percentage: Math.round((completed / checks.length) * 100),
     }
-    return getDefaultFormData()
-  }
-
-  const [formData, setFormData] = useState<AppFormData>(loadSavedData())
-  const [loading, setLoading] = useState<'word' | 'html' | false>(false)
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
-  const [showValidationModal, setShowValidationModal] = useState(false)
-  const [missingFields, setMissingFields] = useState<string[]>([])
-  const [previewHtml, setPreviewHtml] = useState<string | null>(null)
-
-  // Salvar dados automaticamente quando mudar
-  useEffect(() => {
-    localStorage.setItem('sistema_clinica_data', JSON.stringify(formData))
   }, [formData])
 
   const updateFormData = (field: keyof AppFormData, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-    setMessage(null) // Limpar mensagem ao editar
+    setFormData((current) => ({ ...current, [field]: value }))
+    setMessage(null)
   }
 
-  // Função de validação completa
   const validateFormData = (): string[] => {
     const missing: string[] = []
-
-    // Validar Paciente
     if (!formData.nomePaciente.trim()) missing.push('Nome do Paciente')
     if (!formData.numeroDocumento.trim()) missing.push('Número do Documento do Paciente')
     if (!formData.cargo.trim()) missing.push('Cargo do Paciente')
     if (!formData.empresa.trim()) missing.push('Empresa do Paciente')
-
-    // Validar Atestado
     if (!formData.dataAtestado) missing.push('Data do Atestado')
-    if (!formData.diasAfastamento || parseInt(formData.diasAfastamento) <= 0) missing.push('Dias de Afastamento')
+    if (!formData.diasAfastamento || parseInt(formData.diasAfastamento, 10) <= 0) {
+      missing.push('Dias de Afastamento')
+    }
     if (!formData.cidNaoInformado && !formData.cid.trim()) missing.push('Código CID')
-
-    // Validar Médico
     if (!formData.nomeMedico.trim()) missing.push('Nome do Médico')
     if (!formData.numeroRegistro.trim()) missing.push('Número de Registro do Médico')
     if (!formData.ufRegistro.trim()) missing.push('UF do Registro do Médico')
-
     return missing
   }
 
   const handleGenerateHTML = async () => {
     const missing = validateFormData()
-
     if (missing.length > 0) {
       setMissingFields(missing)
       setShowValidationModal(true)
@@ -149,6 +139,7 @@ function App() {
 
     setLoading('html')
     setMessage(null)
+
     try {
       const response = await api.post('/api/generate-html', {
         paciente: {
@@ -160,7 +151,7 @@ function App() {
         },
         atestado: {
           data_atestado: formData.dataAtestado,
-          dias_afastamento: parseInt(formData.diasAfastamento) || 0,
+          dias_afastamento: parseInt(formData.diasAfastamento, 10) || 0,
           cid: formData.cid,
           cid_nao_informado: formData.cidNaoInformado,
           tipo_atestado: formData.tipoAtestado,
@@ -173,134 +164,146 @@ function App() {
         },
       })
 
-      const htmlContent = response.data
-      setPreviewHtml(htmlContent)
-
-      setMessage({ type: 'success', text: 'Documento gerado com sucesso!' })
-    } catch (error) {
-      console.error('Erro ao gerar documento:', error)
-      setMessage({ type: 'error', text: 'Não foi possível gerar o documento. Por favor, tente novamente.' })
+      setPreviewHtml(response.data)
+      setMessage({ type: 'success', text: 'Declaração pronta para revisão.' })
+    } catch {
+      setMessage({
+        type: 'error',
+        text: 'Não foi possível gerar a declaração. Verifique os dados e tente novamente.',
+      })
     } finally {
       setLoading(false)
     }
   }
 
   const handleClear = () => {
-    const defaultData = getDefaultFormData()
-    setFormData(defaultData)
-    localStorage.removeItem('sistema_clinica_data')
-    setMessage({ type: 'success', text: 'Todos os campos foram limpos com sucesso!' })
+    setFormData(getDefaultFormData())
+    setPreviewHtml(null)
+    setMessage({ type: 'success', text: 'Formulário limpo. Pronto para um novo atendimento.' })
   }
 
-  // --- 2. NOVO DESIGN SYSTEM E SEMÂNTICA ---
-  if (!isAuthenticated) {
-    return <Login onLoginSuccess={handleLoginSuccess} />
+  const handleLogout = async () => {
+    await logoutUser()
+    setFormData(getDefaultFormData())
+    setAuthState('anonymous')
   }
+
+  if (authState === 'checking') {
+    return (
+      <div className="app-surface flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="h-9 w-9 animate-spin rounded-full border-2 border-garnet-500/20 border-t-garnet-500" />
+          <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Validando sessão segura...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (authState === 'anonymous') {
+    return <Login onLoginSuccess={() => setAuthState('authenticated')} />
+  }
+
+  const documentName =
+    formData.nomePaciente
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9_-]+/g, '_')
+      .replace(/^_+|_+$/g, '') || 'documento'
 
   return (
-    <div className="relative h-[100dvh] flex flex-col bg-zinc-50 dark:bg-surface-page overflow-hidden font-sans transition-colors duration-300">
-
-      {/* Marca d'água de Plano de Fundo (NOVA Logo PNG sem fundo) */}
-      <div className="fixed inset-0 pointer-events-none select-none z-0 flex items-center justify-center overflow-hidden p-6">
-        <img
-          src="/logo_light.png"
-          alt="NOVA Logo"
-          className="w-[85vw] max-w-[720px] object-contain opacity-[0.08] dark:hidden transition-opacity duration-300"
-        />
-        <img
-          src="/logo_dark.png"
-          alt="NOVA Logo"
-          className="w-[85vw] max-w-[720px] object-contain opacity-[0.10] hidden dark:block transition-opacity duration-300"
-        />
-      </div>
-
-      {/* Header Fixo no Topo */}
-      <Header 
-        onLogout={handleLogout} 
+    <div className="app-surface flex min-h-[100dvh] flex-col">
+      <Header
+        onLogout={handleLogout}
         layoutMode={layoutMode}
-        onToggleLayout={() => setLayoutMode(prev => prev === 'horizontal' ? 'vertical' : 'horizontal')}
+        onToggleLayout={() =>
+          setLayoutMode((current) => current === 'horizontal' ? 'vertical' : 'horizontal')
+        }
       />
 
-      {/* Mensagem de Status flutuante (Toast) */}
       {message && (
-        <div className={`fixed top-4 right-4 z-50 rounded-xl px-4 py-3 flex items-center gap-3 shadow-xl transition-all animate-in fade-in slide-in-from-top-3 duration-200 backdrop-blur-md border text-xs sm:text-sm font-medium
-          ${message.type === 'success'
-            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300'
-            : 'bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300'}
-        `}>
+        <div
+          role="status"
+          className="fixed right-4 top-20 z-50 flex max-w-sm items-start gap-3 rounded-xl border bg-white px-4 py-3 shadow-lg dark:bg-zinc-900"
+        >
           {message.type === 'success' ? (
-            <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+            <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
           ) : (
-            <XCircle className="w-5 h-5 text-rose-500 flex-shrink-0" />
+            <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
           )}
-          <span>{message.text}</span>
-          <button onClick={() => setMessage(null)} className="ml-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-white font-bold">✕</button>
+          <p className="flex-1 text-sm font-medium text-zinc-700 dark:text-zinc-200">{message.text}</p>
+          <button
+            type="button"
+            onClick={() => setMessage(null)}
+            className="rounded-md p-0.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-100"
+            aria-label="Fechar mensagem"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
       )}
 
-      {/* Conteúdo Principal com Scroll Próprio */}
-      <main className="relative z-10 flex-1 overflow-y-auto px-[clamp(12px,2vw,32px)] py-4 space-y-4 max-w-[1800px] mx-auto w-full">
+      <main className="app-container flex-1 py-5 sm:py-6">
+        <section className="workspace-panel mb-4 sm:mb-5">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="workspace-kicker">{t.workspaceEyebrow}</p>
+              <h2 className="workspace-title">{t.workspaceTitle}</h2>
+              <p className="workspace-description">{t.workspaceDescription}</p>
+            </div>
 
-        {/* Grid dos Três Formulários com Layout Responsivo por Breakpoints */}
+            <div className="w-full max-w-sm lg:w-[320px]">
+              <div className="mb-2 flex items-center justify-between gap-3 text-xs">
+                <span className="font-semibold text-zinc-600 dark:text-zinc-300">{t.progressLabel}</span>
+                <span className="tabular-nums font-bold text-garnet-500">{completion.percentage}%</span>
+              </div>
+              <div className="progress-track" aria-hidden="true">
+                <div className="progress-fill" style={{ width: completion.percentage + '%' }} />
+              </div>
+              <p className="mt-2 text-right text-[11px] text-zinc-500 dark:text-zinc-400">
+                {completion.completed}/{completion.total}
+              </p>
+            </div>
+          </div>
+        </section>
+
         <div
-          className={`grid gap-[clamp(12px,1.5vw,24px)] items-stretch transition-all duration-300 ${
+          className={
             layoutMode === 'vertical'
-              ? 'max-w-3xl mx-auto w-full grid-cols-1'
-              : 'w-full grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
-          }`}
+              ? 'mx-auto grid w-full max-w-4xl grid-cols-1 gap-4'
+              : 'grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3'
+          }
         >
-          {/* Seção: Dados do Paciente */}
-          <article className="card-orange group h-full flex flex-col justify-between min-w-0 w-full">
-            <div>
-              <header className="flex items-center gap-3 mb-4 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
-                <div className="w-9 h-9 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform duration-200">
-                  <User className="w-4 h-4" />
-                </div>
-                <h2 className="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight transition-all duration-300">
-                  {t.patientDataTitle}
-                </h2>
-              </header>
-              <PatientForm formData={formData} updateFormData={updateFormData} />
-            </div>
-          </article>
+          <SectionCard
+            step="01"
+            title={t.patientDataTitle}
+            description={t.patientSectionHint}
+            icon={User}
+          >
+            <PatientForm formData={formData} updateFormData={updateFormData} />
+          </SectionCard>
 
-          {/* Seção: Dados do Atestado */}
-          <article className="card-orange group h-full flex flex-col justify-between min-w-0 w-full">
-            <div>
-              <header className="flex items-center gap-3 mb-4 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
-                <div className="w-9 h-9 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center text-orange-500 group-hover:scale-105 transition-transform duration-200">
-                  <FileText className="w-4 h-4" />
-                </div>
-                <h2 className="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight transition-all duration-300">
-                  {t.certificateDataTitle}
-                </h2>
-              </header>
-              <CertificateForm formData={formData} updateFormData={updateFormData} />
-            </div>
-          </article>
+          <SectionCard
+            step="02"
+            title={t.certificateDataTitle}
+            description={t.certificateSectionHint}
+            icon={FileText}
+          >
+            <CertificateForm formData={formData} updateFormData={updateFormData} />
+          </SectionCard>
 
-          {/* Seção: Dados do Médico */}
-          <article className="card-orange group h-full flex flex-col justify-between min-w-0 w-full">
-            <div>
-              <header className="flex items-center gap-3 mb-4 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
-                <div className="w-9 h-9 bg-zinc-500/10 dark:bg-zinc-400/15 border border-zinc-500/20 dark:border-zinc-400/25 rounded-xl flex items-center justify-center text-zinc-600 dark:text-zinc-300 group-hover:scale-105 transition-transform duration-200">
-                  <Stethoscope className="w-4 h-4" />
-                </div>
-                <h2 className="font-display text-[15px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight transition-all duration-300">
-                  {t.doctorDataTitle}
-                </h2>
-              </header>
-              <DoctorForm formData={formData} updateFormData={updateFormData} />
-            </div>
-          </article>
-
+          <SectionCard
+            step="03"
+            title={t.doctorDataTitle}
+            description={t.doctorSectionHint}
+            icon={Stethoscope}
+          >
+            <DoctorForm formData={formData} updateFormData={updateFormData} />
+          </SectionCard>
         </div>
-
       </main>
 
-      {/* Barra de Ações Sticky Fixada na Parte Inferior */}
-      <footer className="sticky bottom-0 z-30 bg-white/95 dark:bg-surface-page/95 backdrop-blur-md border-t border-zinc-200 dark:border-zinc-800 px-[clamp(12px,2vw,32px)] py-3">
-        <div className="max-w-[1800px] mx-auto">
+      <footer className="sticky bottom-0 z-30 border-t border-zinc-200/90 bg-white/95 py-3 backdrop-blur-md dark:border-zinc-800 dark:bg-surface-page/95">
+        <div className="app-container">
           <ActionButtons
             onGenerateHTML={handleGenerateHTML}
             onClear={handleClear}
@@ -309,21 +312,18 @@ function App() {
         </div>
       </footer>
 
-      {/* Modal de Validação */}
       <ValidationModal
         isOpen={showValidationModal}
         onClose={() => setShowValidationModal(false)}
         missingFields={missingFields}
       />
 
-      {/* Modal de Pré-visualização do Documento */}
       <DocumentPreviewModal
         isOpen={!!previewHtml}
         onClose={() => setPreviewHtml(null)}
         htmlContent={previewHtml || ''}
-        fileName={`atestado_${formData.nomePaciente.replace(/\s+/g, '_') || 'documento'}.html`}
+        fileName={'atestado_' + documentName + '.html'}
       />
-
     </div>
   )
 }

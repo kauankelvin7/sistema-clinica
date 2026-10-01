@@ -18,6 +18,14 @@ export interface TranslationSchema {
   patientDataTitle: string
   certificateDataTitle: string
   doctorDataTitle: string
+  workspaceEyebrow: string
+  workspaceTitle: string
+  workspaceDescription: string
+  progressLabel: string
+  secureSessionNotice: string
+  patientSectionHint: string
+  certificateSectionHint: string
+  doctorSectionHint: string
 
   // Patient Form
   patientNameLabel: string
@@ -116,6 +124,14 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     patientDataTitle: 'Dados do Paciente',
     certificateDataTitle: 'Dados do Atestado',
     doctorDataTitle: 'Dados do Médico',
+    workspaceEyebrow: 'Fluxo de homologação',
+    workspaceTitle: 'Nova homologação médica',
+    workspaceDescription: 'Preencha os dados essenciais em três etapas e revise a declaração antes de imprimir.',
+    progressLabel: 'Preenchimento do formulário',
+    secureSessionNotice: 'Dados do formulário ficam apenas nesta sessão.',
+    patientSectionHint: 'Identificação e vínculo profissional',
+    certificateSectionHint: 'Período, CID e previsão de retorno',
+    doctorSectionHint: 'Responsável e registro profissional',
 
     // Patient Form
     patientNameLabel: 'Nome Completo do Paciente',
@@ -212,6 +228,14 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     patientDataTitle: 'Patient Information',
     certificateDataTitle: 'Certificate Details',
     doctorDataTitle: 'Doctor Information',
+    workspaceEyebrow: 'Homologation workflow',
+    workspaceTitle: 'New medical homologation',
+    workspaceDescription: 'Complete the essential information in three steps and review the declaration before printing.',
+    progressLabel: 'Form completion',
+    secureSessionNotice: 'Form data stays only in this session.',
+    patientSectionHint: 'Identification and employment details',
+    certificateSectionHint: 'Period, ICD code and expected return',
+    doctorSectionHint: 'Responsible professional and registration',
 
     // Patient Form
     patientNameLabel: 'Patient Full Name',
@@ -308,6 +332,14 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     patientDataTitle: 'Datos del Paciente',
     certificateDataTitle: 'Datos del Certificado',
     doctorDataTitle: 'Datos del Médico',
+    workspaceEyebrow: 'Flujo de homologación',
+    workspaceTitle: 'Nueva homologación médica',
+    workspaceDescription: 'Complete los datos esenciales en tres etapas y revise la declaración antes de imprimir.',
+    progressLabel: 'Progreso del formulario',
+    secureSessionNotice: 'Los datos del formulario permanecen solo en esta sesión.',
+    patientSectionHint: 'Identificación y vínculo profesional',
+    certificateSectionHint: 'Período, CIE y regreso previsto',
+    doctorSectionHint: 'Profesional responsable y registro',
 
     // Patient Form
     patientNameLabel: 'Nombre Completo del Paciente',
