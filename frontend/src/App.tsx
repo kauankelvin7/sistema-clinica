@@ -268,6 +268,7 @@ function App() {
                 cachedAt={directory.cachedAt}
                 patientCount={directory.patients.length}
                 doctorCount={directory.doctors.length}
+                pendingCount={directory.pendingCount}
                 onRefresh={() => void directory.refresh()}
               />
               <div>
