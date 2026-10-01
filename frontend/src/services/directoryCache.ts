@@ -7,11 +7,30 @@ const DB_VERSION = 1
 
 export const DIRECTORY_CACHE_TTL_MS = 8 * 60 * 60 * 1000
 
+export interface DirectoryMutation {
+  id: string
+  queuedAt: number
+  paciente: {
+    nome: string
+    tipo_documento: string
+    numero_documento: string
+    cargo: string
+    empresa: string
+  }
+  medico: {
+    nome: string
+    tipo_registro: string
+    numero_registro: string
+    uf_registro: string
+  }
+}
+
 export interface DirectorySnapshot {
   version: 1
   cachedAt: number
   patients: Paciente[]
   doctors: Medico[]
+  pending: DirectoryMutation[]
 }
 
 function openDatabase(): Promise<IDBDatabase> {
@@ -63,7 +82,10 @@ export async function readDirectoryCache(): Promise<DirectorySnapshot | null> {
       return null
     }
 
-    return snapshot
+    return {
+      ...snapshot,
+      pending: Array.isArray(snapshot.pending) ? snapshot.pending : [],
+    }
   } catch {
     return null
   }
