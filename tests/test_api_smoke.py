@@ -10,6 +10,7 @@ os.environ.setdefault("JWT_SECRET", "test-only-jwt-secret-that-is-long-enough-fo
 os.environ.setdefault("ENCRYPTION_KEY", "MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA=")
 
 from fastapi.testclient import TestClient
+import pytest
 
 from api.index import app
 
@@ -43,3 +44,23 @@ def test_cross_origin_write_is_blocked():
             headers={"Origin": "https://attacker.invalid"},
         )
     assert response.status_code == 403
+
+
+@pytest.mark.parametrize("remember_me", [False, True])
+def test_login_cookie_session_and_logout(remember_me, monkeypatch):
+    monkeypatch.setattr("api.index._admin_user", "test-admin")
+    monkeypatch.setattr("api.index._admin_pass", "test-password")
+    with TestClient(app) as client:
+        response = client.post("/api/auth/token", json={
+            "username": "test-admin", "password": "test-password",
+            "remember_me": remember_me,
+        })
+        assert response.status_code == 200
+        assert response.json() == {"authenticated": True}
+        cookie = response.headers["set-cookie"].lower()
+        assert "httponly" in cookie
+        assert "samesite=lax" in cookie
+        assert ("max-age=2592000" in cookie) == remember_me
+        assert client.get("/api/auth/session").json()["authenticated"] is True
+        assert client.post("/api/auth/logout").status_code == 200
+        assert client.get("/api/auth/session").status_code == 401
