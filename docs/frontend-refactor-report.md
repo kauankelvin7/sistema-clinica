@@ -1,6 +1,6 @@
 # Refatoração frontend e modelos de documentos
 
-Data: 2026-10-02. Repositório: kauankelvin7/sistema-clinica. Branch local: `refactor/frontend-design-system`. Base: `7d94a6fab5055ab2c74db069f8ed0b36256bf7ba`. Nenhum push, merge ou deploy realizado.
+Data: 2026-10-02. Repositório: kauankelvin7/sistema-clinica. Branch local: `refactor/frontend-design-system`. Base: `7d94a6fab5055ab2c74db069f8ed0b36256bf7ba`. Implementação revisada e testada antes da integração. O usuário autorizou merge ao concluir; integração na main e publicação Git serão verificadas na entrega. Nenhum deploy executado.
 
 ## Resultado
 
@@ -67,4 +67,4 @@ Riscos anteriores preservados/documentados: admin global sem RBAC; PII em Indexe
 - `db22116`: sistema visual, frontend relevante, modelos na UI e harness ampliado.
 - O commit deste relatório encerra a entrega documental; HEAD completo está em `entrega.txt` no pacote de saída.
 
-Código local e relatório entregues para revisão. Próximo passo operacional: revisar diff, configurar chave estável, aplicar migração no ambiente de destino, realizar aceite com API real/PostgreSQL e então autorizar publicação. Não existe regressão introduzida conhecida nos fluxos cobertos pelos gates.
+Código e relatório aprovados por Terra; merge autorizado pelo usuário após conclusão. Próximo passo operacional: configurar chave estável, aplicar migração no ambiente de destino e realizar aceite com API real/PostgreSQL antes de ativar os modelos em produção. Não existe regressão introduzida conhecida nos fluxos cobertos pelos gates.
