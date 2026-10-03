@@ -31,7 +31,7 @@ export default function DirectoryStatus({
   const unavailable = status === 'error'
 
   return (
-    <div className="directory-status" aria-live="polite">
+    <div className="directory-status" role="status">
       <div className="directory-status__icon" aria-hidden="true">
         {syncing ? (
           <RefreshCw className="h-4 w-4 animate-spin" />

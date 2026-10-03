@@ -9,6 +9,7 @@ interface AutocompleteOption {
 }
 
 interface AutocompleteInputProps {
+  id: string
   value: string
   onChange: (value: string) => void
   onSelect?: (option: AutocompleteOption) => void
@@ -20,11 +21,13 @@ interface AutocompleteInputProps {
   minChars?: number
   className?: string
   disabled?: boolean
+  'aria-describedby'?: string
   /** Exibe spinner enquanto aguarda resposta do servidor */
   isLoading?: boolean
 }
 
 export default function AutocompleteInput({
+  id,
   value,
   onChange,
   onSelect,
@@ -34,6 +37,7 @@ export default function AutocompleteInput({
   minChars = 2,
   className = '',
   disabled = false,
+  'aria-describedby': describedBy,
   isLoading = false,
 }: AutocompleteInputProps) {
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -42,6 +46,7 @@ export default function AutocompleteInput({
   const wrapperRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    setSelectedIndex(-1)
     if (value.length >= minChars) {
       if (onSearch) {
         // Modo assíncrono: usa as options diretamente (já vieram filtradas da API)
@@ -67,6 +72,7 @@ export default function AutocompleteInput({
     function handleClickOutside(event: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setShowSuggestions(false)
+        setSelectedIndex(-1)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -75,6 +81,7 @@ export default function AutocompleteInput({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value
+    setSelectedIndex(-1)
     onChange(newValue)
     if (onSearch) {
       onSearch(newValue)
@@ -97,10 +104,11 @@ export default function AutocompleteInput({
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
       setSelectedIndex(prev => (prev > 0 ? prev - 1 : -1))
-    } else if (e.key === 'Enter' && selectedIndex >= 0) {
+    } else if (e.key === 'Enter' && selectedIndex >= 0 && selectedIndex < filteredOptions.length) {
       e.preventDefault()
       handleSelect(filteredOptions[selectedIndex])
     } else if (e.key === 'Escape') {
+      e.preventDefault()
       setShowSuggestions(false)
       setSelectedIndex(-1)
     }
@@ -110,55 +118,74 @@ export default function AutocompleteInput({
     <div ref={wrapperRef} className="relative">
       <div className="relative">
         <input
+          id={id}
           type="text"
           value={value}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={showSuggestions}
+          aria-controls={`${id}-listbox`}
+          aria-activedescendant={showSuggestions && selectedIndex >= 0 && selectedIndex < filteredOptions.length
+            ? `${id}-option-${selectedIndex}`
+            : undefined}
+          aria-describedby={describedBy}
           className={`input-field pr-10 ${className}`}
         />
         {value.length >= minChars && (
           isLoading
-            ? <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-garnet-500 animate-spin" />
-            : <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-garnet-500 dark:text-garnet-400" />
+            ? <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-garnet-500 animate-spin" aria-hidden="true" />
+            : <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-garnet-500 dark:text-garnet-400" aria-hidden="true" />
         )}
       </div>
 
-      {showSuggestions && (
-        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl max-h-60 overflow-y-auto backdrop-blur-md">
+      <div
+        hidden={!showSuggestions}
+        className="absolute z-50 w-full mt-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl max-h-60 overflow-y-auto backdrop-blur-md"
+      >
           <div className="p-1">
             {isLoading ? (
-              <div className="flex items-center gap-3 px-3 py-3 text-sm text-zinc-500 dark:text-zinc-400">
-                <Loader2 className="w-4 h-4 animate-spin text-garnet-500 shrink-0" />
+              <div role="status" className="flex items-center gap-3 px-3 py-3 text-sm text-zinc-500 dark:text-zinc-400">
+                <Loader2 className="w-4 h-4 animate-spin text-garnet-500 shrink-0" aria-hidden="true" />
                 Buscando cadastros...
               </div>
             ) : filteredOptions.length === 0 ? (
-              <div className="px-3 py-3 text-sm text-zinc-400 dark:text-zinc-500 text-center">
+              <div role="status" className="px-3 py-3 text-sm text-muted text-center">
                 Nenhum resultado encontrado
               </div>
-            ) : (
-              filteredOptions.map((option, index) => (
-                <button
+            ) : null}
+            <div
+              id={`${id}-listbox`}
+              role="listbox"
+              aria-busy={isLoading}
+              hidden={isLoading || filteredOptions.length === 0}
+            >
+              {filteredOptions.map((option, index) => (
+                <div
                   key={index}
-                  type="button"
+                  id={`${id}-option-${index}`}
+                  role="option"
+                  aria-selected={index === selectedIndex}
+                  onMouseDown={(event) => event.preventDefault()}
                   onClick={() => handleSelect(option)}
-                  className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors
+                  className={`w-full min-h-11 text-left px-3 py-2.5 rounded-lg text-sm transition-colors cursor-pointer
                     ${index === selectedIndex
                       ? 'bg-garnet-500/10 text-garnet-700 dark:bg-garnet-500/20 dark:text-garnet-200'
                       : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/80 text-zinc-700 dark:text-zinc-200'
                     }`}
                 >
                   <div className="flex items-center gap-2">
-                    <Search className="w-3 h-3 text-garnet-500 shrink-0" />
+                    <Search className="w-3 h-3 text-garnet-500 shrink-0" aria-hidden="true" />
                     <span className="font-medium">{option.label}</span>
                   </div>
-                </button>
-              ))
-            )}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+      </div>
     </div>
   )
 }

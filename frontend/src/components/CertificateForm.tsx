@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { CertificateFormProps } from '../types'
 import AutocompleteInput from './AutocompleteInput'
+import Field from './Field'
 import { searchCID } from '../data/cids'
 import { Calendar, AlertCircle, Clock, ShieldCheck } from 'lucide-react'
 import { useTranslation } from '../utils/i18n'
@@ -72,23 +73,19 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
 
         {/* Data e Dias de Afastamento em linha */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="field-label">
-              {t.certificateDateLabel}
-            </label>
+          <Field id="certificate-date" label={t.certificateDateLabel}>
             <input
+              id="certificate-date"
               type="date"
               className="input-field"
               value={formData.dataAtestado}
               onChange={(e) => updateFormData('dataAtestado', e.target.value)}
             />
-          </div>
+          </Field>
 
-          <div>
-            <label className="field-label">
-              {t.leaveDaysLabel}
-            </label>
+          <Field id="certificate-days" label={t.leaveDaysLabel}>
             <input
+              id="certificate-days"
               type="number"
               className="input-field"
               placeholder={t.leaveDaysPlaceholder}
@@ -96,17 +93,15 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
               value={formData.diasAfastamento}
               onChange={(e) => updateFormData('diasAfastamento', e.target.value)}
             />
-          </div>
+          </Field>
         </div>
 
         {/* Código CID */}
-        <div>
-          <label className="field-label">
-            {t.cidLabel}
-          </label>
+        <Field id="certificate-cid" label={t.cidLabel}>
           <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
             <div className="w-full flex-1">
               <AutocompleteInput
+                id="certificate-cid"
                 value={formData.cidNaoInformado ? '' : formData.cid}
                 onChange={(value) => {
                   updateFormData('cid', value)
@@ -125,7 +120,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
               />
             </div>
 
-            <label className="flex items-center gap-2 cursor-pointer whitespace-nowrap px-1 py-1 group">
+            <label className="flex min-h-11 items-center gap-2 cursor-pointer whitespace-nowrap px-1 py-1 group">
               <input
                 type="checkbox"
                 className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-garnet-500 bg-white dark:bg-surface-input focus:ring-2 focus:ring-garnet-500/20 transition-all cursor-pointer"
@@ -137,7 +132,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
               </span>
             </label>
           </div>
-        </div>
+        </Field>
 
         {/* Painel Informativo Inteligente de Retorno e Regra do INSS (CLT) */}
         {returnInfo ? (
@@ -148,13 +143,13 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
           }`}>
             <div className="flex items-start gap-2.5">
               {returnInfo.requiresINSS ? (
-                <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" aria-hidden="true" />
               ) : (
-                <ShieldCheck className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                <ShieldCheck className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" aria-hidden="true" />
               )}
               <div className="space-y-1 text-xs">
                 <div className="flex items-center gap-2 font-bold tracking-tight">
-                  <Clock className="w-3.5 h-3.5" />
+                  <Clock className="w-3.5 h-3.5" aria-hidden="true" />
                   <span>{t.expectedReturnTitle}: {returnInfo.formattedDate} ({returnInfo.weekDay})</span>
                 </div>
                 <p className="text-[11px] opacity-90 leading-snug">
@@ -167,7 +162,7 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
           </div>
         ) : (
           <div className="p-3.5 rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/20 text-zinc-500 dark:text-zinc-400 text-xs flex items-center gap-2.5">
-            <Calendar className="w-4 h-4 text-garnet-500 flex-shrink-0" />
+            <Calendar className="w-4 h-4 text-garnet-500 flex-shrink-0" aria-hidden="true" />
             <span className="text-[11px]">
               {t.fillDateNotice}
             </span>

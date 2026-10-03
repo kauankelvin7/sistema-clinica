@@ -1,0 +1,32 @@
+.app-dialog {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 1rem;
+  border: 0;
+  background: transparent;
+  overflow: auto;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-dialog:not([open]) {
+  display: none;
+}
+
+.app-dialog[open] {
+  display: flex;
+}
+
+body:has(.app-dialog[open]) {
+  overflow: hidden;
+}
+
+.app-dialog::backdrop {
+  background: rgb(9 9 11 / 80%);
+  backdrop-filter: blur(12px);
+}

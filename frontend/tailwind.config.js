@@ -9,7 +9,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
-        display: ['Sora', 'sans-serif'],
+        display: ['Inter', 'sans-serif'],
       },
       colors: {
         // Mapeamento dinâmico baseado nas variáveis CSS aplicadas pelo ThemeManager
@@ -39,24 +39,29 @@ export default {
           900: 'rgb(var(--color-primary-900) / <alpha-value>)',
           950: 'rgb(var(--color-primary-950) / <alpha-value>)',
         },
-        amber: {
-          50: 'rgb(var(--color-primary-50) / <alpha-value>)',
-          100: 'rgb(var(--color-primary-100) / <alpha-value>)',
-          200: 'rgb(var(--color-primary-200) / <alpha-value>)',
-          300: 'rgb(var(--color-primary-300) / <alpha-value>)',
-          400: 'rgb(var(--color-primary-400) / <alpha-value>)',
-          500: 'rgb(var(--color-primary-400) / <alpha-value>)',
-          600: 'rgb(var(--color-primary-500) / <alpha-value>)',
-          700: 'rgb(var(--color-primary-600) / <alpha-value>)',
-          800: 'rgb(var(--color-primary-700) / <alpha-value>)',
-          900: 'rgb(var(--color-primary-800) / <alpha-value>)',
-          950: 'rgb(var(--color-primary-900) / <alpha-value>)',
-        },
         surface: {
           page: 'rgb(var(--color-bg-page) / <alpha-value>)',
           card: 'rgb(var(--color-bg-card) / <alpha-value>)',
           input: 'rgb(var(--color-bg-input) / <alpha-value>)',
         },
+        canvas: 'rgb(var(--color-canvas) / <alpha-value>)',
+        panel: 'rgb(var(--color-panel) / <alpha-value>)',
+        input: 'rgb(var(--color-input) / <alpha-value>)',
+        ink: 'rgb(var(--color-ink) / <alpha-value>)',
+        muted: 'rgb(var(--color-muted) / <alpha-value>)',
+        border: 'rgb(var(--color-border) / <alpha-value>)',
+        brand: {
+          DEFAULT: 'rgb(var(--color-brand) / <alpha-value>)',
+          hover: 'rgb(var(--color-brand-hover) / <alpha-value>)',
+          foreground: 'rgb(var(--color-brand-foreground) / <alpha-value>)',
+        },
+        sidebar: {
+          DEFAULT: 'rgb(var(--color-sidebar) / <alpha-value>)',
+          ink: 'rgb(var(--color-sidebar-ink) / <alpha-value>)',
+        },
+        success: 'rgb(var(--color-success) / <alpha-value>)',
+        warning: 'rgb(var(--color-warning) / <alpha-value>)',
+        danger: 'rgb(var(--color-danger) / <alpha-value>)',
         accent: {
           DEFAULT: 'rgb(var(--color-primary-500))',
           soft: 'rgba(var(--color-primary-500), 0.15)',

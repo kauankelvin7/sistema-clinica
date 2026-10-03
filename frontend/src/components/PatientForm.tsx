@@ -1,25 +1,18 @@
+import { maskCPF } from '../utils/maskCPF'
 import { AlertCircle, ChevronDown, Eye, Users } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { checkDuplicate } from '../services/api'
 import type { PatientFormProps } from '../types'
 import { useTranslation } from '../utils/i18n'
 import AutocompleteInput from './AutocompleteInput'
+import Field from './Field'
 import PatientsListModal from './PatientsListModal'
-
-function maskCPF(value: string) {
-  return value
-    .replace(/\D/g, '')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
-    .slice(0, 14)
-}
 
 function onlyDigits(value: string) {
   return value.replace(/\D/g, '')
 }
 
-export default function PatientForm({ formData, updateFormData, patients }: PatientFormProps) {
+export default function PatientForm({ formData, updateFormData, patients, onLoadPatient }: PatientFormProps) {
   const { t } = useTranslation()
   const [showListModal, setShowListModal] = useState(false)
   const [isDuplicate, setIsDuplicate] = useState(false)
@@ -56,14 +49,6 @@ export default function PatientForm({ formData, updateFormData, patients }: Pati
     return () => clearTimeout(timer)
   }, [formData.numeroDocumento, formData.empresa, patients])
 
-  const selectPatient = (patient: PatientFormProps['patients'][number]) => {
-    updateFormData('nomePaciente', patient.nome_completo)
-    updateFormData('tipoDocumento', patient.tipo_doc)
-    updateFormData('numeroDocumento', patient.numero_doc)
-    updateFormData('cargo', patient.cargo || '')
-    updateFormData('empresa', patient.empresa || '')
-  }
-
   const handleDocumentoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const nextValue = formData.tipoDocumento === 'CPF'
       ? maskCPF(event.target.value)
@@ -85,53 +70,52 @@ export default function PatientForm({ formData, updateFormData, patients }: Pati
       <PatientsListModal
         isOpen={showListModal}
         onClose={() => setShowListModal(false)}
-        onSelect={selectPatient}
+        onSelect={onLoadPatient}
         patients={patients}
       />
 
       <button type="button" onClick={() => setShowListModal(true)} className="record-picker group">
         <div className="flex w-full items-center gap-3">
-          <div className="record-picker__icon"><Users className="h-4 w-4" /></div>
+          <div className="record-picker__icon"><Users className="h-4 w-4" aria-hidden="true" /></div>
           <div className="min-w-0 flex-1 text-left">
             <p className="record-picker__eyebrow">{t.searchPatientsBtn}</p>
             <p className="record-picker__value">
               {patients.length > 0 ? `${patients.length} ${t.modalPatientsTitle}` : 'Cache aguardando sincronização'}
             </p>
           </div>
-          <Eye className="h-4 w-4 shrink-0 text-zinc-400 transition-colors group-hover:text-garnet-500" />
+          <Eye className="h-4 w-4 shrink-0 text-zinc-400 transition-colors group-hover:text-garnet-500" aria-hidden="true" />
         </div>
       </button>
 
-      <div>
-        <label className="field-label">{t.patientNameLabel}</label>
+      <Field id="patient-name" label={t.patientNameLabel} hint={patients.length > 0 ? 'Busca local instantânea · não aguarda o banco a cada tecla' : undefined}>
         <AutocompleteInput
-          value={formData.nomePaciente}
-          onChange={(value) => updateFormData('nomePaciente', value)}
-          onSelect={(option) => option.data && selectPatient(option.data)}
-          options={patientOptions}
-          placeholder={t.patientNamePlaceholder}
-          minChars={2}
+            id="patient-name"
+            value={formData.nomePaciente}
+            onChange={(value) => updateFormData('nomePaciente', value)}
+            onSelect={(option) => option.data && onLoadPatient(option.data)}
+            options={patientOptions}
+            placeholder={t.patientNamePlaceholder}
+            minChars={2}
         />
-        {patients.length > 0 && (
-          <p className="field-hint">Busca local instantânea · não aguarda o banco a cada tecla</p>
-        )}
-      </div>
+      </Field>
 
-      <div>
-        <label className="field-label">{t.docNumberLabel}</label>
+      <Field id="patient-document" label={t.docNumberLabel}>
         <div className="grid grid-cols-[104px_minmax(0,1fr)] gap-2">
           <div className="select-shell">
             <select
+              id="patient-document-type"
               className="input-field appearance-none pr-9"
+              aria-label={`${t.docNumberLabel} - tipo`}
               value={formData.tipoDocumento}
               onChange={handleTipoDocumentoChange}
             >
               <option value="CPF">CPF</option>
               <option value="RG">RG</option>
             </select>
-            <ChevronDown className="select-shell__icon" />
+            <ChevronDown className="select-shell__icon" aria-hidden="true" />
           </div>
           <input
+            id="patient-document"
             type="text"
             className={`input-field ${isDuplicate ? 'border-amber-500/80 bg-amber-500/5 focus:border-amber-500' : ''}`}
             placeholder={formData.tipoDocumento === 'CPF' ? t.docNumberPlaceholder : 'Número do RG'}
@@ -144,31 +128,31 @@ export default function PatientForm({ formData, updateFormData, patients }: Pati
         </div>
         {isDuplicate && (
           <div className="field-warning">
-            <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+            <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
             <span>Este paciente já está cadastrado nesta empresa.</span>
           </div>
         )}
-      </div>
+      </Field>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div>
-          <label className="field-label">{t.positionLabel}</label>
+        <Field id="patient-position" label={t.positionLabel}>
           <input
+            id="patient-position"
             className="input-field"
             placeholder={t.positionPlaceholder}
             value={formData.cargo}
             onChange={(event) => updateFormData('cargo', event.target.value)}
           />
-        </div>
-        <div>
-          <label className="field-label">{t.companyLabel}</label>
+        </Field>
+        <Field id="patient-company" label={t.companyLabel}>
           <input
+            id="patient-company"
             className="input-field"
             placeholder={t.companyPlaceholder}
             value={formData.empresa}
             onChange={(event) => updateFormData('empresa', event.target.value)}
           />
-        </div>
+        </Field>
       </div>
     </div>
   )

@@ -1,9 +1,9 @@
 import { Briefcase, Building2, ChevronLeft, ChevronRight, Hash, Search, User, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { createPortal } from 'react-dom'
 import type { Paciente } from '../types'
 import { useTranslation } from '../utils/i18n'
 import { normalizeText } from '../utils/normalize'
+import Dialog from './Dialog'
 
 interface Props {
   isOpen: boolean
@@ -27,18 +27,6 @@ export default function PatientsListModal({ isOpen, onClose, onSelect, patients 
     setPage(1)
   }, [isOpen])
 
-  useEffect(() => {
-    if (!isOpen) return
-    const previous = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    const onKeyDown = (event: KeyboardEvent) => event.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.body.style.overflow = previous
-      window.removeEventListener('keydown', onKeyDown)
-    }
-  }, [isOpen, onClose])
-
   const filtered = useMemo(() => {
     const query = normalizeText(searchTerm.trim())
     return patients.filter((patient) => {
@@ -60,11 +48,9 @@ export default function PatientsListModal({ isOpen, onClose, onSelect, patients 
   const safePage = Math.min(page, totalPages)
   const visible = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
 
-  if (!isOpen) return null
-
-  return createPortal(
-    <div className="modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <section className="directory-modal" role="dialog" aria-modal="true" aria-label={t.modalPatientsTitle}>
+  return (
+    <Dialog isOpen={isOpen} onClose={onClose} label={t.modalPatientsTitle}>
+      <section className="directory-modal">
         <header className="directory-modal__header">
           <div className="flex min-w-0 items-center gap-3">
             <div className="directory-modal__hero-icon"><User className="h-5 w-5" /></div>
@@ -76,22 +62,24 @@ export default function PatientsListModal({ isOpen, onClose, onSelect, patients 
             </div>
           </div>
           <button type="button" onClick={onClose} className="icon-button" aria-label="Fechar">
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </header>
 
         <div className="directory-modal__toolbar">
           <label className="search-field">
-            <Search className="search-field__icon" />
+            <Search className="search-field__icon" aria-hidden="true" />
             <input
-              autoFocus
+              data-dialog-focus
               className="input-field pl-10"
+              aria-label={t.searchPatientsPlaceholder}
               placeholder={t.searchPatientsPlaceholder}
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
             />
           </label>
           <select
+            aria-label="Filtrar tipo de documento"
             className="input-field max-w-48"
             value={documentType}
             onChange={(event) => setDocumentType(event.target.value as typeof documentType)}
@@ -105,7 +93,7 @@ export default function PatientsListModal({ isOpen, onClose, onSelect, patients 
         <div className="directory-modal__content">
           {visible.length === 0 ? (
             <div className="empty-state">
-              <User className="h-7 w-7" />
+              <User className="h-7 w-7" aria-hidden="true" />
               <h3>Nenhum paciente encontrado</h3>
               <p>Altere a busca ou atualize a base local.</p>
             </div>
@@ -121,15 +109,15 @@ export default function PatientsListModal({ isOpen, onClose, onSelect, patients 
                   }}
                   className="directory-card"
                 >
-                  <div className="directory-card__avatar"><User className="h-4 w-4" /></div>
+                  <div className="directory-card__avatar"><User className="h-4 w-4" aria-hidden="true" /></div>
                   <div className="min-w-0 flex-1 text-left">
                     <h3 className="directory-card__title" title={patient.nome_completo}>
                       {patient.nome_completo}
                     </h3>
                     <div className="directory-card__meta">
-                      <span><Hash className="h-3 w-3" /> {patient.tipo_doc} {patient.numero_doc}</span>
-                      {patient.cargo && <span><Briefcase className="h-3 w-3" /> {patient.cargo}</span>}
-                      {patient.empresa && <span><Building2 className="h-3 w-3" /> {patient.empresa}</span>}
+                      <span><Hash className="h-3 w-3" aria-hidden="true" /> {patient.tipo_doc} {patient.numero_doc}</span>
+                      {patient.cargo && <span><Briefcase className="h-3 w-3" aria-hidden="true" /> {patient.cargo}</span>}
+                      {patient.empresa && <span><Building2 className="h-3 w-3" aria-hidden="true" /> {patient.empresa}</span>}
                     </div>
                   </div>
                 </button>
@@ -144,25 +132,24 @@ export default function PatientsListModal({ isOpen, onClose, onSelect, patients 
             <div className="flex gap-2">
               <button
                 type="button"
-                className="btn-secondary min-h-9 px-3 py-1.5"
+                className="btn-secondary px-3 py-1.5"
                 disabled={safePage === 1}
                 onClick={() => setPage((value) => Math.max(1, value - 1))}
               >
-                <ChevronLeft className="h-4 w-4" /> Anterior
+                <ChevronLeft className="h-4 w-4" aria-hidden="true" /> Anterior
               </button>
               <button
                 type="button"
-                className="btn-secondary min-h-9 px-3 py-1.5"
+                className="btn-secondary px-3 py-1.5"
                 disabled={safePage === totalPages}
                 onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
               >
-                Próximo <ChevronRight className="h-4 w-4" />
+                Próximo <ChevronRight className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
           </footer>
         )}
       </section>
-    </div>,
-    document.body
+    </Dialog>
   )
 }

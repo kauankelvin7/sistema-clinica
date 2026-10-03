@@ -78,6 +78,14 @@ async def protect_cookie_authenticated_writes(request, call_next):
             return JSONResponse(status_code=403, content={"detail": "Origem não autorizada."})
     return await call_next(request)
 
+@app.middleware("http")
+async def prevent_document_model_caching(request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    if any(path == prefix or path.startswith(prefix + "/") for prefix in ("/api/document-models", "/document-models")):
+        response.headers["Cache-Control"] = "private, no-store, max-age=0"
+    return response
+
 @app.on_event("startup")
 async def startup_event():
     # DDL em cada cold start aumenta latência e pode gerar locks.
@@ -738,6 +746,9 @@ async def database_health(_=Depends(rate_limit), __=Depends(require_auth)):
         logger.exception("Falha no health check do banco")
         raise HTTPException(status_code=503, detail="Banco temporariamente indisponível.")
 
+
+from api.document_models import router as document_models_router
+api_router.include_router(document_models_router)
 
 # O prefixo /api atende a Vercel; o segundo router mantém compatibilidade local.
 app.include_router(api_router, prefix="/api")
