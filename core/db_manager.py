@@ -183,9 +183,16 @@ else:
 def create_tables():
     """Cria tabelas compatíveis com SQLite e PostgreSQL"""
     
+    document_models_schema = """CREATE TABLE IF NOT EXISTS document_models (
+        id TEXT PRIMARY KEY,
+        payload TEXT NOT NULL,
+        revision INTEGER NOT NULL DEFAULT 1 CHECK (revision > 0),
+        updated_at TEXT NOT NULL
+    )"""
     if IS_PRODUCTION:
         # PostgreSQL - usa SERIAL ao invés de AUTOINCREMENT
         queries = [
+            document_models_schema,
             '''
             CREATE TABLE IF NOT EXISTS pacientes (
                 id SERIAL PRIMARY KEY,
@@ -263,6 +270,7 @@ def create_tables():
         # SQLite - usa AUTOINCREMENT
         with get_db_connection() as conn:
             cursor = conn.cursor()
+            cursor.execute(document_models_schema)
             
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS pacientes (
