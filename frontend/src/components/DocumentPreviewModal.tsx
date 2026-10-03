@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { createPortal } from 'react-dom'
 import { X, Printer, Download, Maximize2, Minimize2 } from 'lucide-react'
+import Dialog from './Dialog'
 
 interface DocumentPreviewModalProps {
   isOpen: boolean
@@ -27,28 +27,6 @@ export default function DocumentPreviewModal({
       autoPrintFiredRef.current = false
     }
   }, [isOpen, htmlContent])
-
-  // Fechar com ESC
-  useEffect(() => {
-    if (!isOpen) return
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose])
-
-  // Bloquear scroll do body
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [isOpen])
 
   const handlePrint = useCallback(() => {
     const iframe = iframeRef.current
@@ -87,15 +65,8 @@ export default function DocumentPreviewModal({
     URL.revokeObjectURL(url)
   }, [htmlContent, fileName])
 
-  if (!isOpen || !htmlContent) return null
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-zinc-950/80 dark:bg-black/90 backdrop-blur-md animate-in fade-in duration-200"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-    >
+  return (
+    <Dialog isOpen={isOpen && !!htmlContent} onClose={onClose} label="Pré-visualização do Documento">
       <div
         className={`bg-white dark:bg-zinc-900 flex flex-col overflow-hidden shadow-2xl border border-zinc-200 dark:border-zinc-800 transform animate-in zoom-in-95 duration-200 transition-all ${
           isFullscreen
@@ -118,7 +89,8 @@ export default function DocumentPreviewModal({
               onClick={handlePrint}
               disabled={!iframeLoaded}
               title="Imprimir documento"
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium
+              aria-label="Imprimir documento"
+              className="flex min-h-11 min-w-11 items-center justify-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium
                 bg-garnet-500 hover:bg-garnet-600 text-white
                 disabled:opacity-50 disabled:cursor-not-allowed
                 transition-all duration-150 shadow-sm hover:shadow-md active:scale-95"
@@ -131,7 +103,8 @@ export default function DocumentPreviewModal({
             <button
               onClick={handleDownload}
               title="Baixar como HTML"
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium
+              aria-label="Baixar como HTML"
+              className="flex min-h-11 min-w-11 items-center justify-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium
                 bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600
                 text-zinc-700 dark:text-zinc-200
                 transition-all duration-150 shadow-sm hover:shadow-md active:scale-95"
@@ -147,7 +120,8 @@ export default function DocumentPreviewModal({
             <button
               onClick={() => setIsFullscreen((prev) => !prev)}
               title={isFullscreen ? 'Sair de tela cheia' : 'Tela cheia'}
-              className="p-1.5 rounded-lg text-zinc-500 dark:text-zinc-400
+              aria-label={isFullscreen ? 'Sair de tela cheia' : 'Tela cheia'}
+              className="min-h-11 min-w-11 p-1.5 rounded-lg flex items-center justify-center text-zinc-500 dark:text-zinc-400
                 hover:bg-zinc-200 dark:hover:bg-zinc-700
                 transition-all duration-150 active:scale-95"
             >
@@ -162,7 +136,8 @@ export default function DocumentPreviewModal({
             <button
               onClick={onClose}
               title="Fechar"
-              className="p-1.5 rounded-lg text-zinc-500 dark:text-zinc-400
+              aria-label="Fechar pré-visualização"
+              className="min-h-11 min-w-11 p-1.5 rounded-lg flex items-center justify-center text-zinc-500 dark:text-zinc-400
                 hover:bg-rose-100 dark:hover:bg-rose-900/30
                 hover:text-rose-600 dark:hover:text-rose-400
                 transition-all duration-150 active:scale-95"
@@ -177,8 +152,8 @@ export default function DocumentPreviewModal({
           {/* Indicador de carregamento */}
           {!iframeLoaded && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-zinc-100 dark:bg-zinc-950">
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-8 h-8 border-3 border-garnet-500 border-t-transparent rounded-full animate-spin" />
+              <div className="flex flex-col items-center gap-3" role="status">
+                <div className="w-8 h-8 border-3 border-garnet-500 border-t-transparent rounded-full animate-spin" aria-hidden="true" />
                 <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
                   Carregando documento...
                 </span>
@@ -197,7 +172,6 @@ export default function DocumentPreviewModal({
           />
         </div>
       </div>
-    </div>,
-    document.body
+    </Dialog>
   )
 }

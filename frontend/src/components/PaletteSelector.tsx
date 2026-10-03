@@ -1,11 +1,13 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useId } from 'react'
 import { Palette, Check, ChevronDown } from 'lucide-react'
-import { themeManager, THEME_PALETTES, PaletteName } from '../utils/themeManager'
+import { themeManager, THEME_PALETTES, type PaletteName } from '../utils/themeManager'
 
 export default function PaletteSelector() {
   const [currentPalette, setCurrentPalette] = useState<PaletteName>(() => themeManager.getPalette())
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const menuId = useId()
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -17,32 +19,46 @@ export default function PaletteSelector() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  useEffect(() => {
+    const handlePaletteChange = () => setCurrentPalette(themeManager.getPalette())
+    window.addEventListener('palette_changed', handlePaletteChange)
+    return () => window.removeEventListener('palette_changed', handlePaletteChange)
+  }, [])
+
   const handleSelectPalette = (paletteName: PaletteName) => {
     themeManager.applyPalette(paletteName)
-    setCurrentPalette(paletteName)
     setIsOpen(false)
   }
 
   const selected = THEME_PALETTES[currentPalette] || THEME_PALETTES.garnet
 
   return (
-    <div className="relative inline-block text-left z-30" ref={menuRef}>
+    <div className="relative inline-block text-left z-30" ref={menuRef} onKeyDown={(event) => {
+      if (event.key === 'Escape' && isOpen) {
+        event.preventDefault()
+        setIsOpen(false)
+        buttonRef.current?.focus()
+      }
+    }}>
       <button
         type="button"
+        ref={buttonRef}
+        aria-expanded={isOpen}
+        aria-controls={menuId}
         onClick={() => setIsOpen(prev => !prev)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-100/90 dark:bg-zinc-800/60 hover:bg-zinc-200/80 dark:hover:bg-zinc-700/60 border border-zinc-200/80 dark:border-zinc-700/60 text-xs font-semibold text-zinc-800 dark:text-zinc-200 transition-all duration-200 shadow-xs active:scale-95"
+        className="flex min-h-11 items-center gap-2 px-3 py-1.5 rounded-xl bg-panel/90 hover:bg-canvas border border-border text-xs font-semibold text-ink transition-all duration-200 shadow-xs active:scale-95"
         title="Alternar Paleta de Cores do Sistema"
       >
-        <Palette className="w-4 h-4 text-garnet-500 transition-transform duration-300 group-hover:rotate-45" />
+        <Palette className="w-4 h-4 text-brand-foreground transition-transform duration-300 group-hover:rotate-45" />
         <span className="hidden sm:inline font-bold text-xs">{selected.label}</span>
-        <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 transition-transform duration-200 ${isOpen ? 'rotate-180 text-garnet-500' : ''}`} />
+        <ChevronDown className={`w-3.5 h-3.5 text-muted transition-transform duration-200 ${isOpen ? 'rotate-180 text-brand-foreground' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-52 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200/90 dark:border-zinc-800/90 shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-200">
-          <div className="px-2.5 py-1.5 border-b border-zinc-100 dark:border-zinc-800/60 mb-1 flex items-center gap-2">
-            <Palette className="w-3.5 h-3.5 text-garnet-500" />
-            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Temas de Cores</span>
+        <div id={menuId} className="absolute right-0 mt-2 w-52 rounded-2xl bg-panel/95 backdrop-blur-xl border border-border shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-200">
+          <div className="px-2.5 py-1.5 border-b border-border mb-1 flex items-center gap-2">
+            <Palette className="w-3.5 h-3.5 text-brand-foreground" />
+            <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Temas de Cores</span>
           </div>
 
           <div className="space-y-1">
@@ -52,11 +68,12 @@ export default function PaletteSelector() {
                 <button
                   key={pal.name}
                   type="button"
+                  aria-pressed={isSelected}
                   onClick={() => handleSelectPalette(pal.name as PaletteName)}
-                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 ${
+                  className={`w-full min-h-11 flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 ${
                     isSelected
-                      ? 'bg-garnet-500/10 text-garnet-600 dark:text-garnet-400 border border-garnet-500/30'
-                      : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/70 border border-transparent'
+                      ? 'bg-brand/10 text-brand-foreground border border-brand/30'
+                      : 'text-ink hover:bg-canvas border border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
@@ -68,7 +85,7 @@ export default function PaletteSelector() {
                     <span>{pal.label}</span>
                   </div>
 
-                  {isSelected && <Check className="w-3.5 h-3.5 text-garnet-500" />}
+                  {isSelected && <Check className="w-3.5 h-3.5 text-brand-foreground" />}
                 </button>
               )
             })}

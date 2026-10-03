@@ -3,6 +3,28 @@ import { useState, useEffect } from 'react'
 export type Language = 'pt' | 'en' | 'es'
 
 export interface TranslationSchema {
+  navTitle: string
+  navHomologation: string
+  navPatients: string
+  navDoctors: string
+  navModels: string
+  modelsShortcuts: string
+  modelsAll: string
+  modelsCreate: string
+  modelsLoadError: string
+  navSettings: string
+  navOpenMenu: string
+  navCloseMenu: string
+  skipContent: string
+  themeCurrent: string
+  loginHeroTitle: string
+  loginHeading: string
+  loginIntro: string
+  loginError: string
+  loginShowPassword: string
+  loginHidePassword: string
+  loginModuleHint: string
+
   // Header
   headerTitle: string
   headerSubtitle: string
@@ -22,7 +44,6 @@ export interface TranslationSchema {
   workspaceTitle: string
   workspaceDescription: string
   progressLabel: string
-  secureSessionNotice: string
   patientSectionHint: string
   certificateSectionHint: string
   doctorSectionHint: string
@@ -103,12 +124,32 @@ export interface TranslationSchema {
   loginPassPlaceholder: string
   btnEnterSystem: string
   btnAuthenticating: string
-  loginRestrictedNotice: string
   loginDemoCredentials: string
 }
 
 export const TRANSLATIONS: Record<Language, TranslationSchema> = {
   pt: {
+    navTitle: 'Navegação principal',
+    navHomologation: 'Nova homologação',
+    navPatients: 'Pacientes',
+    navDoctors: 'Médicos',
+    navModels: 'Modelos',
+    modelsShortcuts: 'Seus modelos',
+    modelsAll: 'Ver todos',
+    modelsCreate: 'Criar modelo',
+    modelsLoadError: 'Modelos indisponíveis. Abra a lista para tentar novamente.',
+    navSettings: 'Configurações',
+    navOpenMenu: 'Abrir navegação',
+    navCloseMenu: 'Fechar navegação',
+    skipContent: 'Pular para o formulário',
+    themeCurrent: 'Tema atual',
+    loginHeroTitle: 'Homologação de atestados médicos',
+    loginHeading: 'Entrar no sistema',
+    loginIntro: 'Use suas credenciais para acessar o módulo de homologação de atestados médicos.',
+    loginError: 'Não foi possível entrar. Confira o usuário e a senha.',
+    loginShowPassword: 'Mostrar senha',
+    loginHidePassword: 'Ocultar senha',
+    loginModuleHint: 'Dados do paciente, atestado e responsável em um único formulário.',
     // Header
     headerTitle: 'Sistema de Homologação',
     headerSubtitle: 'Atestados Médicos Digitais',
@@ -128,7 +169,6 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     workspaceTitle: 'Nova homologação médica',
     workspaceDescription: 'Preencha os dados essenciais em três etapas e revise a declaração antes de imprimir.',
     progressLabel: 'Preenchimento do formulário',
-    secureSessionNotice: 'Dados do formulário ficam apenas nesta sessão.',
     patientSectionHint: 'Identificação e vínculo profissional',
     certificateSectionHint: 'Período, CID e previsão de retorno',
     doctorSectionHint: 'Responsável e registro profissional',
@@ -173,7 +213,7 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     btnGenerateHTML: 'Gerar Declaração',
     btnGenerating: 'Gerando...',
     btnClearForm: 'Limpar Formulário',
-    msgFormCleared: 'Formulário limpo com sucesso!',
+    msgFormCleared: 'Formulário limpo.',
 
     // Patient List Modal
     modalPatientsTitle: 'Pacientes Cadastrados',
@@ -209,10 +249,30 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     loginPassPlaceholder: 'Sua senha secreta',
     btnEnterSystem: 'Entrar no Sistema',
     btnAuthenticating: 'Autenticando...',
-    loginRestrictedNotice: 'Acesso Restrito a Colaboradores Autorizados',
     loginDemoCredentials: 'Lembrar de mim neste dispositivo',
   },
   en: {
+    navTitle: 'Main navigation',
+    navHomologation: 'New validation',
+    navPatients: 'Patients',
+    navDoctors: 'Doctors',
+    navModels: 'Templates',
+    modelsShortcuts: 'Your templates',
+    modelsAll: 'View all',
+    modelsCreate: 'Create template',
+    modelsLoadError: 'Templates unavailable. Open the list to retry.',
+    navSettings: 'Settings',
+    navOpenMenu: 'Open navigation',
+    navCloseMenu: 'Close navigation',
+    skipContent: 'Skip to the form',
+    themeCurrent: 'Current theme',
+    loginHeroTitle: 'Medical certificate validation',
+    loginHeading: 'Sign in',
+    loginIntro: 'Use your credentials to access the medical certificate validation module.',
+    loginError: 'Unable to sign in. Check your username and password.',
+    loginShowPassword: 'Show password',
+    loginHidePassword: 'Hide password',
+    loginModuleHint: 'Patient, certificate and practitioner details in one form.',
     // Header
     headerTitle: 'Homologation System',
     headerSubtitle: 'Digital Medical Certificates',
@@ -232,7 +292,6 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     workspaceTitle: 'New medical homologation',
     workspaceDescription: 'Complete the essential information in three steps and review the declaration before printing.',
     progressLabel: 'Form completion',
-    secureSessionNotice: 'Form data stays only in this session.',
     patientSectionHint: 'Identification and employment details',
     certificateSectionHint: 'Period, ICD code and expected return',
     doctorSectionHint: 'Responsible professional and registration',
@@ -277,7 +336,7 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     btnGenerateHTML: 'Generate Declaration',
     btnGenerating: 'Generating...',
     btnClearForm: 'Clear Form',
-    msgFormCleared: 'Form cleared successfully!',
+    msgFormCleared: 'Form cleared.',
 
     // Patient List Modal
     modalPatientsTitle: 'Registered Patients',
@@ -313,10 +372,30 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     loginPassPlaceholder: 'Enter your password',
     btnEnterSystem: 'Sign In to System',
     btnAuthenticating: 'Authenticating...',
-    loginRestrictedNotice: 'Restricted Access for Authorized Personnel Only',
     loginDemoCredentials: 'Remember me on this device',
   },
   es: {
+    navTitle: 'Navegación principal',
+    navHomologation: 'Nueva homologación',
+    navPatients: 'Pacientes',
+    navDoctors: 'Médicos',
+    navModels: 'Modelos',
+    modelsShortcuts: 'Sus modelos',
+    modelsAll: 'Ver todos',
+    modelsCreate: 'Crear modelo',
+    modelsLoadError: 'Modelos no disponibles. Abra la lista para volver a intentarlo.',
+    navSettings: 'Configuración',
+    navOpenMenu: 'Abrir navegación',
+    navCloseMenu: 'Cerrar navegación',
+    skipContent: 'Ir al formulario',
+    themeCurrent: 'Tema actual',
+    loginHeroTitle: 'Homologación de certificados médicos',
+    loginHeading: 'Entrar al sistema',
+    loginIntro: 'Use sus credenciales para acceder al módulo de homologación de certificados médicos.',
+    loginError: 'No se pudo iniciar sesión. Verifique el usuario y la contraseña.',
+    loginShowPassword: 'Mostrar contraseña',
+    loginHidePassword: 'Ocultar contraseña',
+    loginModuleHint: 'Datos del paciente, certificado y profesional en un único formulario.',
     // Header
     headerTitle: 'Sistema de Homologación',
     headerSubtitle: 'Certificados Médicos Digitales',
@@ -336,7 +415,6 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     workspaceTitle: 'Nueva homologación médica',
     workspaceDescription: 'Complete los datos esenciales en tres etapas y revise la declaración antes de imprimir.',
     progressLabel: 'Progreso del formulario',
-    secureSessionNotice: 'Los datos del formulario permanecen solo en esta sesión.',
     patientSectionHint: 'Identificación y vínculo profesional',
     certificateSectionHint: 'Período, CIE y regreso previsto',
     doctorSectionHint: 'Profesional responsable y registro',
@@ -417,7 +495,6 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     loginPassPlaceholder: 'Su contraseña secreta',
     btnEnterSystem: 'Ingresar al Sistema',
     btnAuthenticating: 'Autenticando...',
-    loginRestrictedNotice: 'Acceso Restringido a Personal Autorizado',
     loginDemoCredentials: 'Recordar sesión en este dispositivo',
   },
 }

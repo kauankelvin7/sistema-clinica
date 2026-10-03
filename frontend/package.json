@@ -9,17 +9,14 @@
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "typecheck:e2e": "tsc --noEmit --strict --target ES2022 --module ESNext --moduleResolution bundler --esModuleInterop --skipLibCheck e2e/frontend.spec.ts playwright.config.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "capture:preview": "CAPTURE_PREVIEW=1 playwright test --project=chromium --grep 'preview capture'"
   },
   "dependencies": {
     "axios": "^1.13.1",
-    "clsx": "^2.1.1",
-    "date-fns": "^3.6.0",
     "lucide-react": "^0.400.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-hook-form": "^7.52.0",
-    "tailwind-merge": "^2.4.0"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

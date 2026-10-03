@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import React from 'react';
 import { AlertCircle, X } from 'lucide-react';
 import { useTranslation } from '../utils/i18n';
+import Dialog from './Dialog'
 
 interface ValidationModalProps {
   isOpen: boolean;
@@ -12,43 +12,15 @@ interface ValidationModalProps {
 export const ValidationModal: React.FC<ValidationModalProps> = ({ isOpen, onClose, missingFields }) => {
   const { t } = useTranslation();
 
-  // Trancar scroll do body enquanto aberto
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [isOpen])
-
-  // Fechar com tecla ESC
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) onClose()
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose])
-
-  if (!isOpen) return null;
-
-  return createPortal(
-    <div
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-zinc-950/80 dark:bg-black/90 backdrop-blur-md pt-16 sm:pt-20 pb-4 sm:pb-6 px-4 overflow-y-auto animate-in fade-in duration-300"
-    >
+  return (
+    <Dialog isOpen={isOpen} onClose={onClose} label={t.modalValidationTitle}>
       <div className="bg-white dark:bg-surface-card rounded-3xl shadow-2xl max-w-md w-full border border-zinc-200 dark:border-zinc-800 overflow-hidden relative transform animate-in zoom-in-95 duration-200 my-auto">
         
         {/* Header com tom de alerta sutil */}
         <div className="bg-rose-500/10 dark:bg-rose-500/15 border-b border-rose-500/20 p-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
-              <AlertCircle className="w-5 h-5" />
+              <AlertCircle className="w-5 h-5" aria-hidden="true" />
             </div>
             <div>
               <h3 className="font-display text-base font-bold text-zinc-900 dark:text-zinc-50 leading-tight">
@@ -62,10 +34,10 @@ export const ValidationModal: React.FC<ValidationModalProps> = ({ isOpen, onClos
           
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors flex items-center justify-center"
+            className="icon-button"
             aria-label="Fechar"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
 
@@ -75,7 +47,7 @@ export const ValidationModal: React.FC<ValidationModalProps> = ({ isOpen, onClos
             <ul className="space-y-2.5">
               {missingFields.map((field, index) => (
                 <li key={index} className="flex items-center gap-2.5 text-xs text-zinc-800 dark:text-zinc-200 font-medium">
-                  <div className="w-2 h-2 rounded-full bg-rose-500 shrink-0"></div>
+                  <div className="w-2 h-2 rounded-full bg-rose-500 shrink-0" aria-hidden="true"></div>
                   <span>{field}</span>
                 </li>
               ))}
@@ -87,13 +59,12 @@ export const ValidationModal: React.FC<ValidationModalProps> = ({ isOpen, onClos
         <div className="flex justify-end p-5 pt-0">
           <button
             onClick={onClose}
-            className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold text-white bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-500 rounded-xl shadow-xs transition-all"
+            className="min-h-11 w-full sm:w-auto px-5 py-2.5 text-xs font-bold text-white bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-500 rounded-xl shadow-xs transition-all"
           >
             {t.btnGotIt}
           </button>
         </div>
       </div>
-    </div>,
-    document.body
+    </Dialog>
   );
 };

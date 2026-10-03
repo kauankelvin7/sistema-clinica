@@ -1,3 +1,6 @@
+import DocumentModels from './components/DocumentModels'
+import useDocumentModels from './hooks/useDocumentModels'
+import type { DocumentModel } from './services/documentModels'
 import { useEffect, useMemo, useState } from 'react'
 import { CheckCircle, FileText, Stethoscope, User, X, XCircle } from 'lucide-react'
 import ActionButtons from './components/ActionButtons'
@@ -5,7 +8,10 @@ import CertificateForm from './components/CertificateForm'
 import DoctorForm from './components/DoctorForm'
 import DocumentPreviewModal from './components/DocumentPreviewModal'
 import DirectoryStatus from './components/DirectoryStatus'
-import Header from './components/Header'
+import AppShell from './components/AppShell'
+import ClinicalArtwork from './components/ClinicalArtwork'
+import PatientsListModal from './components/PatientsListModal'
+import DoctorsListModal from './components/DoctorsListModal'
 import Login from './components/Login'
 import PatientForm from './components/PatientForm'
 import SectionCard from './components/SectionCard'
@@ -13,7 +19,7 @@ import { ValidationModal } from './components/ValidationModal'
 import { useClinicDirectory } from './hooks/useClinicDirectory'
 import api, { checkSession, logoutUser } from './services/api'
 import { clearDirectoryCache } from './services/directoryCache'
-import type { AppFormData } from './types'
+import type { AppFormData, Medico, Paciente } from './types'
 import { getSavedLanguage, Language, TRANSLATIONS } from './utils/i18n'
 
 type AuthState = 'checking' | 'authenticated' | 'anonymous'
@@ -53,9 +59,18 @@ function App() {
   const [showValidationModal, setShowValidationModal] = useState(false)
   const [missingFields, setMissingFields] = useState<string[]>([])
   const [previewHtml, setPreviewHtml] = useState<string | null>(null)
+  const [directoryView, setDirectoryView] = useState<'patients' | 'doctors' | null>(null)
+  const [view, setView] = useState<'homologation' | 'models'>('homologation')
+  const [selectedModel, setSelectedModel] = useState<{ model: DocumentModel | null } | null>(null)
+  const [modelPreviewTitle, setModelPreviewTitle] = useState<string | null>(null)
+  const models = useDocumentModels(authState === 'authenticated')
   const directory = useClinicDirectory(authState === 'authenticated')
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.pt
+
+  useEffect(() => {
+    document.documentElement.lang = lang === 'pt' ? 'pt-BR' : lang
+  }, [lang])
 
   useEffect(() => {
     const handleLangChange = (event: Event) => {
@@ -81,6 +96,11 @@ function App() {
   useEffect(() => {
     const handleAuthLogout = () => {
       void clearDirectoryCache()
+      setDirectoryView(null)
+      setView('homologation')
+      setSelectedModel(null)
+      setModelPreviewTitle(null)
+      setPreviewHtml(null)
       setAuthState('anonymous')
     }
     window.addEventListener('auth_logout', handleAuthLogout)
@@ -119,6 +139,28 @@ function App() {
   const updateFormData = (field: keyof AppFormData, value: string | boolean) => {
     setFormData((current) => ({ ...current, [field]: value }))
     setMessage(null)
+  }
+
+  const selectPatient = (patient: Paciente) => {
+    updateFormData('nomePaciente', patient.nome_completo)
+    updateFormData('tipoDocumento', patient.tipo_doc)
+    updateFormData('numeroDocumento', patient.numero_doc)
+    updateFormData('cargo', patient.cargo || '')
+    updateFormData('empresa', patient.empresa || '')
+  }
+
+  const selectDoctor = (doctor: Medico) => {
+    updateFormData('nomeMedico', doctor.nome_completo)
+    updateFormData('tipoRegistro', doctor.tipo_crm)
+    updateFormData('numeroRegistro', doctor.crm)
+    updateFormData('ufRegistro', doctor.uf_crm)
+  }
+
+  const openModels = (model: DocumentModel | null = null) => {
+    setMessage(null)
+    setSelectedModel({ model })
+    setView('models')
+    requestAnimationFrame(() => document.getElementById('clinic-workspace')?.focus())
   }
 
   const validateFormData = (): string[] => {
@@ -173,6 +215,7 @@ function App() {
         },
       }, { timeout: 20000 })
 
+      setModelPreviewTitle(null)
       setPreviewHtml(response.data)
       directory.rememberForm(formData)
       setMessage({ type: 'success', text: 'Declaração pronta para revisão.' })
@@ -196,6 +239,11 @@ function App() {
     await logoutUser()
     await directory.clear()
     setFormData(getDefaultFormData())
+    setDirectoryView(null)
+    setView('homologation')
+    setSelectedModel(null)
+    setModelPreviewTitle(null)
+    setPreviewHtml(null)
     setAuthState('anonymous')
   }
 
@@ -204,7 +252,7 @@ function App() {
       <div className="app-surface flex items-center justify-center">
         <div className="flex flex-col items-center gap-3 text-center">
           <div className="h-9 w-9 animate-spin rounded-full border-2 border-garnet-500/20 border-t-garnet-500" />
-          <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Validando sessão segura...</p>
+          <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Verificando sessão...</p>
         </div>
       </div>
     )
@@ -222,19 +270,20 @@ function App() {
       .replace(/^_+|_+$/g, '') || 'documento'
 
   return (
-    <div className="app-surface flex min-h-[100dvh] flex-col">
-      <Header
-        onLogout={handleLogout}
-        layoutMode={layoutMode}
-        onToggleLayout={() =>
-          setLayoutMode((current) => current === 'horizontal' ? 'vertical' : 'horizontal')
-        }
-      />
-
+    <AppShell
+      onLogout={handleLogout}
+      layoutMode={layoutMode}
+      onToggleLayout={() => setLayoutMode((current) => current === 'horizontal' ? 'vertical' : 'horizontal')}
+      onOpenPatients={() => setDirectoryView('patients')}
+      onOpenDoctors={() => setDirectoryView('doctors')}
+      view={view}
+      onOpenModels={() => openModels()}
+      onHomologation={() => setView('homologation')}
+    >
       {message && (
         <div
-          role="status"
-          className="fixed right-4 top-20 z-50 flex max-w-sm items-start gap-3 rounded-xl border bg-white px-4 py-3 shadow-lg dark:bg-zinc-900"
+          role={message.type === 'error' ? 'alert' : 'status'}
+          className="clinic-toast"
         >
           {message.type === 'success' ? (
             <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
@@ -253,16 +302,17 @@ function App() {
         </div>
       )}
 
-      <main className="app-container flex-1 py-5 sm:py-6">
-        <section className="workspace-panel mb-4 sm:mb-5">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div>
+      <main id="clinic-workspace" tabIndex={-1} className="app-container clinic-main">
+        <div hidden={view !== 'homologation'}>
+        <section className="clinic-hero" aria-label={t.workspaceTitle}>
+            <ClinicalArtwork className="clinic-hero-art" />
+            <div className="clinic-hero-copy">
               <p className="workspace-kicker">{t.workspaceEyebrow}</p>
               <h2 className="workspace-title">{t.workspaceTitle}</h2>
               <p className="workspace-description">{t.workspaceDescription}</p>
             </div>
 
-            <div className="w-full max-w-md space-y-3 lg:w-[390px]">
+            <div className="clinic-status-panel">
               <DirectoryStatus
                 status={directory.status}
                 cachedAt={directory.cachedAt}
@@ -272,19 +322,25 @@ function App() {
                 onRefresh={() => void directory.refresh()}
               />
               <div>
-              <div className="mb-2 flex items-center justify-between gap-3 text-xs">
-                <span className="font-semibold text-zinc-600 dark:text-zinc-300">{t.progressLabel}</span>
-                <span className="tabular-nums font-bold text-garnet-500">{completion.percentage}%</span>
+              <div className="clinic-progress-label">
+                <span className="font-semibold">{t.progressLabel}</span>
+                <span className="tabular-nums font-bold">{completion.percentage}%</span>
               </div>
-              <div className="progress-track" aria-hidden="true">
+              <div className="progress-track" role="progressbar" aria-label={t.progressLabel} aria-valuemin={0} aria-valuemax={100} aria-valuenow={completion.percentage}>
                 <div className="progress-fill" style={{ width: completion.percentage + '%' }} />
               </div>
-              <p className="mt-2 text-right text-[11px] text-zinc-500 dark:text-zinc-400">
+              <p className="clinic-progress-count">
                 {completion.completed}/{completion.total}
               </p>
               </div>
             </div>
-          </div>
+        </section>
+
+        <section className="model-shortcuts" aria-label={t.modelsShortcuts}>
+          <div className="model-shortcuts-header"><h2>{t.modelsShortcuts}</h2><button type="button" className="btn-secondary" onClick={() => openModels()}>{t.modelsAll}</button></div>
+          {models.error && <p role="status" className="text-sm text-muted">{t.modelsLoadError}</p>}
+          <div className="model-shortcuts-list">{models.models.slice(0, 6).map((model) => <button key={model.id} type="button" className="btn-secondary" onClick={() => openModels(model)}>{model.title}</button>)}
+          {!models.loading && !models.error && models.models.length === 0 && <button type="button" className="btn-secondary" onClick={() => openModels()}>{t.modelsCreate}</button>}</div>
         </section>
 
         <div
@@ -300,7 +356,7 @@ function App() {
             description={t.patientSectionHint}
             icon={User}
           >
-            <PatientForm formData={formData} updateFormData={updateFormData} patients={directory.patients} />
+            <PatientForm formData={formData} updateFormData={updateFormData} patients={directory.patients} onLoadPatient={selectPatient} />
           </SectionCard>
 
           <SectionCard
@@ -318,12 +374,14 @@ function App() {
             description={t.doctorSectionHint}
             icon={Stethoscope}
           >
-            <DoctorForm formData={formData} updateFormData={updateFormData} doctors={directory.doctors} />
+            <DoctorForm formData={formData} updateFormData={updateFormData} doctors={directory.doctors} onLoadDoctor={selectDoctor} />
           </SectionCard>
         </div>
+        </div>
+        <div hidden={view !== 'models'}><DocumentModels models={models.models} loading={models.loading} error={models.error} selected={selectedModel} onRefresh={() => void models.refresh()} onSaved={models.onSaved} onPreview={(html, title) => { setModelPreviewTitle(title); setPreviewHtml(html) }} /></div>
       </main>
 
-      <footer className="sticky bottom-0 z-30 border-t border-zinc-200/90 bg-white/95 py-3 backdrop-blur-md dark:border-zinc-800 dark:bg-surface-page/95">
+      <footer hidden={view !== 'homologation'} className="clinic-footer">
         <div className="app-container">
           <ActionButtons
             onGenerateHTML={handleGenerateHTML}
@@ -332,6 +390,9 @@ function App() {
           />
         </div>
       </footer>
+
+      <PatientsListModal isOpen={directoryView === 'patients'} onClose={() => setDirectoryView(null)} onSelect={selectPatient} patients={directory.patients} />
+      <DoctorsListModal isOpen={directoryView === 'doctors'} onClose={() => setDirectoryView(null)} onSelect={selectDoctor} doctors={directory.doctors} />
 
       <ValidationModal
         isOpen={showValidationModal}
@@ -343,9 +404,9 @@ function App() {
         isOpen={!!previewHtml}
         onClose={() => setPreviewHtml(null)}
         htmlContent={previewHtml || ''}
-        fileName={'atestado_' + documentName + '.html'}
+        fileName={modelPreviewTitle ? modelPreviewTitle.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9_-]+/g, '_').slice(0, 120) + '.html' : 'atestado_' + documentName + '.html'}
       />
-    </div>
+    </AppShell>
   )
 }
 

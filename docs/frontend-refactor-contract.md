@@ -2,9 +2,13 @@
 
 Data: 2026-10-02. Base: `7d94a6fab5055ab2c74db069f8ed0b36256bf7ba`. Branch: `refactor/frontend-design-system`.
 
+## Ampliação autorizada
+
+Após a migração visual, o usuário solicitou modelos próprios, persistência, preenchimento/emissão, menu e atalhos. Confirmou texto livre e CPF. A exceção aos limites abaixo fica restrita a novos contratos/tabela dos modelos descritos em `docs/document-models-contract.md`; contratos de homologação, diretório, autenticação e documento original continuam preservados. Também solicitou Inter e retirada das mensagens de segurança da interface. Não foi autorizada publicação ou merge.
+
 ## Auditoria e escopo real
 
-O produto web é uma SPA React 18/TypeScript/Vite/Tailwind 3, sem router. `App.tsx` alterna sessão, login e homologação. Existem formulários de paciente, atestado e profissional; diretórios com busca/filtros/paginação; consulta externa CRM/CRO/RMS; validação; preview HTML com impressão/download/tela cheia; configurações de idioma, paleta, modo e instalação PWA. Não existem dashboard, relatórios ou histórico de atestados no frontend atual. Não serão inventados para preencher o mockup. O cliente desktop Python, backend, banco e geração de documentos ficam fora das mudanças.
+O produto web é uma SPA React 18/TypeScript/Vite/Tailwind 3, sem router. `App.tsx` alterna sessão, login e homologação. Existem formulários de paciente, atestado e profissional; diretórios com busca/filtros/paginação; consulta externa CRM/CRO/RMS; validação; preview HTML com impressão/download/tela cheia; configurações de idioma, paleta, modo e instalação PWA. Não existem dashboard, relatórios ou histórico de atestados no frontend atual. Não serão inventados para preencher o mockup. O cliente desktop Python e os contratos originais de backend, banco e geração ficam fora das mudanças; a ampliação autorizada de modelos está descrita acima.
 
 Estado: formulário em memória; preferências em localStorage; diretório/outbox em IndexedDB com TTL de 8 horas. `useClinicDirectory` sincroniza na entrada, reconexão e a cada 15 minutos visível/online. `api.ts` usa axios com cookies e encerra autenticação em 401. CID é catálogo local. PWA registra SW e possui cache de assets. Assets existentes: logos, ícones e manifest. CSS compartilhado já cobre campos, botões, cards e diretórios. Duplicações principais: estado de tema Header/Settings, opções de paleta, ciclo de vida dos overlays e diretórios.
 
@@ -24,7 +28,7 @@ Estado: formulário em memória; preferências em localStorage; diretório/outbo
 
 ## MAY CHANGE
 
-Composição visual, AppShell/sidebar para ações existentes, tokens semânticos, Manrope, glass com contraste suficiente, CSS, primitives compartilhados e acessibilidade. Nomes visuais Emerald Slate/Midnight Blue/Graphite Sand podem atualizar mantendo chaves persistidas. Amber permanece disponível. Navegação não deve descartar formulário.
+Composição visual, AppShell/sidebar para ações existentes, tokens semânticos, fonte conforme preferência autorizada (Inter), glass com contraste suficiente, CSS, primitives compartilhados e acessibilidade. Nomes visuais Emerald Slate/Midnight Blue/Graphite Sand podem atualizar mantendo chaves persistidas. Amber permanece disponível. Navegação não deve descartar formulário.
 
 ## MUST NOT CHANGE
 
@@ -43,7 +47,7 @@ API/endpoints, banco, schemas, autenticação/autorização, regras clínicas/ad
 
 Playwright como dependência de desenvolvimento, mocks HTTP em memória e dados sintéticos identificados como teste. Cobrir auth/login/remember/logout/401; diretórios/autocomplete/filtros; validação; payload/preview/download; preferências; cache/reconexão e estados error/empty/loading. Rodar contra baseline antes da migração. Matriz visual: 375/430/768/1024/1280/1440/1920, cinco paletas e claro/escuro; Chromium/Firefox/WebKit quando instaláveis. Sem acesso a banco ou credenciais reais.
 
-Infra executável: `frontend/playwright.config.ts`, `frontend/e2e/`, script `npm run test:e2e`, Vite via webServer; CI instala Chromium e roda o mesmo script. Mocks de `/api/auth/session`, `/api/auth/token`, `/api/auth/logout`, `/api/directory`, `/api/check-duplicate`, `/api/generate-html` e `/api/directory/sync` usam formas de dados de `api.ts`/`types/index.ts`. Geração deve comparar objetos enviados, contar ausência de requisição na validação e devolver HTML sintético. Print interceptado em todos frames para contar chamada sem abrir impressão real; download deve produzir arquivo HTML e nome esperado. GET diretório vazio/erro e resposta atrasada exercitam estados. IndexedDB é verificado com snapshots sintéticos; reload/rede indisponível preserva busca local e evento online permite retry. Logout/401 devem remover cache. Preferências verificadas após reload e eventos, não só aparência.
+Infra executável: `frontend/playwright.config.ts`, `frontend/e2e/`, script `npm run test:e2e`, Vite via webServer; CI instala Chromium e Firefox e roda o mesmo script. Mocks de `/api/auth/session`, `/api/auth/token`, `/api/auth/logout`, `/api/directory`, `/api/check-duplicate`, `/api/generate-html` e `/api/directory/sync` usam formas de dados de `api.ts`/`types/index.ts`. Geração deve comparar objetos enviados, contar ausência de requisição na validação e devolver HTML sintético. Print interceptado em todos frames para contar chamada sem abrir impressão real; download deve produzir arquivo HTML e nome esperado. GET diretório vazio/erro e resposta atrasada exercitam estados. IndexedDB é verificado com snapshots sintéticos; reload/rede indisponível preserva busca local e evento online permite retry. Logout/401 devem remover cache. Preferências verificadas após reload e eventos, não só aparência.
 
 Cookie real e validade da sessão pertencem ao smoke backend/TestClient: login válido, remember_me e atributos HttpOnly/SameSite, sessão autenticada e logout. Browser mocks validam encaminhamento de remember_me, não certificam segurança de cookie emitido em produção. Resultado reportará testes backend e testes browser separadamente. Gate M0: comandos baseline + smoke + E2E atuais passando, antes de qualquer edição de `src`; gates posteriores repetem os comandos disponíveis, com captura de falhas em artefatos locais e revisão independente.
 

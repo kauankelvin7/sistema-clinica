@@ -1,9 +1,9 @@
 import { Award, ChevronLeft, ChevronRight, MapPin, Search, Stethoscope, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { createPortal } from 'react-dom'
 import type { Medico } from '../types'
 import { useTranslation } from '../utils/i18n'
 import { normalizeText } from '../utils/normalize'
+import Dialog from './Dialog'
 
 interface Props {
   isOpen: boolean
@@ -29,18 +29,6 @@ export default function DoctorsListModal({ isOpen, onClose, onSelect, doctors }:
     setPage(1)
   }, [isOpen])
 
-  useEffect(() => {
-    if (!isOpen) return
-    const previous = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    const onKeyDown = (event: KeyboardEvent) => event.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.body.style.overflow = previous
-      window.removeEventListener('keydown', onKeyDown)
-    }
-  }, [isOpen, onClose])
-
   const ufs = useMemo(
     () => Array.from(new Set(doctors.map((doctor) => doctor.uf_crm))).filter(Boolean).sort(),
     [doctors]
@@ -64,14 +52,12 @@ export default function DoctorsListModal({ isOpen, onClose, onSelect, doctors }:
   const safePage = Math.min(page, totalPages)
   const visible = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
 
-  if (!isOpen) return null
-
-  return createPortal(
-    <div className="modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <section className="directory-modal" role="dialog" aria-modal="true" aria-label={t.modalDoctorsTitle}>
+  return (
+    <Dialog isOpen={isOpen} onClose={onClose} label={t.modalDoctorsTitle}>
+      <section className="directory-modal">
         <header className="directory-modal__header">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="directory-modal__hero-icon"><Stethoscope className="h-5 w-5" /></div>
+            <div className="directory-modal__hero-icon"><Stethoscope className="h-5 w-5" aria-hidden="true" /></div>
             <div className="min-w-0">
               <h2 className="directory-modal__title">{t.modalDoctorsTitle}</h2>
               <p className="directory-modal__subtitle">
@@ -80,16 +66,17 @@ export default function DoctorsListModal({ isOpen, onClose, onSelect, doctors }:
             </div>
           </div>
           <button type="button" onClick={onClose} className="icon-button" aria-label="Fechar">
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </header>
 
         <div className="directory-modal__toolbar">
           <label className="search-field sm:col-span-2">
-            <Search className="search-field__icon" />
+            <Search className="search-field__icon" aria-hidden="true" />
             <input
-              autoFocus
+              data-dialog-focus
               className="input-field pl-10"
+              aria-label={t.searchDoctorsPlaceholder}
               placeholder={t.searchDoctorsPlaceholder}
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
@@ -98,6 +85,7 @@ export default function DoctorsListModal({ isOpen, onClose, onSelect, doctors }:
 
           <select
             className="input-field"
+            aria-label="Filtrar tipo de registro"
             value={registerType}
             onChange={(event) => setRegisterType(event.target.value as typeof registerType)}
           >
@@ -107,7 +95,7 @@ export default function DoctorsListModal({ isOpen, onClose, onSelect, doctors }:
             <option value="RMS">RMS</option>
           </select>
 
-          <select className="input-field" value={uf} onChange={(event) => setUf(event.target.value)}>
+          <select aria-label="Filtrar UF" className="input-field" value={uf} onChange={(event) => setUf(event.target.value)}>
             <option value="TODAS">Todas as UFs</option>
             {ufs.map((state) => <option key={state} value={state}>{state}</option>)}
           </select>
@@ -116,7 +104,7 @@ export default function DoctorsListModal({ isOpen, onClose, onSelect, doctors }:
         <div className="directory-modal__content">
           {visible.length === 0 ? (
             <div className="empty-state">
-              <Stethoscope className="h-7 w-7" />
+              <Stethoscope className="h-7 w-7" aria-hidden="true" />
               <h3>Nenhum médico encontrado</h3>
               <p>Altere a busca ou atualize a base local.</p>
             </div>
@@ -132,14 +120,14 @@ export default function DoctorsListModal({ isOpen, onClose, onSelect, doctors }:
                   }}
                   className="directory-card"
                 >
-                  <div className="directory-card__avatar"><Stethoscope className="h-4 w-4" /></div>
+                  <div className="directory-card__avatar"><Stethoscope className="h-4 w-4" aria-hidden="true" /></div>
                   <div className="min-w-0 flex-1 text-left">
                     <h3 className="directory-card__title" title={doctor.nome_completo}>
                       {doctor.nome_completo}
                     </h3>
                     <div className="directory-card__meta">
-                      <span><Award className="h-3 w-3" /> {doctor.tipo_crm} {doctor.crm}</span>
-                      <span><MapPin className="h-3 w-3" /> {doctor.uf_crm}</span>
+                      <span><Award className="h-3 w-3" aria-hidden="true" /> {doctor.tipo_crm} {doctor.crm}</span>
+                      <span><MapPin className="h-3 w-3" aria-hidden="true" /> {doctor.uf_crm}</span>
                     </div>
                   </div>
                 </button>
@@ -154,25 +142,24 @@ export default function DoctorsListModal({ isOpen, onClose, onSelect, doctors }:
             <div className="flex gap-2">
               <button
                 type="button"
-                className="btn-secondary min-h-9 px-3 py-1.5"
+                className="btn-secondary px-3 py-1.5"
                 disabled={safePage === 1}
                 onClick={() => setPage((value) => Math.max(1, value - 1))}
               >
-                <ChevronLeft className="h-4 w-4" /> Anterior
+                <ChevronLeft className="h-4 w-4" aria-hidden="true" /> Anterior
               </button>
               <button
                 type="button"
-                className="btn-secondary min-h-9 px-3 py-1.5"
+                className="btn-secondary px-3 py-1.5"
                 disabled={safePage === totalPages}
                 onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
               >
-                Próximo <ChevronRight className="h-4 w-4" />
+                Próximo <ChevronRight className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
           </footer>
         )}
       </section>
-    </div>,
-    document.body
+    </Dialog>
   )
 }

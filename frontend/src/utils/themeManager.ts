@@ -1,4 +1,5 @@
 export type PaletteName = 'garnet' | 'emerald' | 'sapphire' | 'amber' | 'graphite'
+export type Theme = 'light' | 'dark'
 
 export interface ColorPalette {
   name: PaletteName
@@ -26,16 +27,16 @@ export const THEME_PALETTES: Record<PaletteName, ColorPalette> = {
     name: 'garnet',
     label: 'Garnet Burgundy',
     colors: {
-      50: '249 234 234',
-      100: '240 206 205',
-      200: '225 157 154',
-      300: '202 117 111',
-      400: '166 84 77',    // #a6544d (Hex 5)
-      500: '110 45 41',    // #6e2d29 (Hex 4)
-      600: '61 4 7',       // #3d0407 (Hex 3)
-      700: '35 5 3',       // #230503 (Hex 2)
-      800: '23 2 2',
-      900: '13 0 0',       // #0d0000 (Hex 1)
+      50: '250 235 236',
+      100: '245 215 217',
+      200: '230 177 182',
+      300: '211 128 137',
+      400: '172 74 86',
+      500: '122 31 42',
+      600: '102 25 35',
+      700: '80 20 28',
+      800: '56 17 23',
+      900: '38 17 20',
       950: '5 0 0',
       bgPage: '13 0 0',
       bgCard: '26 3 3',
@@ -44,18 +45,18 @@ export const THEME_PALETTES: Record<PaletteName, ColorPalette> = {
   },
   emerald: {
     name: 'emerald',
-    label: 'Emerald Health',
+    label: 'Emerald Slate',
     colors: {
       50: '236 253 245',
       100: '209 250 229',
       200: '167 243 208',
       300: '110 231 183',
-      400: '52 211 153',
-      500: '16 185 129',
-      600: '5 150 105',
-      700: '4 120 87',
-      800: '6 78 59',
-      900: '6 30 22',
+      400: '52 160 138',
+      500: '23 107 92',
+      600: '19 88 76',
+      700: '16 69 61',
+      800: '13 49 44',
+      900: '10 32 29',
       950: '2 18 13',
       bgPage: '6 30 22',
       bgCard: '10 45 34',
@@ -64,17 +65,17 @@ export const THEME_PALETTES: Record<PaletteName, ColorPalette> = {
   },
   sapphire: {
     name: 'sapphire',
-    label: 'Sapphire Clinical',
+    label: 'Midnight Blue',
     colors: {
       50: '239 246 255',
       100: '219 234 254',
       200: '191 219 254',
       300: '147 197 253',
-      400: '96 165 250',
-      500: '59 130 246',
-      600: '37 99 235',
-      700: '29 78 216',
-      800: '30 58 138',
+      400: '72 137 185',
+      500: '18 85 140',
+      600: '15 70 116',
+      700: '13 55 91',
+      800: '11 40 66',
       900: '10 20 40',
       950: '5 10 25',
       bgPage: '10 20 40',
@@ -90,12 +91,12 @@ export const THEME_PALETTES: Record<PaletteName, ColorPalette> = {
       100: '253 230 138',
       200: '252 211 77',
       300: '251 191 36',
-      400: '245 158 11',
-      500: '217 119 6',
-      600: '180 83 9',
-      700: '146 64 14',
-      800: '120 53 15',
-      900: '28 20 10',
+      400: '190 111 15',
+      500: '142 75 8',
+      600: '119 61 8',
+      700: '96 48 8',
+      800: '70 36 8',
+      900: '42 27 12',
       950: '15 10 5',
       bgPage: '28 20 10',
       bgCard: '42 30 15',
@@ -104,17 +105,17 @@ export const THEME_PALETTES: Record<PaletteName, ColorPalette> = {
   },
   graphite: {
     name: 'graphite',
-    label: 'Graphite Dark',
+    label: 'Graphite Sand',
     colors: {
       50:  '250 250 250',
       100: '244 244 245',
       200: '228 228 231',
       300: '212 212 216',
-      400: '161 161 170',
-      500: '113 113 122',
-      600: '82  82  91',
-      700: '63  63  70',
-      800: '39  39  42',
+      400: '168 143 113',
+      500: '113 91 67',
+      600: '94 75 55',
+      700: '75 59 44',
+      800: '54 42 32',
       900: '15  15  17',
       950: '7   7   8',
       bgPage: '9   9   11',
@@ -126,7 +127,7 @@ export const THEME_PALETTES: Record<PaletteName, ColorPalette> = {
 
 function rgbToHex(rgbStr: string): string {
   if (!rgbStr) return '#6e2d29'
-  const parts = rgbStr.split(' ').map(Number)
+  const parts = rgbStr.trim().split(/\s+/).map(Number)
   if (parts.length < 3 || parts.some(isNaN)) return '#6e2d29'
   const [r, g, b] = parts
   return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`
@@ -134,6 +135,7 @@ function rgbToHex(rgbStr: string): string {
 
 class ThemeManager {
   private currentPalette: PaletteName = 'garnet'
+  private currentTheme: Theme = 'light'
 
   constructor() {
     this.init()
@@ -146,6 +148,21 @@ class ThemeManager {
         this.currentPalette = saved
       }
     } catch {}
+    let savedTheme: string | null = null
+    try {
+      savedTheme = localStorage.getItem('theme')
+    } catch {}
+    if (savedTheme === 'light' || savedTheme === 'dark') {
+      this.currentTheme = savedTheme
+    } else {
+      try {
+        this.currentTheme = typeof window !== 'undefined' &&
+          window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      } catch {
+        this.currentTheme = 'light'
+      }
+    }
+    document.documentElement.classList.toggle('dark', this.currentTheme === 'dark')
     this.applyPalette(this.currentPalette)
   }
 
@@ -153,11 +170,28 @@ class ThemeManager {
     return this.currentPalette
   }
 
+  public getTheme(): Theme {
+    return this.currentTheme
+  }
+
+  public setTheme(theme: Theme) {
+    if (theme !== 'light' && theme !== 'dark') return
+    this.currentTheme = theme
+    document.documentElement.classList.toggle('dark', theme === 'dark')
+    try {
+      localStorage.setItem('theme', theme)
+    } catch {}
+    this.updateThemeColor()
+    window.dispatchEvent(new CustomEvent('theme_changed', { detail: theme }))
+  }
+
+  public toggleTheme() {
+    this.setTheme(this.currentTheme === 'dark' ? 'light' : 'dark')
+  }
+
   public updateThemeColor() {
     if (typeof document === 'undefined') return
-    const isDark =
-      document.documentElement.classList.contains('dark') ||
-      (typeof localStorage !== 'undefined' && localStorage.getItem('theme') === 'dark')
+    const isDark = this.currentTheme === 'dark'
 
     const palette = THEME_PALETTES[this.currentPalette]?.colors
     if (!palette) return
@@ -213,4 +247,3 @@ class ThemeManager {
 }
 
 export const themeManager = new ThemeManager()
-
