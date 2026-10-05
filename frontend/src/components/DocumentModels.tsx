@@ -20,7 +20,8 @@ const COPY = {
       refresh: 'Atualizar lista',
       unavailable: 'Não foi possível carregar os modelos.',
       loading: 'Carregando modelos...',
-      name: 'Título do documento',
+      modelName: 'Nome do modelo',
+      documentTitle: 'Título do documento',
       body: 'Texto do modelo',
       help: 'Use {{nome}}, {{cpf}} ou outro nome entre chaves duplas para criar campos. CPF recebe máscara; os demais campos são texto livre.',
       add: 'Adicionar campo',
@@ -48,7 +49,8 @@ const COPY = {
       refresh: 'Refresh list',
       unavailable: 'Could not load templates.',
       loading: 'Loading templates...',
-      name: 'Document title',
+      modelName: 'Template name',
+      documentTitle: 'Document title',
       body: 'Template text',
       help: 'Use {{nome}}, {{cpf}} or another name in double braces to create fields. CPF is formatted; other fields are free text.',
       add: 'Add field',
@@ -76,7 +78,8 @@ const COPY = {
       refresh: 'Actualizar lista',
       unavailable: 'No se pudieron cargar los modelos.',
       loading: 'Cargando modelos...',
-      name: 'Título del documento',
+      modelName: 'Nombre del modelo',
+      documentTitle: 'Título del documento',
       body: 'Texto del modelo',
       help: 'Use {{nome}}, {{cpf}} u otro nombre entre llaves dobles para crear campos. CPF recibe formato; los demás son texto libre.',
       add: 'Añadir campo',
@@ -109,6 +112,7 @@ export default function DocumentModels({ models, loading, error, selected, onRef
   const c = COPY[lang]
   const [mode, setMode] = useState<'list' | 'edit' | 'fill'>('list')
   const [current, setCurrent] = useState<DocumentModel | undefined>()
+  const [name, setName] = useState('')
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
   const [labels, setLabels] = useState<Record<string, string>>({})
@@ -129,7 +133,7 @@ export default function DocumentModels({ models, loading, error, selected, onRef
   useEffect(() => { headingRef.current?.focus() }, [mode])
 
   const edit = (model?: DocumentModel) => {
-    setCurrent(model); setTitle(model?.title || ''); setBody(model?.body || '')
+    setCurrent(model); setName(model?.name || model?.title || ''); setTitle(model?.title || ''); setBody(model?.body || '')
     setLabels(Object.fromEntries((model?.fields || []).map((field) => [field.key, field.label])))
     setMessage(''); setMode('edit')
   }
@@ -141,7 +145,7 @@ export default function DocumentModels({ models, loading, error, selected, onRef
     if (remainder.includes('{{') || remainder.includes('}}') || keys.length > 30) { setMessage(c.invalid); return }
     setBusy(true); setMessage('')
     try {
-      const model = await saveDocumentModel({ title, body, fields: keys.map((key) => ({ key, label: labels[key]?.trim() || (key === 'cpf' ? 'CPF' : key.replace(/_/g, ' ')) })) }, current)
+      const model = await saveDocumentModel({ name, title, body, fields: keys.map((key) => ({ key, label: labels[key]?.trim() || (key === 'cpf' ? 'CPF' : key.replace(/_/g, ' ')) })) }, current)
       if (!mounted.current) return
       onSaved(model); setCurrent(model); setMode('list')
     } catch (error) { fail(error) }
@@ -171,7 +175,7 @@ export default function DocumentModels({ models, loading, error, selected, onRef
   return (
     <section className="models-page" aria-label={c.title}>
       <header className="models-heading">
-        <div><h2 ref={headingRef} tabIndex={-1}>{mode === 'fill' ? current?.title : c.title}</h2><p>{c.intro}</p></div>
+        <div><h2 ref={headingRef} tabIndex={-1}>{mode === 'fill' ? current?.name : c.title}</h2><p>{c.intro}</p></div>
         {mode === 'list'
           ? <div className="models-card-actions"><button className="btn-secondary" type="button" onClick={onRefresh} disabled={loading}><RefreshCw className="h-4 w-4" aria-hidden="true" />{c.refresh}</button><button className="btn-primary" type="button" onClick={() => edit()}><FilePlus2 className="h-4 w-4" aria-hidden="true" />{c.new}</button></div>
           : <button className="btn-secondary" type="button" disabled={busy} onClick={() => { setMode('list'); setMessage('') }}><ArrowLeft className="h-4 w-4" aria-hidden="true" />{c.back}</button>}
@@ -182,13 +186,14 @@ export default function DocumentModels({ models, loading, error, selected, onRef
         {error && <div role="alert" className="models-error">{c.unavailable} <button type="button" className="btn-secondary" onClick={onRefresh}><RefreshCw className="h-4 w-4" aria-hidden="true" />{c.retry}</button></div>}
         {!loading && !error && models.length === 0 && <div className="models-empty"><FileText className="h-8 w-8" aria-hidden="true" /><p>{c.empty}</p></div>}
         <div className="models-grid">{models.map((model) => <article key={model.id} className="models-card">
-          <FileText className="h-5 w-5 text-brand-foreground" aria-hidden="true" /><h3>{model.title}</h3><p className="models-excerpt">{model.body}</p>
+          <FileText className="h-5 w-5 text-brand-foreground" aria-hidden="true" /><h3>{model.name}</h3><p className="models-document-title">{model.title}</p><p className="models-excerpt">{model.body}</p>
           <div className="models-card-actions"><button type="button" className="btn-primary" onClick={() => fill(model)}>{c.fill}</button><button type="button" className="btn-secondary" onClick={() => edit(model)}><Pencil className="h-4 w-4" aria-hidden="true" />{c.edit}</button></div>
         </article>)}</div>
       </>}
       {mode === 'edit' && <form onSubmit={save} className="models-editor" aria-busy={busy}>
         <fieldset disabled={busy} className="models-fields">
-          <Field id="model-title" label={c.name}><input id="model-title" required maxLength={120} className="input-field" value={title} onChange={(event) => setTitle(event.target.value)} /></Field>
+          <Field id="model-name" label={c.modelName}><input id="model-name" required maxLength={120} className="input-field" value={name} onChange={(event) => setName(event.target.value)} /></Field>
+          <Field id="model-title" label={c.documentTitle}><input id="model-title" required maxLength={120} className="input-field" value={title} onChange={(event) => setTitle(event.target.value)} /></Field>
           <Field id="model-body" label={c.body} hint={c.help}><textarea ref={textRef} id="model-body" required maxLength={20000} rows={12} className="input-field models-textarea" value={body} onChange={(event) => setBody(event.target.value)} /></Field>
           <div className="models-insert"><Field id="model-field-name" label={c.field}><input id="model-field-name" maxLength={40} className="input-field" value={fieldName} onChange={(event) => setFieldName(event.target.value)} placeholder="nome, cpf, cargo" /></Field><button type="button" className="btn-secondary" onClick={insert} disabled={!fieldName.trim()}><Plus className="h-4 w-4" aria-hidden="true" />{c.add}</button></div>
           {keys.length > 0 && <div className="models-field-labels"><h3>{c.labels}</h3>{keys.map((key) => <Field key={key} id={`model-label-${key}`} label={`{{${key}}}`}><input id={`model-label-${key}`} className="input-field" maxLength={80} value={labels[key] ?? (key === 'cpf' ? 'CPF' : key.replace(/_/g, ' '))} onChange={(event) => setLabels((previous) => ({ ...previous, [key]: event.target.value }))} /></Field>)}</div>}
