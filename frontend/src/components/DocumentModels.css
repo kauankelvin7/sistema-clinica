@@ -6,6 +6,7 @@
 .models-card, .models-editor, .models-empty { padding: 24px; border: 1px solid rgb(var(--color-border)); border-radius: 20px; background: rgb(var(--color-panel) / .94); }
 .models-card { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .models-card h3 { font-size: 18px; font-weight: 650; overflow-wrap: anywhere; }
+.models-document-title { margin-top: -8px; color: rgb(var(--color-muted)); font-size: 12px; font-weight: 600; overflow-wrap: anywhere; }
 .models-excerpt { color: rgb(var(--color-muted)); font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .models-card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
 .models-editor { max-width: 980px; }
