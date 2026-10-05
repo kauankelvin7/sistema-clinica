@@ -470,7 +470,7 @@ test('responsive overflow matrix: seven widths, five palettes, two themes', asyn
 
 test('custom models save, reload, fill CPF, emit, and preserve homologation', async ({ page }) => {
   await mockApi(page, { authenticated: true })
-  type Model = { id: string; title: string; body: string; fields: Array<{ key: string; label: string }>; revision: number; updated_at: string }
+  type Model = { id: string; name: string; title: string; body: string; fields: Array<{ key: string; label: string }>; revision: number; updated_at: string }
   const stored: Model[] = []
   let conflict = false
   let generationFails = false
@@ -485,7 +485,7 @@ test('custom models save, reload, fill CPF, emit, and preserve homologation', as
         : route.fulfill({ contentType: 'text/html', body: '<!doctype html><h1>Modelo sintético emitido</h1><p>111.222.333-44</p>' })
     }
     if (conflict && stored[0]) {
-      stored[0] = { ...stored[0], title: 'Título atualizado em outra sessão', revision: stored[0].revision + 1 }
+      stored[0] = { ...stored[0], name: 'Modelo atualizado em outra sessão', revision: stored[0].revision + 1 }
       conflict = false
     }
     const existing = stored[0]
@@ -501,16 +501,17 @@ test('custom models save, reload, fill CPF, emit, and preserve homologation', as
   await page.getByRole('navigation', { name: 'Navegação principal' }).getByRole('button', { name: 'Modelos', exact: true }).click()
   await expect(page.getByText('Você ainda não criou modelos.')).toBeVisible()
   await page.getByRole('button', { name: 'Novo modelo', exact: true }).click()
-  await page.getByLabel('Título do documento').fill('Aptidão física sintética')
+  await page.getByLabel('Nome do modelo').fill('Modelo de aptidão')
+  await page.getByLabel('Título do documento').fill('APTIDÃO FÍSICA')
   await page.getByLabel('Texto do modelo').fill('Texto de teste para {{nome}}. CPF: {{cpf}}. Cargo: {{cargo}}.')
   await page.getByLabel('{{nome}}', { exact: true }).fill('Nome')
   await page.getByLabel('{{cargo}}', { exact: true }).fill('Cargo')
   await page.getByRole('button', { name: 'Salvar modelo', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'Aptidão física sintética' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Modelo de aptidão' })).toBeVisible()
   expect(stored[0].fields).toEqual([{ key: 'nome', label: 'Nome' }, { key: 'cpf', label: 'CPF' }, { key: 'cargo', label: 'Cargo' }])
   await page.getByRole('navigation', { name: 'Navegação principal' }).getByRole('button', { name: 'Nova homologação', exact: true }).click()
   await expect(page.getByPlaceholder('Ex: Empresa XYZ Ltda')).toHaveValue('Empresa preservada ao abrir modelos')
-  await page.getByRole('region', { name: 'Seus modelos' }).getByRole('button', { name: 'Aptidão física sintética', exact: true }).click()
+  await page.getByRole('region', { name: 'Seus modelos' }).getByRole('button', { name: 'Modelo de aptidão', exact: true }).click()
   await page.getByRole('button', { name: 'Emitir documento', exact: true }).click()
   expect(emitted).toHaveLength(0)
   await page.getByLabel('Nome', { exact: true }).fill('Pessoa Sintética')
@@ -527,26 +528,29 @@ test('custom models save, reload, fill CPF, emit, and preserve homologation', as
   expect(emitted.at(-1)).toEqual({ revision: 1, values: { nome: 'Pessoa Sintética', cpf: '111.222.333-44', cargo: 'Vigilante sintético' } })
   const download = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Baixar como HTML' }).click()
-  expect((await download).suggestedFilename()).toBe('Aptidao_fisica_sintetica.html')
+  expect((await download).suggestedFilename()).toBe('APTIDAO_FISICA.html')
   await page.getByRole('button', { name: 'Fechar pré-visualização' }).click()
   await page.getByRole('button', { name: 'Voltar aos modelos' }).click()
   await page.getByRole('button', { name: 'Editar', exact: true }).click()
-  await page.getByLabel('Título do documento').fill('Título editado sintético')
+  await page.getByLabel('Nome do modelo').fill('Modelo renomeado sintético')
   conflict = true
   await page.getByRole('button', { name: 'Salvar modelo', exact: true }).click()
   await expect(page.getByRole('alert')).toContainText('outra sessão')
-  await expect(page.getByLabel('Título do documento')).toHaveValue('Título editado sintético')
+  await expect(page.getByLabel('Nome do modelo')).toHaveValue('Modelo renomeado sintético')
+  await expect(page.getByLabel('Título do documento')).toHaveValue('APTIDÃO FÍSICA')
   expect(stored[0].revision).toBe(2)
   await page.getByRole('button', { name: 'Voltar aos modelos' }).click()
   await page.getByRole('button', { name: 'Atualizar lista', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'Título atualizado em outra sessão' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Modelo atualizado em outra sessão' })).toBeVisible()
   await page.getByRole('article').getByRole('button', { name: 'Editar', exact: true }).click()
-  await expect(page.getByLabel('Título do documento')).toHaveValue('Título atualizado em outra sessão')
-  await page.getByLabel('Título do documento').fill('Título final sintético')
+  await expect(page.getByLabel('Nome do modelo')).toHaveValue('Modelo atualizado em outra sessão')
+  await expect(page.getByLabel('Título do documento')).toHaveValue('APTIDÃO FÍSICA')
+  await page.getByLabel('Nome do modelo').fill('Modelo final sintético')
   await page.getByRole('button', { name: 'Salvar modelo', exact: true }).click()
   await page.reload()
   await page.getByRole('navigation', { name: 'Navegação principal' }).getByRole('button', { name: 'Modelos', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'Título final sintético' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Modelo final sintético' })).toBeVisible()
+  expect(stored[0].title).toBe('APTIDÃO FÍSICA')
   expect(stored[0].revision).toBe(3)
 })
 
