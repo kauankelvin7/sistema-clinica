@@ -22,12 +22,17 @@ class ModelField(BaseModel):
 
 class ModelInput(BaseModel):
     model_config = ConfigDict(extra='forbid', str_strip_whitespace=True)
+    # name identifica o modelo na interface; title é o título exibido no documento.
+    # name é opcional no contrato para manter compatibilidade com clientes antigos.
+    name: str | None = Field(default=None, min_length=1, max_length=120)
     title: str = Field(min_length=1, max_length=120)
     body: str = Field(min_length=1, max_length=20000)
     fields: list[ModelField] = Field(default_factory=list, max_length=30)
 
     @model_validator(mode='after')
     def validate_fields(self):
+        if not self.name:
+            self.name = self.title
         keys = field_keys(self.body)
         supplied = [field.key for field in self.fields]
         if len(set(supplied)) != len(supplied) or set(keys) != set(supplied):

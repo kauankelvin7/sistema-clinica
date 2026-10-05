@@ -339,7 +339,7 @@ function App() {
         <section className="model-shortcuts" aria-label={t.modelsShortcuts}>
           <div className="model-shortcuts-header"><h2>{t.modelsShortcuts}</h2><button type="button" className="btn-secondary" onClick={() => openModels()}>{t.modelsAll}</button></div>
           {models.error && <p role="status" className="text-sm text-muted">{t.modelsLoadError}</p>}
-          <div className="model-shortcuts-list">{models.models.slice(0, 6).map((model) => <button key={model.id} type="button" className="btn-secondary" onClick={() => openModels(model)}>{model.title}</button>)}
+          <div className="model-shortcuts-list">{models.models.slice(0, 6).map((model) => <button key={model.id} type="button" className="btn-secondary" onClick={() => openModels(model)}>{model.name}</button>)}
           {!models.loading && !models.error && models.models.length === 0 && <button type="button" className="btn-secondary" onClick={() => openModels()}>{t.modelsCreate}</button>}</div>
         </section>
 

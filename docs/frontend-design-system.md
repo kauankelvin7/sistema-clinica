@@ -17,7 +17,7 @@ Arquivos de referência: `/home/kauankelvin/.codex/attachments/799c80ad-d07d-47e
 
 ## Composição
 
-Desktop: sidebar de aproximadamente 224 px, topbar compacta, conteúdo fluido, hero com título + ilustração + status real. Três seções do formulário quando largura útil permitir, duas ou uma antes disso. Footer de ações sticky dentro do workspace, respeitando área da sidebar e espaço para campos/foco.
+Desktop: sidebar compacta de aproximadamente 192 px, topbar compacta, conteúdo fluido, hero com título + ilustração + status real. Três seções do formulário quando largura útil permitir, duas ou uma antes disso. Footer de ações sticky dentro do workspace, respeitando área da sidebar e espaço para campos/foco.
 
 Mobile: cabeçalho compacto, navegação em drawer acessível que agrupa apenas ações existentes (homologação, modelos autorizados, pacientes, médicos, configurações e logout), formulário vertical, campos e botões com área mínima de toque 44 px, overlays com rolagem interna. Não renderizar botões sem ação ou recursos ausentes como relatórios/histórico. Opções de diretório usam os componentes e callbacks atuais; selecionar não perde os outros dados do formulário. Gerar/limpar continuam sticky e alcançáveis; reservar scroll-padding para header/footer.
 

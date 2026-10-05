@@ -140,8 +140,11 @@
   .clinic-shell .workspace-grid > :nth-child(3) { grid-column: span 2; }
 }
 @media (min-width: 1024px) {
-  .clinic-sidebar--desktop { position: fixed; inset: 0 auto 0 0; display: flex; z-index: 45; }
-  .clinic-workspace { margin-left: 224px; }
+  .clinic-sidebar--desktop { position: fixed; inset: 0 auto 0 0; display: flex; z-index: 45; width: 192px; padding: 20px 12px; }
+  .clinic-sidebar--desktop .sidebar-brand { gap: 10px; padding-bottom: 22px; }
+  .clinic-sidebar--desktop .sidebar-link { gap: 10px; padding-left: 10px; padding-right: 10px; }
+  .clinic-sidebar--desktop .sidebar-palette { padding-left: 10px; padding-right: 10px; }
+  .clinic-workspace { margin-left: 192px; }
   .topbar-identity .topbar-mobile-menu { display: none; }
   .topbar-identity .brand-mark { display: none; }
   .login-stage { display: grid; grid-template-columns: 1.15fr 1fr; }

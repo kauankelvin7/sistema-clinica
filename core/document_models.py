@@ -30,7 +30,10 @@ def _execute(connection, query, params=None):
 
 def _decode(row):
     record = dict(row._mapping if IS_PRODUCTION else row)
-    return {**json.loads(decrypt(record['payload'])), 'id': record['id'],
+    payload = json.loads(decrypt(record['payload']))
+    # Compatibilidade: modelos anteriores usavam o título do documento também como nome.
+    payload.setdefault('name', payload.get('title', ''))
+    return {**payload, 'id': record['id'],
             'revision': record['revision'], 'updated_at': record['updated_at']}
 
 

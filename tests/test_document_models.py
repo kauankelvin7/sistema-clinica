@@ -13,7 +13,7 @@ from fastapi.testclient import TestClient
 from api.index import app
 from core.document_models import get_model, render_model
 
-MODEL = {'title': 'Modelo sintético', 'body': 'Texto de {{nome}}. CPF: {{cpf}}.\nCargo: {{cargo}}.',
+MODEL = {'name': 'Modelo sintético', 'title': 'DECLARAÇÃO DE APTIDÃO', 'body': 'Texto de {{nome}}. CPF: {{cpf}}.\nCargo: {{cargo}}.',
          'fields': [{'key': 'nome', 'label': 'Nome'}, {'key': 'cpf', 'label': 'CPF'}, {'key': 'cargo', 'label': 'Cargo'}]}
 
 
@@ -54,13 +54,14 @@ def test_model_save_reload_edit_revision_and_encrypted_storage(client):
     from core.db_manager import get_db_connection
     with get_db_connection() as connection:
         stored = connection.execute('SELECT payload FROM document_models').fetchone()[0]
-        assert MODEL['title'] not in stored and MODEL['body'] not in stored
-    edited = {**MODEL, 'title': 'Título alterado', 'revision': 1}
+        assert MODEL['name'] not in stored and MODEL['title'] not in stored and MODEL['body'] not in stored
+    edited = {**MODEL, 'name': 'Modelo renomeado', 'revision': 1}
     response = client.post('/api/document-models/' + record['id'], json=edited)
     assert response.status_code == 200 and response.json()['revision'] == 2
     assert client.post('/api/document-models/' + record['id'], json=edited).status_code == 409
     response = client.get('/api/document-models')
-    assert response.json()[0]['title'] == 'Título alterado'
+    assert response.json()[0]['name'] == 'Modelo renomeado'
+    assert response.json()[0]['title'] == MODEL['title']
     assert 'no-store' in response.headers['cache-control']
     stale = client.post('/api/document-models/' + record['id'] + '/generate', json={'revision': 1, 'values': {}})
     assert stale.status_code == 409
@@ -78,6 +79,8 @@ def test_model_render_escapes_content_and_preserves_shared_layout(client):
     assert 'Médico do trabalho / Examinador' in content
     assert 'NOVA MEDICINA E SEGURANÇA DO TRABALHO LTDA.' in content
     assert '111.222.333-44' in content
+    assert MODEL['title'] in content
+    assert MODEL['name'] not in content
     assert '&lt;script&gt;' in content and '<script>' not in content
     assert '{{cargo}}' in content  # valor não dispara nova substituição
     assert '<img src=x' not in content
@@ -89,7 +92,7 @@ def test_model_render_escapes_content_and_preserves_shared_layout(client):
 
 @pytest.mark.parametrize('change', [
     {'body': 'Campo {{nome inválido}}'}, {'body': 'Sem campo', 'fields': MODEL['fields']},
-    {'fields': [*MODEL['fields'], MODEL['fields'][0]]}, {'title': '   '}, {'body': 'x' * 20001},
+    {'fields': [*MODEL['fields'], MODEL['fields'][0]]}, {'name': '   '}, {'title': '   '}, {'body': 'x' * 20001},
 ])
 def test_invalid_models_are_rejected(client, change):
     login(client)
@@ -111,13 +114,21 @@ def test_invalid_fill_is_rejected(client, values):
 
 def test_static_model_and_literal_layout_placeholders_are_not_interpreted(client):
     login(client)
-    payload = {'title': '<b>Título</b>', 'body': 'Texto fixo {logo_base64} <script>teste</script>', 'fields': []}
+    payload = {'name': 'Modelo interno', 'title': '<b>Título</b>', 'body': 'Texto fixo {logo_base64} <script>teste</script>', 'fields': []}
     model = client.post('/api/document-models', json=payload).json()
     content = render_model(model, {})
     assert '&lt;b&gt;Título&lt;/b&gt;' in content
     assert '{logo_base64}' in content
     assert '&lt;script&gt;teste&lt;/script&gt;' in content
 
+
+def test_legacy_model_without_name_uses_title_as_display_name(client):
+    from core.document_models import save_model
+    legacy = {key: value for key, value in MODEL.items() if key != 'name'}
+    saved = save_model(legacy)
+    reloaded = get_model(saved['id'])
+    assert reloaded['name'] == legacy['title']
+    assert reloaded['title'] == legacy['title']
 
 def test_models_do_not_save_with_temporary_key(client, monkeypatch):
     login(client)
