@@ -2,13 +2,14 @@ import api from './api'
 
 export interface DocumentModel {
   id: string
+  name: string
   title: string
   body: string
   fields: Array<{ key: string; label: string }>
   revision: number
   updated_at: string
 }
-export type ModelDraft = Pick<DocumentModel, 'title' | 'body' | 'fields'>
+export type ModelDraft = Pick<DocumentModel, 'name' | 'title' | 'body' | 'fields'>
 
 export const fetchDocumentModels = async (signal?: AbortSignal): Promise<DocumentModel[]> => (await api.get('/api/document-models', { signal })).data
 export const saveDocumentModel = async (draft: ModelDraft, current?: DocumentModel): Promise<DocumentModel> => (
