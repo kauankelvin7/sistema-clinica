@@ -24,7 +24,7 @@ class ModelInput(BaseModel):
     model_config = ConfigDict(extra='forbid', str_strip_whitespace=True)
     # name identifica o modelo na interface; title é o título exibido no documento.
     # name é opcional no contrato para manter compatibilidade com clientes antigos.
-    name: str | None = Field(default=None, max_length=120)
+    name: str | None = Field(default=None, min_length=1, max_length=120)
     title: str = Field(min_length=1, max_length=120)
     body: str = Field(min_length=1, max_length=20000)
     fields: list[ModelField] = Field(default_factory=list, max_length=30)
