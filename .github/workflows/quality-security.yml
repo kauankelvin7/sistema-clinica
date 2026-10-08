@@ -40,7 +40,10 @@ jobs:
       - run: npm run test:e2e
       - name: Capture clinical visual signature
         if: github.event_name == 'pull_request'
-        run: CAPTURE_SIGNATURE=1 PREVIEW_OUTPUT_DIR="${{ runner.temp }}/clinic-signature-preview" npx playwright test --project=chromium --grep 'visual identity: synthetic mobile and desktop screenshot evidence'
+        run: |
+          CAPTURE_SIGNATURE=1 PREVIEW_OUTPUT_DIR="${{ runner.temp }}/clinic-signature-preview" \
+            npx playwright test --project=chromium \
+            --grep 'visual identity: synthetic mobile and desktop screenshot evidence'
       - name: Upload synthetic visual evidence
         if: always() && github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
