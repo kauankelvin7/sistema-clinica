@@ -9,6 +9,12 @@ on:
       - refactor/cache-performance-v3
       - refactor/frontend-design-system
 
+# A PR revision supersedes older runs. Avoid concurrent browser matrices
+# competing for resources and producing stale or timing-sensitive results.
+concurrency:
+  group: quality-security-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 

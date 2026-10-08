@@ -1,23 +1,22 @@
 import { useUiCopy } from '../utils/uiCopy'
 import { maskCPF } from '../utils/maskCPF'
 import { AlertCircle, ChevronDown, Eye, Users } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
-import { checkDuplicate } from '../services/api'
+import { useMemo, useState } from 'react'
+import { normalizeText } from '../utils/normalize'
 import type { PatientFormProps } from '../types'
 import { useTranslation } from '../utils/i18n'
 import AutocompleteInput from './AutocompleteInput'
 import Field from './Field'
 import PatientsListModal from './PatientsListModal'
 
-function onlyDigits(value: string) {
-  return value.replace(/\D/g, '')
+function documentKey(value: string) {
+  return normalizeText(value).replace(/[^a-z0-9]/g, '')
 }
 
 export default function PatientForm({ formData, updateFormData, patients, onLoadPatient }: PatientFormProps) {
   const c = useUiCopy()
   const { t } = useTranslation()
   const [showListModal, setShowListModal] = useState(false)
-  const [isDuplicate, setIsDuplicate] = useState(false)
 
   const patientOptions = useMemo(() => patients.map((patient) => ({
     label: patient.nome_completo,
@@ -25,31 +24,21 @@ export default function PatientForm({ formData, updateFormData, patients, onLoad
     data: patient,
   })), [patients])
 
-  useEffect(() => {
-    const normalizedDocument = onlyDigits(formData.numeroDocumento)
-    if (normalizedDocument.length < 11) {
-      setIsDuplicate(false)
-      return
-    }
-
-    const company = formData.empresa.trim().toLocaleLowerCase('pt-BR')
-    const localMatch = patients.some((patient) =>
-      onlyDigits(patient.numero_doc) === normalizedDocument &&
-      (!company || patient.empresa.trim().toLocaleLowerCase('pt-BR') === company)
+  // Selecting an existing record is normal. Warn only on conflicting entered details.
+  const conflictingPatient = useMemo(() => {
+    const key = documentKey(formData.numeroDocumento)
+    if (key.length < (formData.tipoDocumento === 'CPF' ? 11 : 3)) return false
+    const matching = patients.filter((patient) =>
+      patient.tipo_doc === formData.tipoDocumento && documentKey(patient.numero_doc) === key
     )
-
-    if (localMatch || patients.length > 0) {
-      setIsDuplicate(localMatch)
-      return
-    }
-
-    const timer = setTimeout(() => {
-      void checkDuplicate('paciente', formData.numeroDocumento, formData.empresa)
-        .then(setIsDuplicate)
-        .catch(() => setIsDuplicate(false))
-    }, 350)
-    return () => clearTimeout(timer)
-  }, [formData.numeroDocumento, formData.empresa, patients])
+    if (matching.length === 0) return false
+    const name = normalizeText(formData.nomePaciente.trim())
+    // A patient may legitimately work for another company. A different
+    // employer alone is not an identity conflict for the same document.
+    return Boolean(name) && !matching.some((patient) =>
+      name === normalizeText(patient.nome_completo.trim())
+    )
+  }, [formData.tipoDocumento, formData.numeroDocumento, formData.nomePaciente, patients])
 
   const handleDocumentoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const nextValue = formData.tipoDocumento === 'CPF'
@@ -119,7 +108,7 @@ export default function PatientForm({ formData, updateFormData, patients, onLoad
           <input
             id="patient-document"
             type="text"
-            className={`input-field ${isDuplicate ? 'border-amber-500/80 bg-amber-500/5 focus:border-amber-500' : ''}`}
+            className={`input-field ${conflictingPatient ? 'border-amber-500/80 bg-amber-500/5 focus:border-amber-500' : ''}`}
             placeholder={formData.tipoDocumento === 'CPF' ? t.docNumberPlaceholder : c.rg}
             value={formData.numeroDocumento}
             onChange={handleDocumentoChange}
@@ -128,10 +117,10 @@ export default function PatientForm({ formData, updateFormData, patients, onLoad
             autoComplete="off"
           />
         </div>
-        {isDuplicate && (
+        {conflictingPatient && (
           <div className="field-warning">
             <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            <span>{c.duplicatePatient}</span>
+            <span>{c.patientMismatch}</span>
           </div>
         )}
       </Field>
