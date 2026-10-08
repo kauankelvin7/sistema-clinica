@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sistema-clinica-v7-shell';
+const CACHE_NAME = 'sistema-clinica-v8-shell';
 const SHELL_ASSETS = [
   '/',
   '/index.html',
