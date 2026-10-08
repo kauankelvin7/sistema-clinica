@@ -24,7 +24,7 @@ button { touch-action: manipulation; }
   font-family: var(--clinic-display);
 }
 .clinic-shell {
-  --sidebar-width: 228px;
+  --sidebar-width: 205px;
   min-height: 100dvh;
   background:
     radial-gradient(ellipse 52% 43% at 4% 8%, rgb(var(--color-primary-300) / .18), transparent 82%),
