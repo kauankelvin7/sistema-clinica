@@ -14,6 +14,10 @@ interface AutocompleteInputProps {
   value: string
   onChange: (value: string) => void
   onSelect?: (option: AutocompleteOption) => void
+  /** Complete a single verified local match on Tab/Enter or when leaving the field. */
+  autoSelectUnique?: boolean
+  /** Prevent silent replacement when existing identifying fields disagree. */
+  canAutoSelect?: (option: AutocompleteOption) => boolean
   /** Chamada com o termo de busca atual. Quando definida, desativa o filtro local
    *  e usa as `options` diretamente (já filtradas pelo servidor via debounce externo). */
   onSearch?: (query: string) => void
@@ -32,6 +36,8 @@ export default function AutocompleteInput({
   value,
   onChange,
   onSelect,
+  autoSelectUnique = false,
+  canAutoSelect,
   onSearch,
   placeholder,
   options,
@@ -48,6 +54,20 @@ export default function AutocompleteInput({
   const wrapperRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const dismissedValue = useRef<string | null>(null)
+
+  const uniqueMatch = (): AutocompleteOption | null => {
+    if (!autoSelectUnique || onSearch || isLoading || disabled) return null
+    const query = normalizeText(value).trim().replace(/\s+/g, ' ')
+    if (query.length < 5) return null
+    // Examine the FULL local directory: a listbox limited to 8 records
+    // cannot establish that a name is unique.
+    const matches = options.filter((option) =>
+      normalizeText(option.label).trim().replace(/\s+/g, ' ').startsWith(query)
+    )
+    if (matches.length !== 1) return null
+    const candidate = matches[0]
+    return canAutoSelect && !canAutoSelect(candidate) ? null : candidate
+  }
 
   useEffect(() => {
     setSelectedIndex(-1)
@@ -107,6 +127,17 @@ export default function AutocompleteInput({
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Tab keeps native focus navigation; Enter must not submit the parent
+    // form while accepting a directory record.
+    if ((e.key === 'Tab' || e.key === 'Enter') && selectedIndex < 0 &&
+        dismissedValue.current !== value) {
+      const match = uniqueMatch()
+      if (match) {
+        if (e.key === 'Enter') e.preventDefault()
+        handleSelect(match)
+        return
+      }
+    }
     if (!showSuggestions) {
       if (e.key === 'ArrowDown' && value.length >= minChars) { e.preventDefault(); dismissedValue.current = null; setShowSuggestions(true); setSelectedIndex(0) }
       return
@@ -139,7 +170,13 @@ export default function AutocompleteInput({
           value={value}
           onChange={handleChange}
           onFocus={(event) => { dismissedValue.current = null; setShowSuggestions(event.currentTarget.value.length >= minChars) }}
-          onBlur={() => { dismissedValue.current = value; setShowSuggestions(false) }}
+          onBlur={() => {
+            // No extra click required for a single unambiguous match.
+            // Never auto-select after Escape or if identifiers conflict.
+            const match = dismissedValue.current === value ? null : uniqueMatch()
+            if (match) handleSelect(match)
+            else { dismissedValue.current = value; setShowSuggestions(false) }
+          }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
@@ -175,6 +212,11 @@ export default function AutocompleteInput({
                 {c.noResults}
               </div>
             ) : null}
+            {showSuggestions && !isLoading && uniqueMatch() && (
+              <p className="px-3 pb-2 text-[11px] text-muted" aria-hidden="true">
+                {c.autoCompleteHint}
+              </p>
+            )}
             <div
               id={`${id}-listbox`}
               role="listbox"
