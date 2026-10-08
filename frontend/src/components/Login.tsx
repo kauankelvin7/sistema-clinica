@@ -1,6 +1,6 @@
 import BrandMark from './BrandMark'
 import { useState } from 'react'
-import { ArrowRight, Eye, EyeOff, Loader2, Lock, Settings, Stethoscope, User as UserIcon } from 'lucide-react'
+import { ArrowRight, Eye, EyeOff, Loader2, Lock, Settings, User as UserIcon } from 'lucide-react'
 import { loginUser } from '../services/api'
 import { useTranslation } from '../utils/i18n'
 import ClinicalArtwork from './ClinicalArtwork'
@@ -56,8 +56,8 @@ export default function Login({ onLoginSuccess }: LoginProps) {
               <div className="login-brand-lockup">
                 <div className="brand-mark"><BrandMark /></div>
                 <div className="login-brand-label">
-                  <strong>{t.headerTitle}</strong>
-                  <span>{t.headerSubtitle}</span>
+                  <strong>NOVA</strong>
+                  <span>{t.headerTitle}</span>
                 </div>
               </div>
             </div>
@@ -90,10 +90,6 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                 {loading ? <><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /><span>{t.btnAuthenticating}</span></> : <><span>{t.btnEnterSystem}</span><ArrowRight className="h-4 w-4" aria-hidden="true" /></>}
               </button>
             </form>
-            <div className="login-module">
-              <Stethoscope aria-hidden="true" />
-              <div><strong>{t.headerTitle}</strong><p>{t.loginModuleHint}</p></div>
-            </div>
           </div>
         </main>
       </div>
