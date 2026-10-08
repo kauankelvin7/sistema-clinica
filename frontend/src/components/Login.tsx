@@ -48,7 +48,6 @@ export default function Login({ onLoginSuccess }: LoginProps) {
           <h1>{t.loginHeroTitle}</h1>
           <p className="login-story-description">{t.loginAppSubtitle}</p>
           <ClinicalArtwork className="login-art" />
-          <p className="login-brand-caption">{t.loginAppTitle}</p>
         </aside>
         <main className="login-panel">
           <div className="login-panel-inner">
@@ -56,7 +55,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
               <div className="login-brand-lockup">
                 <div className="brand-mark"><BrandMark /></div>
                 <div className="login-brand-label">
-                  <strong>NOVA</strong>
+                  <strong>Sistema Clínica</strong>
                   <span>{t.headerTitle}</span>
                 </div>
               </div>
