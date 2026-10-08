@@ -33,12 +33,12 @@ export default function PatientForm({ formData, updateFormData, patients, onLoad
     )
     if (matching.length === 0) return false
     const name = normalizeText(formData.nomePaciente.trim())
-    const company = normalizeText(formData.empresa.trim())
-    return !matching.some((patient) =>
-      (!name || name === normalizeText(patient.nome_completo.trim())) &&
-      (!company || company === normalizeText((patient.empresa || '').trim()))
+    // A patient may legitimately work for another company. A different
+    // employer alone is not an identity conflict for the same document.
+    return Boolean(name) && !matching.some((patient) =>
+      name === normalizeText(patient.nome_completo.trim())
     )
-  }, [formData.tipoDocumento, formData.numeroDocumento, formData.nomePaciente, formData.empresa, patients])
+  }, [formData.tipoDocumento, formData.numeroDocumento, formData.nomePaciente, patients])
 
   const handleDocumentoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const nextValue = formData.tipoDocumento === 'CPF'
