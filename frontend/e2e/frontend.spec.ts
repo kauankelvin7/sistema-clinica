@@ -229,6 +229,7 @@ test('validation, exact generation payload, preview, single auto-print, and down
   await page.getByPlaceholder('Dr. Nome do Médico').fill('Profissional Sintético Payload')
   await page.getByPlaceholder('123456').fill('98765')
   await page.getByRole('button', { name: 'Gerar e imprimir' }).click()
+  await expect.poll(() => api.generateRequests.length, { message: 'The valid form must reach /api/generate-html' }).toBe(1)
 
   await expect(page.getByText('Pré-visualização do Documento')).toBeVisible()
   await expect(page.frameLocator('iframe[title="Pré-visualização do documento"]').getByRole('heading', { name: 'Prévia sintética' })).toBeVisible()
@@ -947,6 +948,7 @@ test('fastflow: one automatic print per identical HTML generation, rerender, loa
   await page.goto('/')
   await fillCriticalForm(page)
   await page.getByRole('button', { name: 'Gerar e imprimir' }).click()
+  await expect.poll(() => state.generateRequests.length, { message: 'Generation must reach the API before automatic print' }).toBe(1)
   await expect.poll(() => page.evaluate(() => (window as Window & { __printCalls?: number }).__printCalls)).toBe(1)
   await page.locator('iframe').evaluate((frame) => { frame.dispatchEvent(new Event('load')); frame.dispatchEvent(new Event('load')) })
   await page.getByRole('button', { name: 'Tela cheia', exact: true }).click()
