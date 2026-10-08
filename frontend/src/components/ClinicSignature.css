@@ -1,0 +1,649 @@
+/*
+ * CLINIC SIGNATURE / v3 — clinical utility meets Leve's "glass and paper".
+ * Visual hierarchy is new; document generation and printing are untouched.
+ * Glass belongs to chrome; clinical values always live on opaque paper.
+ */
+:root {
+  --clinic-type: 'DM Sans', 'Segoe UI', sans-serif;
+  --clinic-display: 'Nunito', 'DM Sans', sans-serif;
+  --clinic-curve-xl: 26px;
+  --clinic-curve-lg: 19px;
+  --clinic-hairline: rgb(var(--color-border) / .72);
+  --clinic-elevation: 0 16px 36px rgb(22 34 37 / .085), 0 2px 7px rgb(22 34 37 / .035);
+  --clinic-glass: rgb(var(--color-panel) / .82);
+}
+body, input, button, select, textarea {
+  font-family: var(--clinic-type);
+}
+button { touch-action: manipulation; }
+:where(.clinic-shell, .login-page) {
+  font-family: var(--clinic-type);
+  font-feature-settings: 'ss01' on;
+}
+:where(.clinic-shell, .login-page) :is(h1, h2, h3, .clinic-wordmark, .login-brand-label strong) {
+  font-family: var(--clinic-display);
+}
+.clinic-shell {
+  --sidebar-width: 205px;
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse 52% 43% at 4% 8%, rgb(var(--color-primary-300) / .18), transparent 82%),
+    radial-gradient(ellipse 53% 56% at 102% 13%, rgb(var(--color-primary-400) / .105), transparent 80%),
+    radial-gradient(ellipse 58% 54% at 56% 108%, rgb(var(--color-primary-100) / .2), transparent 79%),
+    linear-gradient(148deg, rgb(var(--color-bg-page)), rgb(var(--color-panel) / .72) 52%, rgb(var(--color-bg-page)));
+}
+.clinic-shell::before {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 61% 26%, rgb(var(--color-primary-200) / .045), transparent 44%);
+}
+.dark .clinic-shell {
+  background:
+    radial-gradient(ellipse 63% 50% at -8% -8%, rgb(var(--color-primary-500) / .18), transparent 77%),
+    radial-gradient(ellipse 62% 56% at 109% 104%, rgb(var(--color-primary-600) / .09), transparent 80%),
+    rgb(var(--color-bg-page));
+}
+.clinic-shell--collapsed { --sidebar-width: 94px; }
+
+/* True floating navigation — visibly distinct from the previous full-height strip. */
+@media (min-width: 1024px) {
+  .clinic-sidebar--desktop {
+    inset: 16px auto 16px 16px;
+    height: calc(100dvh - 32px);
+    width: calc(var(--sidebar-width) - 28px);
+    border-radius: 25px;
+    border: 1px solid rgb(255 255 255 / .18);
+    box-shadow: 0 25px 55px rgb(15 25 22 / .18), inset 0 1px 0 rgb(255 255 255 / .16);
+    padding: 18px 12px 15px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  .clinic-workspace { margin-left: var(--sidebar-width); }
+  .clinic-topbar { margin: 15px 16px 0 0; }
+}
+.clinic-sidebar {
+  background:
+    radial-gradient(ellipse 126% 70% at 12% -12%, rgb(var(--color-primary-300) / .3), transparent 63%),
+    linear-gradient(157deg, #263b37, #142925 55%, #0c1b1b);
+  color: #f7fbf7;
+}
+.sidebar-brand {
+  gap: 10px;
+  align-items: center;
+  padding: 4px 5px 25px;
+  border-bottom: 1px solid rgb(255 255 255 / .14);
+  margin-bottom: 19px;
+}
+.sidebar-brand .brand-mark {
+  width: 43px;
+  height: 43px;
+  border-radius: 14px;
+  background: rgb(255 255 255 / .11);
+  color: #fff;
+  border: 1px solid rgb(255 255 255 / .22);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .18);
+}
+.sidebar-brand .clinic-wordmark {
+  font-size: 21px;
+  line-height: 1.03;
+  letter-spacing: -.075em;
+  font-weight: 850;
+  color: #fff;
+}
+.sidebar-brand .clinic-wordmark span { color: #a9dfc8; }
+.sidebar-brand p { font-size: 10px; color: #c7dbd3; max-width: 120px; line-height: 1.5; }
+.sidebar-nav-label {
+  padding: 0 11px;
+  margin-bottom: 9px;
+  color: #bbd0ca;
+  font-size: 11px;
+  font-weight: 550;
+}
+.sidebar-nav { gap: 4px; }
+.sidebar-link {
+  min-height: 47px;
+  border-radius: 14px;
+  padding: 11px 12px;
+  font-size: 12.5px;
+  font-weight: 580;
+  color: rgb(244 251 246 / .79);
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+.sidebar-link svg { width: 19px; height: 19px; }
+.sidebar-link:hover { background: rgb(255 255 255 / .1); color: #fff; }
+.clinic-sidebar .sidebar-link[aria-current] {
+  color: #13302a;
+  background: #effbf4;
+  border-color: rgb(255 255 255 / .66);
+  box-shadow: 0 6px 14px rgb(5 20 16 / .12), inset 0 1px 0 #fff;
+  font-weight: 770;
+}
+.sidebar-bottom { padding-top: 12px; border-top: 1px solid rgb(255 255 255 / .14); }
+.sidebar-bottom .sidebar-link { border: 0; border-radius: 14px; padding-block: 10px; }
+.sidebar-palette { border-top: 1px solid rgb(255 255 255 / .12); margin-top: 8px; padding-top: 16px; }
+.sidebar-palette svg { color: #b0dfc9; }
+.clinic-shell--collapsed .clinic-sidebar--desktop .sidebar-nav-label { display: none; }
+.clinic-shell--collapsed .clinic-sidebar--desktop .sidebar-brand { padding-inline: 0; }
+.clinic-shell--collapsed .clinic-sidebar--desktop .sidebar-link { margin-inline: auto; width: 48px; }
+
+/* Floating pane header: useful controls rather than a stock app toolbar. */
+.clinic-topbar {
+  top: 12px;
+  border: 1px solid rgb(var(--color-border) / .72);
+  border-radius: 21px;
+  background: rgb(var(--color-panel) / .77);
+  -webkit-backdrop-filter: blur(24px) saturate(135%);
+  backdrop-filter: blur(24px) saturate(135%);
+  box-shadow: 0 10px 32px rgb(20 35 29 / .065), inset 0 1px 0 rgb(255 255 255 / .35);
+}
+.topbar-inner { min-height: 65px; gap: 12px; }
+.topbar-identity strong, .topbar-identity h1 {
+  font-family: var(--clinic-display);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -.038em;
+}
+.topbar-identity p { font-size: 11px; }
+.topbar-actions { gap: 9px; }
+.topbar-actions .icon-button, .topbar-actions .btn-secondary {
+  border-radius: 13px;
+  background: rgb(var(--color-panel) / .52);
+  box-shadow: none;
+}
+.topbar-actions .icon-button:hover { background: rgb(var(--color-primary-500) / .09); }
+
+/* Editorial work surface: a recognizable hero with integrated progress. */
+.clinic-main { padding-top: 21px; padding-bottom: 26px; }
+.clinic-hero {
+  position: relative;
+  padding: 20px 24px;
+  min-height: 112px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  border: 1px solid rgb(var(--color-border) / .62);
+  border-radius: 25px;
+  background:
+    radial-gradient(ellipse 69% 130% at 98% -20%, rgb(var(--color-primary-300) / .13), transparent 83%),
+    linear-gradient(112deg, rgb(var(--color-panel) / .98), rgb(var(--color-panel) / .84));
+  box-shadow: var(--clinic-elevation);
+}
+.clinic-hero::after {
+  content: '';
+  position: absolute;
+  inset: auto 24px 0;
+  height: 3px;
+  border-radius: 9px 9px 0 0;
+  background: linear-gradient(90deg, rgb(var(--color-primary-500) / .65), transparent 78%);
+}
+.clinic-hero-copy .workspace-title {
+  font-family: var(--clinic-display);
+  font-size: clamp(25px, 2.3vw, 36px);
+  font-weight: 850;
+  letter-spacing: -.055em;
+  line-height: 1.13;
+  text-wrap: balance;
+}
+.clinic-hero-copy .workspace-description {
+  font-size: 12.5px;
+  line-height: 1.65;
+  margin-top: 7px;
+  max-width: 410px;
+}
+.clinic-status-panel { gap: 12px; }
+.clinic-status-panel .directory-status {
+  border-radius: 15px;
+  min-height: 56px;
+  background: rgb(var(--color-panel) / .7);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .17);
+}
+.clinic-status-panel > :last-child {
+  flex: 0 0 95px;
+  min-width: 86px;
+  border-left: 1px solid rgb(var(--color-border) / .65);
+  padding-left: 13px;
+}
+.clinic-progress-label { font-size: 11px; }
+.clinic-progress-label span:last-child { font-family: var(--clinic-display); font-size: 17px; font-weight: 800; }
+.clinic-status-panel .progress-track { height: 5px; border-radius: 8px; }
+.clinic-status-panel .progress-fill { border-radius: 8px; background: rgb(var(--color-brand)); }
+.clinic-progress-count { font-variant-numeric: tabular-nums; }
+
+/* Clinical paper: cards have a hierarchy, not generic repeated SaaS tiles. */
+.clinic-shell .workspace-grid { gap: 19px; }
+.clinic-shell .section-shell {
+  overflow: hidden;
+  border-radius: 23px;
+  border: 1px solid rgb(var(--color-border) / .74);
+  background: rgb(var(--color-panel));
+  box-shadow: 0 14px 34px rgb(21 38 33 / .06), 0 2px 6px rgb(21 38 33 / .025);
+}
+.clinic-shell .section-shell:nth-child(2) {
+  border-color: rgb(var(--color-primary-500) / .31);
+  box-shadow: 0 16px 37px rgb(var(--color-primary-500) / .065), 0 2px 8px rgb(21 38 33 / .025);
+}
+.clinic-shell .section-shell__header {
+  align-items: center;
+  gap: 13px;
+  padding: 19px 19px 18px;
+  background: linear-gradient(110deg, rgb(var(--color-primary-500) / .065), rgb(var(--color-panel)));
+  border-bottom-color: rgb(var(--color-border) / .66);
+}
+.clinic-shell .section-shell__icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 14px;
+  color: rgb(var(--color-brand-foreground));
+  border: 1px solid rgb(var(--color-primary-500) / .14);
+  background: rgb(var(--color-primary-500) / .10);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .2);
+}
+.clinic-shell .section-shell__icon svg { width: 21px; height: 21px; }
+.clinic-shell .section-shell__title {
+  color: rgb(var(--color-ink));
+  font-size: 16.5px;
+  line-height: 1.27;
+  font-weight: 850;
+  letter-spacing: -.035em;
+}
+.clinic-shell .section-shell__description {
+  color: rgb(var(--color-muted));
+  font-size: 11.5px;
+  line-height: 1.55;
+  margin-top: 4px;
+}
+.clinic-shell .section-shell__body { padding: 19px 20px 22px; }
+.clinic-shell .field-label {
+  color: rgb(var(--color-ink));
+  font-family: var(--clinic-type);
+  font-weight: 730;
+  font-size: 12.5px;
+  letter-spacing: -.008em;
+  margin-bottom: 7px;
+}
+.clinic-shell .field-hint { font-size: 11px; line-height: 1.4; }
+.clinic-shell .input-field,
+.login-page .input-field,
+.settings-panel .input-field,
+.models-page .input-field {
+  min-height: 48px;
+  border-radius: 13px;
+  border: 1px solid rgb(var(--color-border) / .87);
+  background: rgb(var(--color-input));
+  color: rgb(var(--color-ink));
+  padding: 11px 13px;
+  font-size: 13.5px;
+  font-weight: 550;
+  box-shadow: 0 1px 2px rgb(15 30 30 / .025);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.clinic-shell .input-field:focus,
+.login-page .input-field:focus,
+.models-page .input-field:focus {
+  border-color: rgb(var(--color-primary-400));
+  box-shadow: 0 0 0 3px rgb(var(--color-primary-400) / .13);
+}
+.clinic-shell .input-field::placeholder, .login-page .input-field::placeholder {
+  color: rgb(var(--color-muted) / .76);
+  font-weight: 440;
+}
+.clinic-shell .record-picker {
+  min-height: 60px;
+  padding: 10px 12px;
+  background: rgb(var(--color-primary-500) / .048);
+  border: 1px dashed rgb(var(--color-primary-500) / .3);
+  border-radius: 15px;
+  box-shadow: none;
+}
+.clinic-shell .record-picker:hover {
+  border-style: solid;
+  background: rgb(var(--color-primary-500) / .078);
+}
+.clinic-shell .record-picker__icon {
+  width: 35px; height: 35px;
+  background: rgb(var(--color-panel));
+  color: rgb(var(--color-brand-foreground));
+  border-radius: 11px;
+}
+.clinic-shell .record-picker__eyebrow {
+  font-size: 12px;
+  font-weight: 750;
+  color: rgb(var(--color-ink));
+}
+.clinic-shell .record-picker__value {
+  margin-top: 1px;
+  font-size: 11px;
+  font-weight: 540;
+  color: rgb(var(--color-muted));
+}
+
+/* Buttons are consciously different: decisive primary, quiet secondary. */
+.clinic-shell .btn-primary,
+.login-page .btn-primary,
+.models-page .btn-primary,
+.settings-panel .btn-primary,
+.document-preview .btn-primary {
+  min-height: 49px;
+  border: 1px solid rgb(255 255 255 / .13);
+  border-radius: 14px;
+  padding-inline: 20px;
+  color: #fff;
+  font-family: var(--clinic-type);
+  font-size: 13px;
+  font-weight: 790;
+  letter-spacing: -.01em;
+  background: linear-gradient(122deg, #22564a 0%, #15382f 72%, #12382f 100%);
+  box-shadow: 0 10px 20px rgb(17 67 52 / .18), inset 0 1px 0 rgb(255 255 255 / .2);
+}
+.clinic-shell .btn-primary:hover,
+.login-page .btn-primary:hover,
+.models-page .btn-primary:hover,
+.settings-panel .btn-primary:hover,
+.document-preview .btn-primary:hover {
+  background: linear-gradient(122deg, #2d6d5c, #17473a);
+  box-shadow: 0 12px 22px rgb(17 67 52 / .21);
+}
+.clinic-shell .btn-secondary,
+.login-page .btn-secondary,
+.models-page .btn-secondary,
+.settings-panel .btn-secondary,
+.document-preview .btn-secondary,
+.clinic-shell .btn-tertiary {
+  min-height: 46px;
+  border-radius: 13px;
+  border-color: rgb(var(--color-border) / .78);
+  background: rgb(var(--color-panel) / .88);
+  color: rgb(var(--color-ink));
+  font-family: var(--clinic-type);
+  font-size: 12.5px;
+  font-weight: 740;
+  box-shadow: 0 2px 6px rgb(20 39 32 / .035);
+}
+.clinic-shell .btn-secondary:hover,
+.login-page .btn-secondary:hover,
+.models-page .btn-secondary:hover,
+.settings-panel .btn-secondary:hover {
+  background: rgb(var(--color-primary-500) / .075);
+  border-color: rgb(var(--color-primary-500) / .24);
+}
+.clinic-shell .icon-button,
+.login-page .icon-button,
+.models-page .icon-button,
+.settings-panel .icon-button {
+  border-radius: 13px;
+  border-color: rgb(var(--color-border) / .76);
+  background: rgb(var(--color-panel) / .89);
+}
+.clinic-footer {
+  bottom: 12px;
+  margin: 6px 16px 0;
+  padding: 11px 14px;
+  border: 1px solid rgb(var(--color-border) / .73);
+  border-radius: 18px;
+  background: rgb(var(--color-panel) / .85);
+  -webkit-backdrop-filter: blur(20px) saturate(125%);
+  backdrop-filter: blur(20px) saturate(125%);
+  box-shadow: 0 16px 39px rgb(21 38 33 / .1), inset 0 1px 0 rgb(255 255 255 / .25);
+}
+.clinic-footer .btn-primary { min-width: 185px; }
+.clinic-footer .btn-secondary { box-shadow: none; }
+
+/* Modal and template surfaces share the same visual grammar. */
+.clinic-shell .model-shortcuts {
+  margin-bottom: 18px;
+  padding: 9px 16px;
+  border-radius: 16px;
+  background: rgb(var(--color-panel) / .75);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+.models-heading h2 {
+  font-family: var(--clinic-display);
+  font-size: clamp(27px, 2.6vw, 35px);
+  font-weight: 850;
+  letter-spacing: -.06em;
+}
+.models-grid { gap: 17px; }
+.models-card, .models-editor, .models-empty {
+  border-radius: 21px;
+  border-color: rgb(var(--color-border) / .77);
+  background: rgb(var(--color-panel));
+  box-shadow: var(--clinic-elevation);
+}
+.models-card { gap: 13px; }
+.models-card h3 { font-family: var(--clinic-display); font-size: 19px; font-weight: 830; }
+.settings-panel, .directory-modal, .document-preview {
+  border-radius: 22px;
+  box-shadow: 0 24px 70px rgb(15 32 26 / .2);
+}
+.settings-panel > header, .preview-toolbar {
+  background: rgb(var(--color-panel) / .89);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+.app-dialog::backdrop { background: rgb(11 24 21 / .66); -webkit-backdrop-filter: blur(9px); backdrop-filter: blur(9px); }
+.clinic-toast {
+  border-radius: 15px;
+  background: rgb(var(--color-panel) / .91);
+  box-shadow: 0 8px 23px rgb(15 35 28 / .065);
+}
+
+/* A new login composition: dark deep-green editorial story + floating glass paper. */
+.login-page {
+  min-height: 100dvh;
+  padding: clamp(14px, 3.4vw, 42px);
+  background:
+    radial-gradient(ellipse 65% 53% at 100% -8%, rgb(var(--color-primary-400) / .19), transparent 74%),
+    radial-gradient(ellipse 60% 45% at -9% 107%, rgb(75 149 123 / .17), transparent 72%),
+    linear-gradient(145deg, #eef4ef, #f7faf7 56%, #e9f2ec);
+}
+.dark .login-page {
+  background:
+    radial-gradient(ellipse 70% 70% at 98% 0%, rgb(var(--color-primary-500) / .16), transparent 70%),
+    linear-gradient(145deg, #101a19, #192623 65%, #111b1a);
+}
+.login-stage {
+  max-width: 1190px;
+  min-height: min(745px, calc(100dvh - 80px));
+  border-radius: 31px;
+  border: 1px solid rgb(255 255 255 / .58);
+  background: rgb(var(--color-panel) / .48);
+  box-shadow: 0 30px 90px rgb(15 38 30 / .14), 0 6px 15px rgb(15 38 30 / .045);
+}
+.login-story {
+  isolation: isolate;
+  padding: clamp(32px, 4vw, 60px);
+  background: linear-gradient(148deg, #2c5448, #14382e 55%, #10251f);
+}
+.login-story::before,
+.dark .login-story::before {
+  background:
+    radial-gradient(ellipse 96% 68% at 100% -8%, rgb(179 227 195 / .28), transparent 77%),
+    radial-gradient(ellipse 73% 77% at -17% 93%, rgb(68 122 103 / .53), transparent 83%);
+}
+.login-story::after {
+  width: 390px; height: 390px; top: auto; right: -170px; bottom: -210px;
+  border: 1px solid rgb(255 255 255 / .17);
+  background: rgb(255 255 255 / .025);
+  box-shadow: -80px -45px 0 22px rgb(255 255 255 / .035), -135px -70px 0 75px rgb(255 255 255 / .03);
+  filter: none;
+}
+.login-story-brand {
+  width: 58px; height: 58px;
+  border-radius: 17px;
+  background: rgb(255 255 255 / .14);
+  border: 1px solid rgb(255 255 255 / .22);
+}
+.login-story-eyebrow {
+  margin-bottom: 12px;
+  font-size: 13px;
+  letter-spacing: .01em;
+  color: rgb(237 255 245 / .78);
+}
+.login-story h1 {
+  margin-top: 6px;
+  font-family: var(--clinic-display);
+  font-weight: 900;
+  line-height: 1.065;
+  letter-spacing: -.065em;
+  font-size: clamp(38px, 4.1vw, 58px);
+  max-width: 480px;
+  color: #fff;
+}
+.login-story-description {
+  font-size: 14px;
+  max-width: 320px;
+  line-height: 1.8;
+  color: rgb(246 255 248 / .8);
+}
+.login-art {
+  width: min(445px, 89%);
+  right: -42px;
+  bottom: -8px;
+  opacity: .65;
+}
+.login-panel {
+  align-self: center;
+  width: auto;
+  background: rgb(var(--color-panel) / .89);
+  -webkit-backdrop-filter: blur(32px) saturate(132%);
+  backdrop-filter: blur(32px) saturate(132%);
+}
+.login-panel-inner { max-width: 400px; }
+.login-brand-lockup { gap: 13px; }
+.login-brand-label strong {
+  font-family: var(--clinic-display);
+  font-weight: 900;
+  font-size: 24px;
+  letter-spacing: -.065em;
+}
+.login-brand-label span { font-size: 11px; }
+.login-heading {
+  font-family: var(--clinic-display);
+  font-size: clamp(28px, 2.7vw, 36px);
+  letter-spacing: -.055em;
+  font-weight: 900;
+}
+.login-intro { font-size: 13px; line-height: 1.7; }
+.login-form { gap: 17px; }
+.login-form .btn-primary { min-height: 53px; font-size: 14px; border-radius: 15px; }
+.login-form .btn-primary svg:last-child { margin-left: auto; }
+.login-form .field-label { font-weight: 750; font-size: 13px; }
+.login-remember { font-size: 12.5px; }
+
+/* Preserve large hit targets, readability, app settings and low-memory fallback. */
+@media (min-width: 1024px) {
+  .login-stage { grid-template-columns: minmax(0, 1.12fr) minmax(0, .88fr); }
+  .login-story { min-height: 660px; }
+  .login-panel { margin: 24px; padding: clamp(34px, 4vw, 55px) 28px; border-radius: 24px; border: 1px solid rgb(255 255 255 / .42); box-shadow: 0 12px 35px rgb(10 35 26 / .04); }
+}
+@media (max-width: 1023px) {
+  .clinic-topbar { margin: 12px 12px 0; }
+  .clinic-footer { margin-inline: 11px; bottom: 9px; }
+  .clinic-shell .clinic-hero { margin-inline: 0; }
+  .navigation-dialog .clinic-sidebar { min-height: 100%; border-radius: 0 23px 23px 0; }
+  .login-stage { min-height: auto; }
+  .login-panel { border-radius: 22px; margin: 0; }
+}
+@media (max-width: 639px) {
+  .clinic-main { padding-top: 14px; }
+  .clinic-hero { padding: 18px; gap: 14px; border-radius: 19px; }
+  .clinic-hero-copy .workspace-title { font-size: 26px; }
+  .clinic-hero-copy .workspace-description { display: block; font-size: 11.5px; line-height: 1.45; }
+  .clinic-status-panel { gap: 9px; }
+  .clinic-status-panel .directory-status { min-width: 0; flex: 1; }
+  .clinic-status-panel > :last-child { flex: 0 0 82px; min-width: 82px; padding-left: 9px; }
+  .clinic-shell .section-shell { border-radius: 19px; }
+  .clinic-shell .section-shell__header { padding: 15px 17px; }
+  .clinic-shell .section-shell__body { padding: 17px; }
+  .clinic-shell .workspace-grid { gap: 14px; }
+  .clinic-footer { border-radius: 17px; padding: 9px 10px; }
+  .clinic-footer .btn-primary { min-width: 0; }
+  .login-page { padding: 11px; }
+  .login-stage { margin: 0 auto; border-radius: 24px; }
+  .login-panel { padding: 30px 23px; background: rgb(var(--color-panel) / .93); }
+  .login-heading { font-size: 31px; }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .clinic-topbar, .clinic-footer, .login-panel,
+  .clinic-status-panel .directory-status, .clinic-shell .model-shortcuts {
+    background: rgb(var(--color-panel));
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+html[data-transparency='reduced'] .clinic-topbar,
+html[data-transparency='reduced'] .clinic-footer,
+html[data-transparency='reduced'] .login-panel {
+  background: rgb(var(--color-panel));
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .clinic-topbar, .clinic-footer, .login-panel { background: rgb(var(--color-panel)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .clinic-shell :is(.btn-primary,.btn-secondary,.icon-button,.sidebar-link),
+  .login-page :is(.btn-primary,.btn-secondary,.icon-button) { transition: none; }
+}
+
+/* Structural visual landmarks for the three genuine form phases. */
+.clinic-shell .section-shell__step {
+  display: grid;
+  place-items: center;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgb(var(--color-border) / .73);
+  border-radius: 11px;
+  color: rgb(var(--color-muted));
+  background: rgb(var(--color-panel) / .68);
+  font-family: var(--clinic-display);
+  font-weight: 850;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.clinic-shell .section-shell:nth-child(2) .section-shell__step {
+  background: rgb(var(--color-primary-500) / .11);
+  border-color: rgb(var(--color-primary-500) / .22);
+  color: rgb(var(--color-brand-foreground));
+}
+.clinic-shell .clinical-action-primary {
+  min-height: 51px;
+  gap: 11px;
+  padding-inline: 19px 13px;
+}
+.clinic-shell .clinical-action-primary .clinical-action-arrow {
+  flex: 0 0 25px;
+  width: 25px;
+  height: 25px;
+  margin-left: 6px;
+  padding: 6px;
+  background: rgb(255 255 255 / .17);
+  border-radius: 8px;
+}
+.login-story-signature {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid rgb(255 255 255 / .26);
+  max-width: 340px;
+  color: rgb(255 255 255 / .83);
+  font-family: var(--clinic-type);
+  font-size: 12px;
+  font-weight: 620;
+  letter-spacing: .015em;
+}
+@media (min-width: 1024px) {
+  .login-story {
+    display: flex;
+    flex-direction: column;
+  }
+}
+@media (max-width: 639px) {
+  .clinic-shell .section-shell__step { width: 29px; height: 29px; flex-basis: 29px; }
+  .clinic-shell .clinical-action-primary { justify-content: center; }
+}
+@media (forced-colors: active) {
+  .clinic-sidebar .sidebar-link[aria-current],
+  .clinic-shell .btn-primary { border: 2px solid Highlight; color: ButtonText; background: ButtonFace; }
+}
