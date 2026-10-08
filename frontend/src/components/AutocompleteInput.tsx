@@ -54,6 +54,7 @@ export default function AutocompleteInput({
   const wrapperRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const dismissedValue = useRef<string | null>(null)
+  const committedQuery = useRef<string | null>(null)
 
   const uniqueMatch = (): AutocompleteOption | null => {
     if (!autoSelectUnique || onSearch || isLoading || disabled) return null
@@ -111,6 +112,7 @@ export default function AutocompleteInput({
     const newValue = e.target.value
     setSelectedIndex(-1)
     dismissedValue.current = null
+    committedQuery.current = null
     setShowSuggestions(newValue.length >= minChars)
     onChange(newValue)
     if (onSearch) {
@@ -119,6 +121,7 @@ export default function AutocompleteInput({
   }
 
   const handleSelect = (option: AutocompleteOption) => {
+    committedQuery.current = value
     dismissedValue.current = option.label
     onChange(option.label)
     onSelect?.(option)
@@ -129,6 +132,11 @@ export default function AutocompleteInput({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     // Tab keeps native focus navigation; Enter must not submit the parent
     // form while accepting a directory record.
+    if (e.key === 'Tab' && showSuggestions && selectedIndex >= 0 &&
+        selectedIndex < filteredOptions.length) {
+      handleSelect(filteredOptions[selectedIndex])
+      return
+    }
     if ((e.key === 'Tab' || e.key === 'Enter') && selectedIndex < 0 &&
         dismissedValue.current !== value) {
       const match = uniqueMatch()
@@ -173,7 +181,8 @@ export default function AutocompleteInput({
           onBlur={() => {
             // No extra click required for a single unambiguous match.
             // Never auto-select after Escape or if identifiers conflict.
-            const match = dismissedValue.current === value ? null : uniqueMatch()
+            const match = dismissedValue.current === value || committedQuery.current === value
+              ? null : uniqueMatch()
             if (match) handleSelect(match)
             else { dismissedValue.current = value; setShowSuggestions(false) }
           }}
