@@ -46,6 +46,8 @@ export default function AutocompleteInput({
   const [filteredOptions, setFilteredOptions] = useState<AutocompleteOption[]>([])
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const wrapperRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const dismissedValue = useRef<string | null>(null)
 
   useEffect(() => {
     setSelectedIndex(-1)
@@ -67,6 +69,10 @@ export default function AutocompleteInput({
       setShowSuggestions(false)
       setFilteredOptions([])
     }
+    // Results may arrive after focus; keep suggestions open until explicitly dismissed.
+    if (value.length >= minChars && inputRef.current === document.activeElement && dismissedValue.current !== value) {
+      setShowSuggestions(true)
+    }
   }, [value, options, minChars, onSearch, isLoading])
 
   // Fechar ao clicar fora
@@ -84,6 +90,7 @@ export default function AutocompleteInput({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value
     setSelectedIndex(-1)
+    dismissedValue.current = null
     setShowSuggestions(newValue.length >= minChars)
     onChange(newValue)
     if (onSearch) {
@@ -92,6 +99,7 @@ export default function AutocompleteInput({
   }
 
   const handleSelect = (option: AutocompleteOption) => {
+    dismissedValue.current = option.label
     onChange(option.label)
     onSelect?.(option)
     setShowSuggestions(false)
@@ -100,7 +108,7 @@ export default function AutocompleteInput({
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!showSuggestions) {
-      if (e.key === 'ArrowDown' && value.length >= minChars) { e.preventDefault(); setShowSuggestions(true); setSelectedIndex(0) }
+      if (e.key === 'ArrowDown' && value.length >= minChars) { e.preventDefault(); dismissedValue.current = null; setShowSuggestions(true); setSelectedIndex(0) }
       return
     }
 
@@ -115,6 +123,7 @@ export default function AutocompleteInput({
       handleSelect(filteredOptions[selectedIndex])
     } else if (e.key === 'Escape') {
       e.preventDefault()
+      dismissedValue.current = value
       setShowSuggestions(false)
       setSelectedIndex(-1)
     }
@@ -124,12 +133,13 @@ export default function AutocompleteInput({
     <div ref={wrapperRef} className="relative">
       <div className="relative">
         <input
+          ref={inputRef}
           id={id}
           type="text"
           value={value}
           onChange={handleChange}
-          onFocus={() => setShowSuggestions(value.length >= minChars)}
-          onBlur={() => setShowSuggestions(false)}
+          onFocus={(event) => { dismissedValue.current = null; setShowSuggestions(event.currentTarget.value.length >= minChars) }}
+          onBlur={() => { dismissedValue.current = value; setShowSuggestions(false) }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
