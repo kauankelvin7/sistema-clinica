@@ -44,6 +44,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
       <div className="login-stage">
         <aside className="login-story">
           <div className="login-story-brand"><BrandMark className="h-8 w-8" /></div>
+          <div className="login-story-eyebrow">{t.loginAppTitle}</div>
           <h1>{t.loginHeroTitle}</h1>
           <p className="login-story-description">{t.loginAppSubtitle}</p>
           <ClinicalArtwork className="login-art" />
@@ -52,7 +53,13 @@ export default function Login({ onLoginSuccess }: LoginProps) {
         <main className="login-panel">
           <div className="login-panel-inner">
             <div className="login-panel-top">
-              <div className="brand-mark"><BrandMark /></div>
+              <div className="login-brand-lockup">
+                <div className="brand-mark"><BrandMark /></div>
+                <div className="login-brand-label">
+                  <strong>{t.headerTitle}</strong>
+                  <span>{t.headerSubtitle}</span>
+                </div>
+              </div>
             </div>
             <h2 className="login-heading">{t.loginHeading}</h2>
             <p className="login-intro">{t.loginIntro}</p>
