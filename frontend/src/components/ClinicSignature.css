@@ -586,3 +586,64 @@ html[data-transparency='reduced'] .login-panel {
   .clinic-shell :is(.btn-primary,.btn-secondary,.icon-button,.sidebar-link),
   .login-page :is(.btn-primary,.btn-secondary,.icon-button) { transition: none; }
 }
+
+/* Structural visual landmarks for the three genuine form phases. */
+.clinic-shell .section-shell__step {
+  display: grid;
+  place-items: center;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgb(var(--color-border) / .73);
+  border-radius: 11px;
+  color: rgb(var(--color-muted));
+  background: rgb(var(--color-panel) / .68);
+  font-family: var(--clinic-display);
+  font-weight: 850;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.clinic-shell .section-shell:nth-child(2) .section-shell__step {
+  background: rgb(var(--color-primary-500) / .11);
+  border-color: rgb(var(--color-primary-500) / .22);
+  color: rgb(var(--color-brand-foreground));
+}
+.clinic-shell .clinical-action-primary {
+  min-height: 51px;
+  gap: 11px;
+  padding-inline: 19px 13px;
+}
+.clinic-shell .clinical-action-primary .clinical-action-arrow {
+  flex: 0 0 25px;
+  width: 25px;
+  height: 25px;
+  margin-left: 6px;
+  padding: 6px;
+  background: rgb(255 255 255 / .17);
+  border-radius: 8px;
+}
+.login-story-signature {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid rgb(255 255 255 / .26);
+  max-width: 340px;
+  color: rgb(255 255 255 / .83);
+  font-family: var(--clinic-type);
+  font-size: 12px;
+  font-weight: 620;
+  letter-spacing: .015em;
+}
+@media (min-width: 1024px) {
+  .login-story {
+    display: flex;
+    flex-direction: column;
+  }
+}
+@media (max-width: 639px) {
+  .clinic-shell .section-shell__step { width: 29px; height: 29px; flex-basis: 29px; }
+  .clinic-shell .clinical-action-primary { justify-content: center; }
+}
+@media (forced-colors: active) {
+  .clinic-sidebar .sidebar-link[aria-current],
+  .clinic-shell .btn-primary { border: 2px solid Highlight; color: ButtonText; background: ButtonFace; }
+}
