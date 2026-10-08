@@ -134,7 +134,7 @@ function rgbToHex(rgbStr: string): string {
 }
 
 class ThemeManager {
-  private currentPalette: PaletteName = 'garnet'
+  private currentPalette: PaletteName = 'emerald'
   private currentTheme: Theme = 'light'
 
   constructor() {
