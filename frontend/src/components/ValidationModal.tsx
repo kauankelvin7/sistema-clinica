@@ -1,3 +1,4 @@
+import { useUiCopy } from '../utils/uiCopy'
 import React from 'react';
 import { AlertCircle, X } from 'lucide-react';
 import { useTranslation } from '../utils/i18n';
@@ -10,6 +11,7 @@ interface ValidationModalProps {
 }
 
 export const ValidationModal: React.FC<ValidationModalProps> = ({ isOpen, onClose, missingFields }) => {
+  const c = useUiCopy()
   const { t } = useTranslation();
 
   return (
@@ -35,7 +37,7 @@ export const ValidationModal: React.FC<ValidationModalProps> = ({ isOpen, onClos
           <button
             onClick={onClose}
             className="icon-button"
-            aria-label="Fechar"
+            aria-label={c.close}
           >
             <X className="w-4 h-4" aria-hidden="true" />
           </button>

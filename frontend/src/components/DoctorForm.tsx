@@ -1,3 +1,4 @@
+import { useUiCopy } from '../utils/uiCopy'
 import { AlertCircle, ChevronDown, ExternalLink, Eye, Stethoscope } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { checkDuplicate } from '../services/api'
@@ -18,6 +19,7 @@ function normalizeRegister(value: string) {
 }
 
 export default function DoctorForm({ formData, updateFormData, doctors, onLoadDoctor }: DoctorFormProps) {
+  const c = useUiCopy()
   const { t } = useTranslation()
   const [showListModal, setShowListModal] = useState(false)
   const [isConsultaModalOpen, setIsConsultaModalOpen] = useState(false)
@@ -74,14 +76,14 @@ export default function DoctorForm({ formData, updateFormData, doctors, onLoadDo
           <div className="min-w-0 flex-1 text-left">
             <p className="record-picker__eyebrow">{t.searchDoctorsBtn}</p>
             <p className="record-picker__value">
-              {doctors.length > 0 ? `${doctors.length} ${t.modalDoctorsTitle}` : 'Cache aguardando sincronização'}
+              {doctors.length > 0 ? `${doctors.length} ${t.modalDoctorsTitle}` : c.waiting}
             </p>
           </div>
           <Eye className="h-4 w-4 shrink-0 text-zinc-400 transition-colors group-hover:text-garnet-500" aria-hidden="true" />
         </div>
       </button>
 
-      <Field id="doctor-name" label={t.doctorNameLabel} hint={doctors.length > 0 ? 'Busca local instantânea · funciona mesmo durante reconexão do banco' : undefined}>
+      <Field id="doctor-name" label={t.doctorNameLabel} hint={doctors.length > 0 ? c.localSearch : undefined}>
         <AutocompleteInput
           id="doctor-name"
           value={formData.nomeMedico}
@@ -100,7 +102,7 @@ export default function DoctorForm({ formData, updateFormData, doctors, onLoadDo
             <select
               id="doctor-register-type"
               className="input-field appearance-none pr-8"
-              aria-label={`${t.regNumberLabel} - tipo`}
+              aria-label={`${t.regNumberLabel} - ${c.type}`}
               value={formData.tipoRegistro}
               onChange={(event) => updateFormData('tipoRegistro', event.target.value)}
             >
@@ -138,7 +140,7 @@ export default function DoctorForm({ formData, updateFormData, doctors, onLoadDo
         {isDuplicate && (
           <div className="field-warning">
             <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            <span>Este {formData.tipoRegistro} já está cadastrado no sistema.</span>
+            <span>{c.duplicateRegister}</span>
           </div>
         )}
 

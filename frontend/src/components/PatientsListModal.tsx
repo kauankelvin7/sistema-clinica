@@ -1,3 +1,4 @@
+import { useUiCopy } from '../utils/uiCopy'
 import { Briefcase, Building2, ChevronLeft, ChevronRight, Hash, Search, User, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type { Paciente } from '../types'
@@ -15,6 +16,7 @@ interface Props {
 const PAGE_SIZE = 30
 
 export default function PatientsListModal({ isOpen, onClose, onSelect, patients }: Props) {
+  const c = useUiCopy()
   const { t } = useTranslation()
   const [searchTerm, setSearchTerm] = useState('')
   const [documentType, setDocumentType] = useState<'TODOS' | 'CPF' | 'RG'>('TODOS')
@@ -57,11 +59,11 @@ export default function PatientsListModal({ isOpen, onClose, onSelect, patients 
             <div className="min-w-0">
               <h2 className="directory-modal__title">{t.modalPatientsTitle}</h2>
               <p className="directory-modal__subtitle">
-                {filtered.length} encontrados · {patients.length} disponíveis no cache local
+                {filtered.length} {c.found} · {patients.length} {c.available}
               </p>
             </div>
           </div>
-          <button type="button" onClick={onClose} className="icon-button" aria-label="Fechar">
+          <button type="button" onClick={onClose} className="icon-button" aria-label={c.close}>
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </header>
@@ -79,7 +81,7 @@ export default function PatientsListModal({ isOpen, onClose, onSelect, patients 
             />
           </label>
           <select
-            aria-label="Filtrar tipo de documento"
+            aria-label={c.filterDoc}
             className="input-field max-w-48"
             value={documentType}
             onChange={(event) => setDocumentType(event.target.value as typeof documentType)}
@@ -94,8 +96,8 @@ export default function PatientsListModal({ isOpen, onClose, onSelect, patients 
           {visible.length === 0 ? (
             <div className="empty-state">
               <User className="h-7 w-7" aria-hidden="true" />
-              <h3>Nenhum paciente encontrado</h3>
-              <p>Altere a busca ou atualize a base local.</p>
+              <h3>{t.noPatientsFound}</h3>
+              <p>{c.emptyHelp}</p>
             </div>
           ) : (
             <div className="directory-grid">
@@ -128,7 +130,7 @@ export default function PatientsListModal({ isOpen, onClose, onSelect, patients 
 
         {totalPages > 1 && (
           <footer className="directory-modal__footer">
-            <span>Página {safePage} de {totalPages}</span>
+            <span>{c.page} {safePage} {c.of} {totalPages}</span>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -136,7 +138,7 @@ export default function PatientsListModal({ isOpen, onClose, onSelect, patients 
                 disabled={safePage === 1}
                 onClick={() => setPage((value) => Math.max(1, value - 1))}
               >
-                <ChevronLeft className="h-4 w-4" aria-hidden="true" /> Anterior
+                <ChevronLeft className="h-4 w-4" aria-hidden="true" /> {c.previous}
               </button>
               <button
                 type="button"
@@ -144,7 +146,7 @@ export default function PatientsListModal({ isOpen, onClose, onSelect, patients 
                 disabled={safePage === totalPages}
                 onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
               >
-                Próximo <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                {c.next} <ChevronRight className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
           </footer>

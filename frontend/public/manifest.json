@@ -2,20 +2,20 @@
   "short_name": "NOVA Medicina",
   "name": "NOVA - Sistema de Homologação de Atestados",
   "description": "Sistema de Homologação e Validação de Atestados Médicos Digitais",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "icons": [
     {
-      "src": "/icons/icon-192x192.png?v=2.0.1",
+      "src": "/icons/icon-192x192.png?v=2.0.2",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/icons/icon-512x512.png?v=2.0.1",
+      "src": "/icons/icon-512x512.png?v=2.0.2",
       "type": "image/png",
       "sizes": "512x512"
     },
     {
-      "src": "/icons/maskable-icon-512x512.png?v=2.0.1",
+      "src": "/icons/maskable-icon-512x512.png?v=2.0.2",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
@@ -23,7 +23,7 @@
   ],
   "start_url": "/",
   "background_color": "#0d0000",
-  "theme_color": "#6e2d29",
+  "theme_color": "#7a1f2a",
   "display": "standalone",
   "orientation": "any",
   "categories": ["medical", "business", "productivity"],
@@ -33,7 +33,7 @@
       "short_name": "Homologação",
       "description": "Gerar Atestado Médico",
       "url": "/",
-      "icons": [{ "src": "/icons/icon-192x192.png?v=2.0.1", "sizes": "192x192" }]
+      "icons": [{ "src": "/icons/icon-192x192.png?v=2.0.2", "sizes": "192x192" }]
     }
   ]
 }

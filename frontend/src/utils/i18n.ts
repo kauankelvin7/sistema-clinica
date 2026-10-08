@@ -167,7 +167,7 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     doctorDataTitle: 'Dados do Médico',
     workspaceEyebrow: 'Fluxo de homologação',
     workspaceTitle: 'Nova homologação médica',
-    workspaceDescription: 'Preencha os dados essenciais em três etapas e revise a declaração antes de imprimir.',
+    workspaceDescription: 'Preencha paciente, atestado e médico. A declaração será impressa automaticamente.',
     progressLabel: 'Preenchimento do formulário',
     patientSectionHint: 'Identificação e vínculo profissional',
     certificateSectionHint: 'Período, CID e previsão de retorno',
@@ -210,7 +210,7 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     consultCroCfo: 'Consultar CRO no Portal do CFO',
 
     // Action Buttons
-    btnGenerateHTML: 'Gerar Declaração',
+    btnGenerateHTML: 'Gerar e imprimir',
     btnGenerating: 'Gerando...',
     btnClearForm: 'Limpar Formulário',
     msgFormCleared: 'Formulário limpo.',
@@ -290,7 +290,7 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     doctorDataTitle: 'Doctor Information',
     workspaceEyebrow: 'Homologation workflow',
     workspaceTitle: 'New medical homologation',
-    workspaceDescription: 'Complete the essential information in three steps and review the declaration before printing.',
+    workspaceDescription: 'Complete patient, certificate and doctor. The document will print automatically.',
     progressLabel: 'Form completion',
     patientSectionHint: 'Identification and employment details',
     certificateSectionHint: 'Period, ICD code and expected return',
@@ -333,7 +333,7 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     consultCroCfo: 'Check CRO on CFO Portal',
 
     // Action Buttons
-    btnGenerateHTML: 'Generate Declaration',
+    btnGenerateHTML: 'Generate and print',
     btnGenerating: 'Generating...',
     btnClearForm: 'Clear Form',
     msgFormCleared: 'Form cleared.',
@@ -413,7 +413,7 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     doctorDataTitle: 'Datos del Médico',
     workspaceEyebrow: 'Flujo de homologación',
     workspaceTitle: 'Nueva homologación médica',
-    workspaceDescription: 'Complete los datos esenciales en tres etapas y revise la declaración antes de imprimir.',
+    workspaceDescription: 'Complete paciente, certificado y médico. El documento se imprimirá automáticamente.',
     progressLabel: 'Progreso del formulario',
     patientSectionHint: 'Identificación y vínculo profesional',
     certificateSectionHint: 'Período, CIE y regreso previsto',
@@ -456,7 +456,7 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     consultCroCfo: 'Consultar CRO en Portal CFO',
 
     // Action Buttons
-    btnGenerateHTML: 'Generar Declaración',
+    btnGenerateHTML: 'Generar e imprimir',
     btnGenerating: 'Generando...',
     btnClearForm: 'Limpiar Formulario',
     msgFormCleared: '¡Formulario limpiado con éxito!',

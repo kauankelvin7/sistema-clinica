@@ -1,177 +1,70 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { X, Printer, Download, Maximize2, Minimize2 } from 'lucide-react'
 import Dialog from './Dialog'
+import { useTranslation } from '../utils/i18n'
 
-interface DocumentPreviewModalProps {
+interface Props {
   isOpen: boolean
   onClose: () => void
   htmlContent: string
   fileName?: string
+  /** Owned by the generation, survives preview rerenders/remounts; contains no PII. */
+  generation: { attempted: boolean }
 }
-
-export default function DocumentPreviewModal({
-  isOpen,
-  onClose,
-  htmlContent,
-  fileName = 'documento.html',
-}: DocumentPreviewModalProps) {
+export default function DocumentPreviewModal({ isOpen, onClose, htmlContent, fileName = 'documento.html', generation }: Props) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [iframeLoaded, setIframeLoaded] = useState(false)
-  const autoPrintFiredRef = useRef(false)
-
-  // Resetar estado de carregamento e auto-impressão quando o modal abre
-  useEffect(() => {
-    if (isOpen) {
-      setIframeLoaded(false)
-      autoPrintFiredRef.current = false
-    }
-  }, [isOpen, htmlContent])
-
+  const [printBlocked, setPrintBlocked] = useState(false)
+  const active = useRef({ isOpen, generation })
+  active.current = { isOpen, generation }
+  const { lang } = useTranslation()
+  const c = {
+    pt: { title: 'Pré-visualização do Documento', frame: 'Pré-visualização do documento', print: 'Imprimir', printLabel: 'Imprimir documento', download: 'Baixar', downloadLabel: 'Baixar como HTML', full: 'Tela cheia', exit: 'Sair de tela cheia', close: 'Fechar pré-visualização', loading: 'Carregando documento...', blocked: 'Se a impressão não abriu, use Imprimir documento.' },
+    en: { title: 'Document preview', frame: 'Document preview', print: 'Print', printLabel: 'Print document', download: 'Download', downloadLabel: 'Download as HTML', full: 'Fullscreen', exit: 'Exit fullscreen', close: 'Close preview', loading: 'Loading document...', blocked: 'If printing did not open, use Print document.' },
+    es: { title: 'Vista previa del documento', frame: 'Vista previa del documento', print: 'Imprimir', printLabel: 'Imprimir documento', download: 'Descargar', downloadLabel: 'Descargar como HTML', full: 'Pantalla completa', exit: 'Salir de pantalla completa', close: 'Cerrar vista previa', loading: 'Cargando documento...', blocked: 'Si no se abrió la impresión, use Imprimir documento.' },
+  }[lang]
+  useEffect(() => { if (isOpen) { setIframeLoaded(false); setPrintBlocked(false) } }, [isOpen, generation])
   const handlePrint = useCallback(() => {
-    const iframe = iframeRef.current
-    if (iframe?.contentWindow) {
-      try {
-        iframe.contentWindow.focus()
-        iframe.contentWindow.print()
-      } catch (err) {
-        console.error('Erro ao acionar a impressão do iframe:', err)
-        window.print()
-      }
+    const frame = iframeRef.current
+    if (!frame?.contentWindow) return
+    try { frame.contentWindow.focus(); frame.contentWindow.print() }
+    catch {
+      setPrintBlocked(true)
+      try { window.print() } catch { /* Existing fallback; manual action remains, never loop. */ }
     }
   }, [])
-
-  // Callback chamado quando o iframe termina de carregar o HTML via srcDoc
-  const handleIframeLoad = useCallback(() => {
+  const handleIframeLoad = useCallback(async () => {
+    const frame = iframeRef.current
+    const loadedDocument = frame?.contentDocument
+    if (!loadedDocument) return
+    try { await loadedDocument.fonts?.ready } catch { /* onLoad confirms readiness. */ }
+    if (!frame?.isConnected || !active.current.isOpen || active.current.generation !== generation) return
     setIframeLoaded(true)
-    if (!autoPrintFiredRef.current) {
-      autoPrintFiredRef.current = true
-      // Pequeno timeout para garantir renderização do estilo antes de abrir o diálogo de impressão
-      setTimeout(() => {
-        handlePrint()
-      }, 300)
-    }
-  }, [handlePrint])
-
+    if (!generation.attempted) { generation.attempted = true; handlePrint() }
+  }, [generation, handlePrint])
   const handleDownload = useCallback(() => {
-    const blob = new Blob([htmlContent], { type: 'text/html; charset=utf-8' })
-    const url = URL.createObjectURL(blob)
+    const url = URL.createObjectURL(new Blob([htmlContent], { type: 'text/html; charset=utf-8' }))
     const link = document.createElement('a')
-    link.href = url
-    link.download = fileName
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
+    link.href = url; link.download = fileName
+    document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url)
   }, [htmlContent, fileName])
-
-  return (
-    <Dialog isOpen={isOpen && !!htmlContent} onClose={onClose} label="Pré-visualização do Documento">
-      <div
-        className={`bg-white dark:bg-zinc-900 flex flex-col overflow-hidden shadow-2xl border border-zinc-200 dark:border-zinc-800 transform animate-in zoom-in-95 duration-200 transition-all ${
-          isFullscreen
-            ? 'w-full h-full rounded-none'
-            : 'w-[95vw] max-w-6xl h-[92vh] rounded-2xl'
-        }`}
-      >
-        {/* Barra de Ferramentas */}
-        <header className="flex items-center justify-between gap-3 px-4 py-3 bg-zinc-50 dark:bg-zinc-800/80 border-b border-zinc-200 dark:border-zinc-700 flex-shrink-0">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-3 h-3 rounded-full bg-emerald-400 flex-shrink-0" />
-            <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-200 truncate">
-              Pré-visualização do Documento
-            </h3>
-          </div>
-
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            {/* Botão Imprimir */}
-            <button
-              onClick={handlePrint}
-              disabled={!iframeLoaded}
-              title="Imprimir documento"
-              aria-label="Imprimir documento"
-              className="flex min-h-11 min-w-11 items-center justify-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium
-                bg-garnet-500 hover:bg-garnet-600 text-white
-                disabled:opacity-50 disabled:cursor-not-allowed
-                transition-all duration-150 shadow-sm hover:shadow-md active:scale-95"
-            >
-              <Printer className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Imprimir</span>
-            </button>
-
-            {/* Botão Baixar */}
-            <button
-              onClick={handleDownload}
-              title="Baixar como HTML"
-              aria-label="Baixar como HTML"
-              className="flex min-h-11 min-w-11 items-center justify-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium
-                bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600
-                text-zinc-700 dark:text-zinc-200
-                transition-all duration-150 shadow-sm hover:shadow-md active:scale-95"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Baixar</span>
-            </button>
-
-            {/* Separador */}
-            <div className="w-px h-5 bg-zinc-300 dark:bg-zinc-600 mx-1" />
-
-            {/* Botão Fullscreen */}
-            <button
-              onClick={() => setIsFullscreen((prev) => !prev)}
-              title={isFullscreen ? 'Sair de tela cheia' : 'Tela cheia'}
-              aria-label={isFullscreen ? 'Sair de tela cheia' : 'Tela cheia'}
-              className="min-h-11 min-w-11 p-1.5 rounded-lg flex items-center justify-center text-zinc-500 dark:text-zinc-400
-                hover:bg-zinc-200 dark:hover:bg-zinc-700
-                transition-all duration-150 active:scale-95"
-            >
-              {isFullscreen ? (
-                <Minimize2 className="w-4 h-4" />
-              ) : (
-                <Maximize2 className="w-4 h-4" />
-              )}
-            </button>
-
-            {/* Botão Fechar */}
-            <button
-              onClick={onClose}
-              title="Fechar"
-              aria-label="Fechar pré-visualização"
-              className="min-h-11 min-w-11 p-1.5 rounded-lg flex items-center justify-center text-zinc-500 dark:text-zinc-400
-                hover:bg-rose-100 dark:hover:bg-rose-900/30
-                hover:text-rose-600 dark:hover:text-rose-400
-                transition-all duration-150 active:scale-95"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </header>
-
-        {/* Área do Iframe com Preview */}
-        <div className="flex-1 relative bg-zinc-100 dark:bg-zinc-950 overflow-hidden">
-          {/* Indicador de carregamento */}
-          {!iframeLoaded && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-zinc-100 dark:bg-zinc-950">
-              <div className="flex flex-col items-center gap-3" role="status">
-                <div className="w-8 h-8 border-3 border-garnet-500 border-t-transparent rounded-full animate-spin" aria-hidden="true" />
-                <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-                  Carregando documento...
-                </span>
-              </div>
-            </div>
-          )}
-
-          <iframe
-            ref={iframeRef}
-            srcDoc={htmlContent}
-            onLoad={handleIframeLoad}
-            sandbox="allow-same-origin allow-modals"
-            referrerPolicy="no-referrer"
-            className="h-full w-full border-0"
-            title="Pré-visualização do documento"
-          />
+  return <Dialog isOpen={isOpen && !!htmlContent} onClose={onClose} label={c.title}>
+    <section className={`document-preview ${isFullscreen ? 'document-preview--full' : ''}`}>
+      <header className="preview-toolbar">
+        <h3>{c.title}</h3>
+        <div>
+          <button onClick={handlePrint} disabled={!iframeLoaded} title={c.printLabel} aria-label={c.printLabel} className="btn-primary"><Printer className="h-4 w-4" aria-hidden="true" /><span>{c.print}</span></button>
+          <button onClick={handleDownload} title={c.downloadLabel} aria-label={c.downloadLabel} className="btn-secondary"><Download className="h-4 w-4" aria-hidden="true" /><span>{c.download}</span></button>
+          <button onClick={() => setIsFullscreen((previous) => !previous)} title={isFullscreen ? c.exit : c.full} aria-label={isFullscreen ? c.exit : c.full} className="icon-button">{isFullscreen ? <Minimize2 aria-hidden="true" className="h-4 w-4" /> : <Maximize2 aria-hidden="true" className="h-4 w-4" />}</button>
+          <button onClick={onClose} title={c.close} aria-label={c.close} className="icon-button"><X className="h-4 w-4" aria-hidden="true" /></button>
         </div>
+      </header>
+      {printBlocked && <p role="status" className="print-fallback">{c.blocked}</p>}
+      <div className="preview-document">
+        {!iframeLoaded && <div role="status" className="preview-loading">{c.loading}</div>}
+        <iframe ref={iframeRef} srcDoc={htmlContent} onLoad={() => void handleIframeLoad()} sandbox="allow-same-origin allow-modals" referrerPolicy="no-referrer" title={c.frame} />
       </div>
-    </Dialog>
-  )
+    </section>
+  </Dialog>
 }

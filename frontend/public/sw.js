@@ -1,16 +1,21 @@
-const CACHE_NAME = 'nova-homologacao-v5-shell';
+const CACHE_NAME = 'nova-homologacao-v6-shell';
 const SHELL_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/icons/icon-192x192.png?v=2.0.1',
-  '/icons/icon-512x512.png?v=2.0.1',
-  '/favicon.ico?v=2.0.1',
+  '/logo.svg',
+  '/stethoscope.svg?v=2.0.2',
+  '/icons/icon-192x192.png?v=2.0.2',
+  '/icons/icon-512x512.png?v=2.0.2',
+  '/favicon.ico?v=2.0.2',
 ];
 
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_ASSETS)));
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') void self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {

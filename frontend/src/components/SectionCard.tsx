@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
 
 interface SectionCardProps {
-  step: string
   title: string
   description: string
   icon: LucideIcon
@@ -10,7 +9,6 @@ interface SectionCardProps {
 }
 
 export default function SectionCard({
-  step,
   title,
   description,
   icon: Icon,
@@ -24,7 +22,6 @@ export default function SectionCard({
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="section-shell__step">{step}</span>
             <h2 className="section-shell__title">{title}</h2>
           </div>
           <p className="section-shell__description">{description}</p>

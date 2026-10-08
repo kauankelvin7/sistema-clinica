@@ -28,8 +28,8 @@ export interface DirectoryPayload {
   synced_at: string
 }
 
-export const fetchDirectory = async (): Promise<DirectoryPayload> => {
-  const response = await api.get('/api/directory', { timeout: 6000 })
+export const fetchDirectory = async (signal?: AbortSignal): Promise<DirectoryPayload> => {
+  const response = await api.get('/api/directory', { timeout: 6000, signal })
   return response.data
 }
 
@@ -49,8 +49,8 @@ export interface DirectorySyncPayload {
   }
 }
 
-export const syncDirectoryEntry = async (payload: DirectorySyncPayload): Promise<void> => {
-  await api.post('/api/directory/sync', payload, { timeout: 8000 })
+export const syncDirectoryEntry = async (payload: DirectorySyncPayload, signal?: AbortSignal): Promise<void> => {
+  await api.post('/api/directory/sync', payload, { timeout: 8000, signal })
 }
 
 export const checkDuplicate = async (

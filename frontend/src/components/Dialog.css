@@ -10,6 +10,7 @@
   border: 0;
   background: transparent;
   overflow: auto;
+  overscroll-behavior: contain;
   align-items: center;
   justify-content: center;
 }
@@ -28,5 +29,8 @@ body:has(.app-dialog[open]) {
 
 .app-dialog::backdrop {
   background: rgb(9 9 11 / 80%);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(var(--glass-blur));
 }
+html[data-transparency="reduced"] .app-dialog::backdrop { backdrop-filter: none; }
+@media (prefers-reduced-transparency: reduce) { .app-dialog::backdrop { backdrop-filter: none; } }
+@supports not (backdrop-filter: blur(1px)) { .app-dialog::backdrop { backdrop-filter: none; } }

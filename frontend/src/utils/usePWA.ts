@@ -30,7 +30,6 @@ export function usePWA() {
 
   const installApp = async () => {
     if (!deferredPrompt) {
-      alert('Para instalar o App no seu dispositivo:\n1. No Chrome/Edge/Brave, clique no ícone de três pontos ou de instalação na barra do navegador.\n2. Selecione "Instalar NOVA - Sistema de Homologação".')
       return false
     }
     deferredPrompt.prompt()

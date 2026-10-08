@@ -1,3 +1,4 @@
+import { useUiCopy } from '../utils/uiCopy'
 import { useState, useEffect, useRef } from 'react'
 import { Search, Loader2 } from 'lucide-react'
 import { normalizeText } from '../utils/normalize'
@@ -40,6 +41,7 @@ export default function AutocompleteInput({
   'aria-describedby': describedBy,
   isLoading = false,
 }: AutocompleteInputProps) {
+  const c = useUiCopy()
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [filteredOptions, setFilteredOptions] = useState<AutocompleteOption[]>([])
   const [selectedIndex, setSelectedIndex] = useState(-1)
@@ -51,7 +53,7 @@ export default function AutocompleteInput({
       if (onSearch) {
         // Modo assíncrono: usa as options diretamente (já vieram filtradas da API)
         setFilteredOptions(options.slice(0, 8))
-        setShowSuggestions(options.length > 0 || isLoading)
+
       } else {
         // Modo local: filtra as options em memória (comportamento original)
         const normalizedSearch = normalizeText(value)
@@ -59,7 +61,7 @@ export default function AutocompleteInput({
           .filter(option => normalizeText(option.label).includes(normalizedSearch))
           .slice(0, 8)
         setFilteredOptions(filtered)
-        setShowSuggestions(filtered.length > 0)
+
       }
     } else {
       setShowSuggestions(false)
@@ -82,6 +84,7 @@ export default function AutocompleteInput({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value
     setSelectedIndex(-1)
+    setShowSuggestions(newValue.length >= minChars)
     onChange(newValue)
     if (onSearch) {
       onSearch(newValue)
@@ -96,7 +99,10 @@ export default function AutocompleteInput({
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!showSuggestions) return
+    if (!showSuggestions) {
+      if (e.key === 'ArrowDown' && value.length >= minChars) { e.preventDefault(); setShowSuggestions(true); setSelectedIndex(0) }
+      return
+    }
 
     if (e.key === 'ArrowDown') {
       e.preventDefault()
@@ -122,6 +128,8 @@ export default function AutocompleteInput({
           type="text"
           value={value}
           onChange={handleChange}
+          onFocus={() => setShowSuggestions(value.length >= minChars)}
+          onBlur={() => setShowSuggestions(false)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
@@ -150,11 +158,11 @@ export default function AutocompleteInput({
             {isLoading ? (
               <div role="status" className="flex items-center gap-3 px-3 py-3 text-sm text-zinc-500 dark:text-zinc-400">
                 <Loader2 className="w-4 h-4 animate-spin text-garnet-500 shrink-0" aria-hidden="true" />
-                Buscando cadastros...
+                {c.searching}
               </div>
             ) : filteredOptions.length === 0 ? (
               <div role="status" className="px-3 py-3 text-sm text-muted text-center">
-                Nenhum resultado encontrado
+                {c.noResults}
               </div>
             ) : null}
             <div

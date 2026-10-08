@@ -20,7 +20,7 @@
 .models-error button { margin-top: 12px; }
 .models-empty { color: rgb(var(--color-muted)); display: grid; gap: 16px; }
 .models-status { display: flex; align-items: center; gap: 8px; color: rgb(var(--color-muted)); padding: 20px 0; }
-.model-shortcuts { margin-bottom: 24px; border: 1px solid rgb(var(--color-border)); border-radius: 16px; background: rgb(var(--color-panel)); padding: 20px; }
+.model-shortcuts { margin-bottom: 12px; border: 1px solid rgb(var(--color-border)); border-radius: 16px; background: rgb(var(--color-panel)); padding: 8px 12px; }
 .model-shortcuts-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .model-shortcuts h2 { font-size: 14px; font-weight: 650; }
 .model-shortcuts-list { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -31,3 +31,17 @@
   .models-card, .models-editor { padding: 20px; }
   .models-card-actions > button { width: 100%; }
 }
+
+.model-shortcuts summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-size: 13px; font-weight: 600; }
+.model-shortcuts summary::before { content: '+'; margin-right: 8px; }
+.model-shortcuts[open] summary::before { content: '−'; }
+.models-toolbar { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.models-toolbar > :first-child { flex: 1; min-width: min(100%, 240px); }
+.models-toolbar p, .models-meta { color: rgb(var(--color-muted)); font-size: 12px; line-height: 1.5; }
+.models-toolbar p { padding-bottom: 12px; }
+.model-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.model-chips span { display: inline-flex; padding: 4px 8px; background: rgb(var(--color-brand) / .06); color: rgb(var(--color-brand-foreground)); border: 1px solid rgb(var(--color-brand) / .2); border-radius: 8px; font-size: 12px; }
+.model-live-preview { border: 1px solid rgb(var(--color-border)); border-radius: 12px; padding: 12px; background: rgb(var(--color-canvas)); }
+.model-live-preview summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font-size: 13px; font-weight: 600; }
+.model-live-preview h3 { font-weight: 650; margin-block: 8px; overflow-wrap: anywhere; }
+.model-live-preview p { white-space: pre-wrap; line-height: 1.7; overflow-wrap: anywhere; font-size: 14px; }

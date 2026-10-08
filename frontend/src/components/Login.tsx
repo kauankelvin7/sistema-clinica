@@ -1,5 +1,6 @@
+import BrandMark from './BrandMark'
 import { useState } from 'react'
-import { ArrowRight, Eye, EyeOff, HeartPulse, Loader2, Lock, Settings, Stethoscope, User as UserIcon } from 'lucide-react'
+import { ArrowRight, Eye, EyeOff, Loader2, Lock, Settings, Stethoscope, User as UserIcon } from 'lucide-react'
 import { loginUser } from '../services/api'
 import { useTranslation } from '../utils/i18n'
 import ClinicalArtwork from './ClinicalArtwork'
@@ -42,7 +43,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
       </button>
       <div className="login-stage">
         <aside className="login-story">
-          <div className="login-story-brand"><HeartPulse className="h-7 w-7" aria-hidden="true" /></div>
+          <div className="login-story-brand"><BrandMark className="h-8 w-8" /></div>
           <h1>{t.loginHeroTitle}</h1>
           <p className="login-story-description">{t.loginAppSubtitle}</p>
           <ClinicalArtwork className="login-art" />
@@ -51,7 +52,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
         <main className="login-panel">
           <div className="login-panel-inner">
             <div className="login-panel-top">
-              <div className="brand-mark"><HeartPulse className="h-5 w-5" aria-hidden="true" /></div>
+              <div className="brand-mark"><BrandMark /></div>
             </div>
             <h2 className="login-heading">{t.loginHeading}</h2>
             <p className="login-intro">{t.loginIntro}</p>

@@ -119,6 +119,9 @@ function sameMutationTarget(a: DirectoryMutation, b: DirectoryMutation) {
 export function useClinicDirectory(enabled: boolean) {
   const [state, setState] = useState<DirectoryState>(EMPTY_STATE)
   const stateRef = useRef(state)
+  const session = useRef(new AbortController())
+  const epoch = useRef(0)
+  const persistence = useRef<Promise<void>>(Promise.resolve())
   const refreshPromise = useRef<Promise<void> | null>(null)
   const flushPromise = useRef<Promise<void> | null>(null)
 
@@ -135,13 +138,19 @@ export function useClinicDirectory(enabled: boolean) {
       doctors: next.doctors,
       pending: next.pending,
     }
-    await writeDirectoryCache(snapshot)
+    const operationEpoch = epoch.current
+    persistence.current = persistence.current.catch(() => undefined).then(async () => {
+      if (operationEpoch === epoch.current && !session.current.signal.aborted) await writeDirectoryCache(snapshot)
+    })
+    await persistence.current
   }, [])
 
   const flushPending = useCallback(async () => {
     if (!enabled) return
     if (flushPromise.current) return flushPromise.current
 
+    const operationEpoch = epoch.current
+    const signal = session.current.signal
     const queued = [...stateRef.current.pending]
     if (queued.length === 0) return
 
@@ -149,18 +158,19 @@ export function useClinicDirectory(enabled: boolean) {
       const syncedIds = new Set<string>()
 
       for (const mutation of queued) {
+        if (operationEpoch !== epoch.current || signal.aborted) return
         try {
           await syncDirectoryEntry({
             paciente: mutation.paciente,
             medico: mutation.medico,
-          })
+          }, signal)
           syncedIds.add(mutation.id)
         } catch {
           // Mantém na fila local para retry em reconexão/refresh.
         }
       }
 
-      if (syncedIds.size === 0) return
+      if (syncedIds.size === 0 || operationEpoch !== epoch.current || signal.aborted) return
 
       const current = stateRef.current
       const next: DirectoryState = {
@@ -172,7 +182,7 @@ export function useClinicDirectory(enabled: boolean) {
       setState(next)
       await persist(next)
     })().finally(() => {
-      flushPromise.current = null
+      if (operationEpoch === epoch.current) flushPromise.current = null
     })
 
     flushPromise.current = job
@@ -183,6 +193,8 @@ export function useClinicDirectory(enabled: boolean) {
     if (!enabled) return
     if (refreshPromise.current) return refreshPromise.current
 
+    const operationEpoch = epoch.current
+    const signal = session.current.signal
     const job = (async () => {
       setState((current) => ({
         ...current,
@@ -190,7 +202,8 @@ export function useClinicDirectory(enabled: boolean) {
       }))
 
       try {
-        const payload = await fetchDirectory()
+        const payload = await fetchDirectory(signal)
+        if (operationEpoch !== epoch.current || signal.aborted) return
         const current = stateRef.current
         const merged = applyPending(payload.patients, payload.doctors, current.pending)
         const next: DirectoryState = {
@@ -205,6 +218,7 @@ export function useClinicDirectory(enabled: boolean) {
         await persist(next)
         if (next.pending.length) void flushPending()
       } catch {
+        if (operationEpoch !== epoch.current || signal.aborted) return
         const current = stateRef.current
         const next: DirectoryState = {
           ...current,
@@ -214,7 +228,7 @@ export function useClinicDirectory(enabled: boolean) {
         setState(next)
       }
     })().finally(() => {
-      refreshPromise.current = null
+      if (operationEpoch === epoch.current) refreshPromise.current = null
     })
 
     refreshPromise.current = job
@@ -222,7 +236,10 @@ export function useClinicDirectory(enabled: boolean) {
   }, [enabled, flushPending, persist])
 
   useEffect(() => {
-    if (!enabled) return
+    if (!enabled) { stateRef.current = EMPTY_STATE; setState(EMPTY_STATE); return }
+    const controller = new AbortController()
+    const lifecycleEpoch = epoch
+    session.current = controller
     let active = true
 
     const bootstrap = async () => {
@@ -249,6 +266,10 @@ export function useClinicDirectory(enabled: boolean) {
     void bootstrap()
     return () => {
       active = false
+      lifecycleEpoch.current++
+      controller.abort()
+      refreshPromise.current = null
+      flushPromise.current = null
     }
   }, [enabled, flushPending, refresh])
 
@@ -275,6 +296,7 @@ export function useClinicDirectory(enabled: boolean) {
   }, [enabled, flushPending, refresh])
 
   const rememberForm = useCallback((formData: AppFormData) => {
+    if (!enabled || session.current.signal.aborted) return
     const mutation = buildMutation(formData)
     const current = stateRef.current
     const optimistic = applyMutation(current.patients, current.doctors, mutation)
@@ -299,12 +321,17 @@ export function useClinicDirectory(enabled: boolean) {
         void flushPending()
       }
     })
-  }, [flushPending, persist])
+  }, [enabled, flushPending, persist])
 
   const clear = useCallback(async () => {
-    await clearDirectoryCache()
+    epoch.current++
+    session.current.abort()
+    refreshPromise.current = null
+    flushPromise.current = null
     stateRef.current = EMPTY_STATE
     setState(EMPTY_STATE)
+    await persistence.current.catch(() => undefined)
+    await clearDirectoryCache()
   }, [])
 
   return {

@@ -1,301 +1,44 @@
-import { useState, useEffect } from 'react'
-import { Settings, X, Globe, Palette, Check, Moon, Sun, Monitor, Sparkles, Download, CheckCircle2 } from 'lucide-react'
-import { useTranslation, Language, setSavedLanguage } from '../utils/i18n'
+import { useEffect, useState } from 'react'
+import { Check, Download, Globe, Moon, Palette, Sun, X } from 'lucide-react'
+import { useTranslation, setSavedLanguage, type Language } from '../utils/i18n'
 import { themeManager, THEME_PALETTES, type PaletteName } from '../utils/themeManager'
-import { FlagBR, FlagUS, FlagES } from './LanguageSelector'
 import { usePWA } from '../utils/usePWA'
-import Dialog from './Dialog'
 import { useTheme } from '../hooks/useTheme'
+import Dialog from './Dialog'
 
-interface SettingsModalProps {
-  isOpen: boolean
-  onClose: () => void
-}
-
-export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+interface Props { isOpen: boolean; onClose: () => void }
+export default function SettingsModal({ isOpen, onClose }: Props) {
   const { lang } = useTranslation()
   const { theme, setTheme } = useTheme()
-  const { isStandalone, installed, installApp } = usePWA()
-  const [currentPalette, setCurrentPalette] = useState<PaletteName>(() => themeManager.getPalette())
-  const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null)
-  useEffect(() => {
-    const handlePaletteChange = (event: Event) => {
-      const name = (event as CustomEvent<PaletteName>).detail
-      if (THEME_PALETTES[name]) setCurrentPalette(name)
-    }
-    window.addEventListener('palette_changed', handlePaletteChange)
-    return () => window.removeEventListener('palette_changed', handlePaletteChange)
-  }, [])
-
-  const showFeedback = (msg: string) => {
-    setFeedbackMsg(msg)
-    setTimeout(() => setFeedbackMsg(null), 2500)
+  const { isStandalone, installed, deferredPrompt, installApp } = usePWA()
+  const [palette, setPalette] = useState(() => themeManager.getPalette())
+  const [compact, setCompact] = useState(() => document.documentElement.dataset.density === 'compact')
+  const [reduced, setReduced] = useState(() => document.documentElement.dataset.transparency === 'reduced')
+  const [feedback, setFeedback] = useState('')
+  const c = {
+    pt: { title: 'Configurações do Sistema', intro: 'Aparência, idioma e aplicativo.', appearance: 'Aparência', palette: 'Paleta de Cores do Sistema', language: 'Idioma da Interface / Language', light: 'Modo Claro', dark: 'Modo Escuro', density: 'Modo compacto', densityHelp: 'Menos espaço entre grupos, mesmos controles.', transparency: 'Reduzir transparência', done: 'Concluído', close: 'Fechar', saved: 'Preferência aplicada.', install: 'Instalar App Agora', installed: 'App Instalado no Dispositivo', installHelp: 'A instalação depende do navegador. Use seu menu para instalar quando esta opção estiver disponível.', installStarted: 'Instalação iniciada.' },
+    en: { title: 'System settings', intro: 'Appearance, language and application.', appearance: 'Appearance', palette: 'System color palette', language: 'Interface language', light: 'Light mode', dark: 'Dark mode', density: 'Compact mode', densityHelp: 'Less space between groups, same controls.', transparency: 'Reduce transparency', done: 'Done', close: 'Close', saved: 'Preference applied.', install: 'Install app', installed: 'App installed on this device', installHelp: 'Installation depends on your browser. Use its menu to install when available.', installStarted: 'Installation started.' },
+    es: { title: 'Configuración del sistema', intro: 'Apariencia, idioma y aplicación.', appearance: 'Apariencia', palette: 'Paleta de colores del sistema', language: 'Idioma de la interfaz', light: 'Modo claro', dark: 'Modo oscuro', density: 'Modo compacto', densityHelp: 'Menos espacio entre grupos, mismos controles.', transparency: 'Reducir transparencia', done: 'Listo', close: 'Cerrar', saved: 'Preferencia aplicada.', install: 'Instalar aplicación', installed: 'Aplicación instalada en este dispositivo', installHelp: 'La instalación depende del navegador. Use su menú para instalar cuando esté disponible.', installStarted: 'Instalación iniciada.' },
+  }[lang]
+  useEffect(() => { const update = () => setPalette(themeManager.getPalette()); window.addEventListener('palette_changed', update); return () => window.removeEventListener('palette_changed', update) }, [])
+  const persistDisplay = (key: 'density' | 'transparency', value: string) => {
+    document.documentElement.dataset[key] = value
+    try { localStorage.setItem(`display_${key}`, value) } catch { /* Preference does not block work. */ }
+    setFeedback(c.saved)
   }
-
-  // Trata seleção de idioma
-  const handleLanguageSelect = (newLang: Language) => {
-    setSavedLanguage(newLang)
-    const labels = { pt: 'Português (BR)', en: 'English (US)', es: 'Español' }
-    showFeedback(`Idioma alterado para ${labels[newLang]}`)
-  }
-
-  // Trata seleção de paleta de cores
-  const handlePaletteSelect = (palName: PaletteName) => {
-    themeManager.applyPalette(palName)
-    setCurrentPalette(palName)
-    showFeedback(`Paleta alterada para ${THEME_PALETTES[palName].label}`)
-  }
-
-  // Trata alternância Claro / Escuro
-  const handleThemeToggle = (newTheme: 'light' | 'dark') => {
-    try {
-      setTheme(newTheme)
-      showFeedback(newTheme === 'dark' ? 'Modo Escuro ativado' : 'Modo Claro ativado')
-    } catch {
-      // Persistência segue centralizada no gerenciador de tema.
-    }
-  }
-
-  // Trata auto-instalação PWA
-  const handleAutoInstallPWA = async () => {
-    const success = await installApp()
-    if (success) {
-      showFeedback('Instalação do aplicativo iniciada!')
-    }
-  }
-
-  return (
-    <Dialog isOpen={isOpen} onClose={onClose} label="Configurações do Sistema">
-      <div
-        className="bg-white dark:bg-surface-card rounded-3xl shadow-2xl w-full max-w-xl max-h-[82vh] overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col transform transition-all animate-in zoom-in-95 duration-200 my-auto"
-      >
-        {/* Header Elegante do Modal */}
-        <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md px-6 py-4.5 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800/80 shrink-0 relative">
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 bg-garnet-500/10 dark:bg-garnet-500/15 border border-garnet-500/25 rounded-2xl flex items-center justify-center text-garnet-500 flex-shrink-0 shadow-sm shadow-garnet-500/10">
-              <Settings className="w-5.5 h-5.5 animate-spin-slow" aria-hidden="true" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="font-display text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight leading-none">
-                  Configurações do Sistema
-                </h2>
-                <span className="px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded-md bg-garnet-500/10 text-garnet-600 dark:text-garnet-400 border border-garnet-500/20">
-                  v2.0
-                </span>
-              </div>
-              <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-1">
-                Personalize idioma, cores, tema e instale o app no dispositivo
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="icon-button"
-            title="Fechar"
-          >
-            <X className="w-4.5 h-4.5" aria-hidden="true" />
-          </button>
-
-          {/* Notificação Toast de Feedback Live */}
-          {feedbackMsg && (
-            <div className="absolute bottom-[-18px] left-1/2 -translate-x-1/2 z-30 px-3.5 py-1 rounded-full bg-garnet-500 text-white text-[11px] font-bold shadow-lg flex items-center gap-1.5 animate-in fade-in slide-in-from-top-2 duration-200">
-              <Sparkles className="w-3.5 h-3.5 text-amber-200" aria-hidden="true" />
-              <span>{feedbackMsg}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Corpo das Configurações Organizado por Blocos */}
-        <div className="p-6 space-y-6 overflow-y-auto max-h-[75vh]">
-
-          {/* 1. SEÇÃO DE PALETA DE CORES DINÂMICA */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-extrabold text-zinc-400 uppercase tracking-widest">
-                <Palette className="w-4 h-4 text-garnet-500" aria-hidden="true" />
-                <span>Paleta de Cores do Sistema</span>
-              </div>
-              <span className="text-[11px] font-semibold text-garnet-600 dark:text-garnet-400">
-                Altera todo o site em tempo real
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {Object.values(THEME_PALETTES).map((pal) => {
-                const isSelected = currentPalette === pal.name
-                return (
-                  <button
-                    key={pal.name}
-                    type="button"
-                    onClick={() => handlePaletteSelect(pal.name as PaletteName)}
-                    className={`group relative flex items-center justify-between p-3.5 rounded-2xl border text-xs font-bold transition-all duration-200 text-left ${isSelected
-                      ? 'bg-garnet-500/15 border-garnet-500 text-zinc-900 dark:text-zinc-50 shadow-md ring-2 ring-garnet-500/20'
-                      : 'bg-zinc-50/80 dark:bg-surface-input border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-garnet-500/40 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
-                      }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      {/* Amostra Tríplice de Cores da Paleta */}
-                      <div className="flex items-center -space-x-1.5 shrink-0" aria-hidden="true">
-                        {[pal.colors[500], pal.colors[700], pal.colors[400]].map((c, idx) => (
-                          <span
-                            key={idx}
-                            className="w-4 h-4 rounded-full border-2 border-white dark:border-zinc-900 shadow-xs inline-block"
-                            style={{ backgroundColor: `rgb(${c})` }}
-                          />
-                        ))}
-                      </div>
-
-                      <div>
-                        <p className="font-bold text-xs leading-tight text-zinc-900 dark:text-zinc-100">{pal.label}</p>
-                      </div>
-                    </div>
-
-                    {isSelected && (
-                      <div className="w-5 h-5 rounded-full bg-garnet-500 text-white flex items-center justify-center shrink-0 shadow-xs">
-                        <Check className="w-3.5 h-3.5" aria-hidden="true" />
-                      </div>
-                    )}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          <div className="border-t border-zinc-100 dark:border-zinc-800/80" />
-
-          {/* 2. SEÇÃO DE IDIOMA */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-xs font-extrabold text-zinc-400 uppercase tracking-widest">
-              <Globe className="w-4 h-4 text-garnet-500" aria-hidden="true" />
-              <span>Idioma da Interface / Language</span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-              {[
-                { code: 'pt', label: 'Português (BR)', flag: <FlagBR /> },
-                { code: 'en', label: 'English (US)', flag: <FlagUS /> },
-                { code: 'es', label: 'Español', flag: <FlagES /> },
-              ].map((item) => {
-                const isSelected = lang === item.code
-                return (
-                  <button
-                    key={item.code}
-                    type="button"
-                    onClick={() => handleLanguageSelect(item.code as Language)}
-                    className={`flex items-center justify-between p-3.5 rounded-2xl border text-xs font-bold transition-all duration-200 ${isSelected
-                      ? 'bg-garnet-500/15 border-garnet-500 text-zinc-900 dark:text-zinc-50 shadow-md ring-2 ring-garnet-500/20'
-                      : 'bg-zinc-50/80 dark:bg-surface-input border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-garnet-500/40 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
-                      }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      {item.flag}
-                      <span>{item.label}</span>
-                    </div>
-                    {isSelected && (
-                      <div className="w-4 h-4 rounded-full bg-garnet-500 text-white flex items-center justify-center shrink-0">
-                        <Check className="w-3 h-3" aria-hidden="true" />
-                      </div>
-                    )}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          <div className="border-t border-zinc-100 dark:border-zinc-800/80" />
-
-          {/* 3. SEÇÃO DE INSTALAÇÃO PWA AUTO-INSTALL */}
-          {!isStandalone && (
-            <>
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 text-xs font-extrabold text-zinc-400 uppercase tracking-widest">
-                  <Download className="w-4 h-4 text-garnet-500" aria-hidden="true" />
-                  <span>Instalar Aplicativo no Dispositivo</span>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-garnet-500/10 dark:bg-garnet-500/15 border border-garnet-500/25 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="space-y-1 text-center sm:text-left">
-                    <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-50">
-                      {installed ? 'App Instalado no Dispositivo' : 'Instalar sistema no seu Dispositivo'}
-                    </h4>
-                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                      {installed
-                        ? 'O aplicativo já está pronto para uso no seu sistema.'
-                        : 'Acesse o sistema diretamente da sua área de trabalho como um app nativo.'
-                      }
-                    </p>
-                  </div>
-
-                  {installed ? (
-                    <div className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold shrink-0">
-                      <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
-                      <span>Instalado</span>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={handleAutoInstallPWA}
-                      className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-garnet-500 to-garnet-600 hover:from-garnet-600 hover:to-garnet-700 shadow-md shadow-garnet-500/20 transition-all flex items-center justify-center gap-2 shrink-0 active:scale-95"
-                    >
-                      <Download className="w-4 h-4 animate-bounce" aria-hidden="true" />
-                      <span>Instalar App Agora</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <div className="border-t border-zinc-100 dark:border-zinc-800/80" />
-            </>
-          )}
-
-          {/* 4. SEÇÃO DE TEMA CLARO / ESCURO */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-xs font-extrabold text-zinc-400 uppercase tracking-widest">
-              <Monitor className="w-4 h-4 text-garnet-500" aria-hidden="true" />
-              <span>Modo de Exibição</span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => handleThemeToggle('light')}
-                className={`flex items-center justify-center gap-3 p-3.5 rounded-2xl border text-xs font-bold transition-all duration-200 ${theme === 'light'
-                  ? 'bg-garnet-500/15 border-garnet-500 text-zinc-900 dark:text-zinc-50 shadow-md ring-2 ring-garnet-500/20'
-                  : 'bg-zinc-50/80 dark:bg-surface-input border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-garnet-500/40'
-                  }`}
-              >
-                <Sun className="w-4.5 h-4.5 text-amber-500" aria-hidden="true" />
-                <span>Modo Claro</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleThemeToggle('dark')}
-                className={`flex items-center justify-center gap-3 p-3.5 rounded-2xl border text-xs font-bold transition-all duration-200 ${theme === 'dark'
-                  ? 'bg-garnet-500/15 border-garnet-500 text-zinc-900 dark:text-zinc-50 shadow-md ring-2 ring-garnet-500/20'
-                  : 'bg-zinc-50/80 dark:bg-surface-input border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-garnet-500/40'
-                  }`}
-              >
-                <Moon className="w-4.5 h-4.5 text-indigo-400" aria-hidden="true" />
-                <span>Modo Escuro</span>
-              </button>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Footer do Modal com Botão Concluído */}
-        <div className="bg-zinc-50/80 dark:bg-zinc-900/60 border-t border-zinc-200/80 dark:border-zinc-800/80 px-6 py-4 flex justify-end shrink-0">
-          <button
-            onClick={onClose}
-            className="px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-garnet-500 to-garnet-600 hover:from-garnet-600 hover:to-garnet-700 rounded-xl shadow-md shadow-garnet-500/20 transition-all active:scale-95"
-          >
-            Concluído
-          </button>
-        </div>
-
+  return <Dialog isOpen={isOpen} onClose={onClose} label={c.title}>
+    <section className="settings-panel">
+      <header><div><h2>{c.title}</h2><p>{c.intro}</p></div><button className="icon-button" data-testid="settings-close" onClick={onClose} aria-label={c.close} title={c.close}><X className="h-4 w-4" aria-hidden="true" /></button></header>
+      <div className="settings-content">
+        <section><h3>{c.appearance}</h3><div className="settings-theme"><button data-testid="theme-light" className="btn-secondary" aria-pressed={theme === 'light'} onClick={() => { setTheme('light'); setFeedback(c.saved) }}><Sun className="h-4 w-4" aria-hidden="true" />{c.light}</button><button data-testid="theme-dark" className="btn-secondary" aria-pressed={theme === 'dark'} onClick={() => { setTheme('dark'); setFeedback(c.saved) }}><Moon className="h-4 w-4" aria-hidden="true" />{c.dark}</button></div>
+          <label className="settings-check"><input type="checkbox" checked={compact} onChange={(event) => { setCompact(event.target.checked); persistDisplay('density', event.target.checked ? 'compact' : 'comfortable') }} /><span>{c.density}<small>{c.densityHelp}</small></span></label>
+          <label className="settings-check"><input type="checkbox" checked={reduced} onChange={(event) => { setReduced(event.target.checked); persistDisplay('transparency', event.target.checked ? 'reduced' : 'normal') }} /><span>{c.transparency}</span></label>
+          <h3><Palette className="h-4 w-4" aria-hidden="true" />{c.palette}</h3><div className="settings-palettes">{Object.values(THEME_PALETTES).map((item) => <button key={item.name} className="btn-secondary" aria-pressed={palette === item.name} onClick={() => { themeManager.applyPalette(item.name as PaletteName); setFeedback(c.saved) }}><i aria-hidden="true" style={{ background: `rgb(${item.colors[500]})` }} />{item.label}{palette === item.name && <Check className="h-4 w-4" aria-hidden="true" />}</button>)}</div>
+        </section>
+        <section><h3><Globe className="h-4 w-4" aria-hidden="true" />{c.language}</h3><div className="settings-languages">{[['pt', 'Português (BR)'], ['en', 'English (US)'], ['es', 'Español']].map(([code, label]) => <button key={code} className="btn-secondary" aria-pressed={lang === code} onClick={() => { setSavedLanguage(code as Language); setFeedback('') }}>{label}</button>)}</div></section>
+        {!isStandalone && <section><h3><Download className="h-4 w-4" aria-hidden="true" />{installed ? c.installed : c.install}</h3><p>{c.installHelp}</p>{!installed && deferredPrompt && <button className="btn-secondary" onClick={() => void installApp().then((success) => { if (success) setFeedback(c.installStarted) })}>{c.install}</button>}</section>}
       </div>
-    </Dialog>
-  )
+      <footer><p role="status">{feedback}</p><button className="btn-primary" onClick={onClose}>{c.done}</button></footer>
+    </section>
+  </Dialog>
 }

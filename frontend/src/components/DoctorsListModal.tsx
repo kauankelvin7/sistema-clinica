@@ -1,3 +1,4 @@
+import { useUiCopy } from '../utils/uiCopy'
 import { Award, ChevronLeft, ChevronRight, MapPin, Search, Stethoscope, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type { Medico } from '../types'
@@ -15,6 +16,7 @@ interface Props {
 const PAGE_SIZE = 30
 
 export default function DoctorsListModal({ isOpen, onClose, onSelect, doctors }: Props) {
+  const c = useUiCopy()
   const { t } = useTranslation()
   const [searchTerm, setSearchTerm] = useState('')
   const [registerType, setRegisterType] = useState<'TODOS' | 'CRM' | 'CRO' | 'RMS'>('TODOS')
@@ -61,11 +63,11 @@ export default function DoctorsListModal({ isOpen, onClose, onSelect, doctors }:
             <div className="min-w-0">
               <h2 className="directory-modal__title">{t.modalDoctorsTitle}</h2>
               <p className="directory-modal__subtitle">
-                {filtered.length} encontrados · {doctors.length} disponíveis no cache local
+                {filtered.length} {c.found} · {doctors.length} {c.available}
               </p>
             </div>
           </div>
-          <button type="button" onClick={onClose} className="icon-button" aria-label="Fechar">
+          <button type="button" onClick={onClose} className="icon-button" aria-label={c.close}>
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </header>
@@ -85,7 +87,7 @@ export default function DoctorsListModal({ isOpen, onClose, onSelect, doctors }:
 
           <select
             className="input-field"
-            aria-label="Filtrar tipo de registro"
+            aria-label={c.filterRegister}
             value={registerType}
             onChange={(event) => setRegisterType(event.target.value as typeof registerType)}
           >
@@ -95,8 +97,8 @@ export default function DoctorsListModal({ isOpen, onClose, onSelect, doctors }:
             <option value="RMS">RMS</option>
           </select>
 
-          <select aria-label="Filtrar UF" className="input-field" value={uf} onChange={(event) => setUf(event.target.value)}>
-            <option value="TODAS">Todas as UFs</option>
+          <select aria-label={c.filterState} className="input-field" value={uf} onChange={(event) => setUf(event.target.value)}>
+            <option value="TODAS">{c.allStates}</option>
             {ufs.map((state) => <option key={state} value={state}>{state}</option>)}
           </select>
         </div>
@@ -105,8 +107,8 @@ export default function DoctorsListModal({ isOpen, onClose, onSelect, doctors }:
           {visible.length === 0 ? (
             <div className="empty-state">
               <Stethoscope className="h-7 w-7" aria-hidden="true" />
-              <h3>Nenhum médico encontrado</h3>
-              <p>Altere a busca ou atualize a base local.</p>
+              <h3>{t.noDoctorsFound}</h3>
+              <p>{c.emptyHelp}</p>
             </div>
           ) : (
             <div className="directory-grid">
@@ -138,7 +140,7 @@ export default function DoctorsListModal({ isOpen, onClose, onSelect, doctors }:
 
         {totalPages > 1 && (
           <footer className="directory-modal__footer">
-            <span>Página {safePage} de {totalPages}</span>
+            <span>{c.page} {safePage} {c.of} {totalPages}</span>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -146,7 +148,7 @@ export default function DoctorsListModal({ isOpen, onClose, onSelect, doctors }:
                 disabled={safePage === 1}
                 onClick={() => setPage((value) => Math.max(1, value - 1))}
               >
-                <ChevronLeft className="h-4 w-4" aria-hidden="true" /> Anterior
+                <ChevronLeft className="h-4 w-4" aria-hidden="true" /> {c.previous}
               </button>
               <button
                 type="button"
@@ -154,7 +156,7 @@ export default function DoctorsListModal({ isOpen, onClose, onSelect, doctors }:
                 disabled={safePage === totalPages}
                 onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
               >
-                Próximo <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                {c.next} <ChevronRight className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
           </footer>

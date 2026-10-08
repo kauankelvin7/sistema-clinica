@@ -1,3 +1,4 @@
+import { useUiCopy } from '../utils/uiCopy'
 import { maskCPF } from '../utils/maskCPF'
 import { AlertCircle, ChevronDown, Eye, Users } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
@@ -13,6 +14,7 @@ function onlyDigits(value: string) {
 }
 
 export default function PatientForm({ formData, updateFormData, patients, onLoadPatient }: PatientFormProps) {
+  const c = useUiCopy()
   const { t } = useTranslation()
   const [showListModal, setShowListModal] = useState(false)
   const [isDuplicate, setIsDuplicate] = useState(false)
@@ -80,14 +82,14 @@ export default function PatientForm({ formData, updateFormData, patients, onLoad
           <div className="min-w-0 flex-1 text-left">
             <p className="record-picker__eyebrow">{t.searchPatientsBtn}</p>
             <p className="record-picker__value">
-              {patients.length > 0 ? `${patients.length} ${t.modalPatientsTitle}` : 'Cache aguardando sincronização'}
+              {patients.length > 0 ? `${patients.length} ${t.modalPatientsTitle}` : c.waiting}
             </p>
           </div>
           <Eye className="h-4 w-4 shrink-0 text-zinc-400 transition-colors group-hover:text-garnet-500" aria-hidden="true" />
         </div>
       </button>
 
-      <Field id="patient-name" label={t.patientNameLabel} hint={patients.length > 0 ? 'Busca local instantânea · não aguarda o banco a cada tecla' : undefined}>
+      <Field id="patient-name" label={t.patientNameLabel} hint={patients.length > 0 ? c.localSearch : undefined}>
         <AutocompleteInput
             id="patient-name"
             value={formData.nomePaciente}
@@ -105,7 +107,7 @@ export default function PatientForm({ formData, updateFormData, patients, onLoad
             <select
               id="patient-document-type"
               className="input-field appearance-none pr-9"
-              aria-label={`${t.docNumberLabel} - tipo`}
+              aria-label={`${t.docNumberLabel} - ${c.type}`}
               value={formData.tipoDocumento}
               onChange={handleTipoDocumentoChange}
             >
@@ -118,7 +120,7 @@ export default function PatientForm({ formData, updateFormData, patients, onLoad
             id="patient-document"
             type="text"
             className={`input-field ${isDuplicate ? 'border-amber-500/80 bg-amber-500/5 focus:border-amber-500' : ''}`}
-            placeholder={formData.tipoDocumento === 'CPF' ? t.docNumberPlaceholder : 'Número do RG'}
+            placeholder={formData.tipoDocumento === 'CPF' ? t.docNumberPlaceholder : c.rg}
             value={formData.numeroDocumento}
             onChange={handleDocumentoChange}
             maxLength={formData.tipoDocumento === 'CPF' ? 14 : 20}
@@ -129,7 +131,7 @@ export default function PatientForm({ formData, updateFormData, patients, onLoad
         {isDuplicate && (
           <div className="field-warning">
             <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            <span>Este paciente já está cadastrado nesta empresa.</span>
+            <span>{c.duplicatePatient}</span>
           </div>
         )}
       </Field>

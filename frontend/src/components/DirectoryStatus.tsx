@@ -1,3 +1,4 @@
+import { useUiCopy } from '../utils/uiCopy'
 import { Check, Database, HardDrive, RefreshCw, WifiOff } from 'lucide-react'
 import type { DirectoryStatus as Status } from '../hooks/useClinicDirectory'
 
@@ -26,6 +27,7 @@ export default function DirectoryStatus({
   pendingCount,
   onRefresh,
 }: DirectoryStatusProps) {
+  const c = useUiCopy()
   const syncing = status === 'loading' || status === 'syncing'
   const stale = status === 'cache' || status === 'stale'
   const unavailable = status === 'error'
@@ -48,12 +50,12 @@ export default function DirectoryStatus({
         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
           <span className="directory-status__title">
             {syncing
-              ? 'Sincronizando cadastros'
+              ? c.syncing
               : unavailable
-                ? 'Base temporariamente indisponível'
+                ? c.unavailable
                 : stale
-                  ? 'Busca instantânea pelo cache local'
-                  : 'Cadastros sincronizados'}
+                  ? c.local
+                  : c.fresh}
           </span>
           {cachedAt && (
             <span className="directory-status__time">{formatTime(cachedAt)}</span>
@@ -61,9 +63,9 @@ export default function DirectoryStatus({
         </div>
         <p className="directory-status__meta">
           <Database className="h-3 w-3" />
-          {patientCount} pacientes · {doctorCount} médicos
-          {pendingCount > 0 && ` · ${pendingCount} sincronização${pendingCount > 1 ? 'ões' : ''} pendente${pendingCount > 1 ? 's' : ''}`}
-          {stale && ' · atualização em segundo plano'}
+          {patientCount} {c.patients} · {doctorCount} {c.doctors}
+          {pendingCount > 0 && ` · ${pendingCount} ${c.pending}`}
+          {stale && ` · ${c.refreshing}`}
         </p>
       </div>
 
@@ -72,8 +74,8 @@ export default function DirectoryStatus({
         onClick={onRefresh}
         disabled={syncing}
         className="directory-status__refresh"
-        aria-label="Atualizar cadastros"
-        title="Atualizar cadastros"
+        aria-label={c.refresh}
+        title={c.refresh}
       >
         <RefreshCw className={`h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} />
       </button>

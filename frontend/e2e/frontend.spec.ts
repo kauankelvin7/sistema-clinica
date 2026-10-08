@@ -30,7 +30,7 @@ const palettes = [
   ['Amber Gold', 'amber'],
   ['Graphite Sand', 'graphite'],
 ] as const
-const viewports = [375, 430, 768, 1024, 1280, 1440, 1920]
+const viewports = [320, 375, 390, 430, 768, 1024, 1280, 1440, 1920]
 
 const patients = [
   { id: 1, nome_completo: 'Pessoa Sintética Um', tipo_doc: 'CPF', numero_doc: '111.222.333-44', cargo: 'Analista de Teste', empresa: 'Empresa Fictícia A' },
@@ -213,8 +213,8 @@ test('patient and doctor autocomplete, modal search, and filters', async ({ page
 test('validation, exact generation payload, preview, single auto-print, and download', async ({ page }) => {
   const api = await mockApi(page, { authenticated: true })
   await page.goto('/')
-  await expect(page.getByRole('button', { name: 'Gerar Declaração' })).toBeVisible()
-  await page.getByRole('button', { name: 'Gerar Declaração' }).click()
+  await expect(page.getByRole('button', { name: 'Gerar e imprimir' })).toBeVisible()
+  await page.getByRole('button', { name: 'Gerar e imprimir' }).click()
   await expect(page.getByRole('heading', { name: 'Campos Obrigatórios Pendentes' })).toBeVisible()
   expect(api.generateRequests).toHaveLength(0)
   await page.getByRole('button', { name: 'Entendi, vou preencher' }).click()
@@ -228,7 +228,7 @@ test('validation, exact generation payload, preview, single auto-print, and down
   await page.getByLabel('Não Informado').check()
   await page.getByPlaceholder('Dr. Nome do Médico').fill('Profissional Sintético Payload')
   await page.getByPlaceholder('123456').fill('98765')
-  await page.getByRole('button', { name: 'Gerar Declaração' }).click()
+  await page.getByRole('button', { name: 'Gerar e imprimir' }).click()
 
   await expect(page.getByText('Pré-visualização do Documento')).toBeVisible()
   await expect(page.frameLocator('iframe[title="Pré-visualização do documento"]').getByRole('heading', { name: 'Prévia sintética' })).toBeVisible()
@@ -273,8 +273,8 @@ test('preferences persist and directory cache survives offline refresh; empty/er
   await page.getByRole('button', { name: 'Abrir configurações' }).click()
   await page.getByRole('button', { name: 'Emerald Slate' }).click()
   await page.getByRole('button', { name: 'English (US)' }).click()
-  await page.getByRole('button', { name: 'Modo Escuro' }).click()
-  await page.getByRole('button', { name: 'Fechar' }).click()
+  await page.getByTestId('theme-dark').click()
+  await page.getByTestId('settings-close').click()
   await expect(page.getByRole('heading', { name: 'Homologation System' })).toBeVisible()
   expect(await page.evaluate(() => ({
     language: localStorage.getItem('app_language'),
@@ -285,12 +285,12 @@ test('preferences persist and directory cache survives offline refresh; empty/er
   api.directoryStatus = 503
   await page.reload()
   await expect(page.getByRole('heading', { name: 'New medical homologation' })).toBeVisible()
-  await expect(page.getByText('Busca instantânea pelo cache local')).toBeVisible()
+  await expect(page.getByText('Records available on this device')).toBeVisible()
   const englishPatientInput = page.getByPlaceholder('Enter patient full name')
   await englishPatientInput.fill('Pessoa Sintética Um')
   await expect(page.getByRole('option', { name: 'Pessoa Sintética Um' })).toBeVisible()
 
-  await page.getByTitle('Alternar organização do formulário').click()
+  await page.locator('.layout-toggle').click()
   expect(await page.evaluate(() => localStorage.getItem('layout_mode'))).toBe('vertical')
   await page.reload()
   await expect(page.getByRole('heading', { name: 'New medical homologation' })).toBeVisible()
@@ -301,7 +301,7 @@ test('preferences persist and directory cache survives offline refresh; empty/er
 
   api.directoryStatus = 200
   await page.evaluate(() => window.dispatchEvent(new Event('online')))
-  await expect(page.getByText('Cadastros sincronizados')).toBeVisible()
+  await expect(page.getByText('Records updated from server')).toBeVisible()
 
   const browser = page.context().browser()
   if (!browser) throw new Error('Expected browser-backed test context')
@@ -340,7 +340,7 @@ test('official CRM, CRO, and RMS consultations retain targets and external fallb
     await registerType.selectOption(type)
     await page.getByRole('button', { name: `Consultar Registro ${type}` }).click()
     await expect(page.getByRole('heading', { name: `Consulta Oficial: ${type}` })).toBeVisible()
-    const iframe = page.getByTitle(`Consulta ${type}`)
+    const iframe = page.getByTitle(`Consulta Oficial ${type}`)
     await expect(iframe).toHaveAttribute('src', url)
     await expect(iframe).toHaveAttribute('sandbox', 'allow-same-origin allow-scripts allow-forms allow-popups')
     await page.getByRole('button', { name: 'Abrir Janela Externa' }).click()
@@ -425,17 +425,20 @@ test('settings, header theme, and palette stay synchronized after reload', async
   await expect(page.getByRole('heading', { name: 'Nova homologação médica' })).toBeVisible()
   await expect(page.locator('html')).not.toHaveClass(/dark/)
   await expect(page.locator('.sidebar-palette')).toContainText('Emerald Slate')
-  await expect(page.getByTitle('Alternar Paleta de Cores do Sistema')).toContainText('Emerald Slate')
+  await page.getByRole('button', { name: 'Abrir configurações' }).click()
+  await expect(page.getByRole('button', { name: 'Emerald Slate' })).toHaveAttribute('aria-pressed', 'true')
+  await page.getByTestId('settings-close').click()
 })
 
-test('responsive overflow matrix: seven widths, five palettes, two themes', async ({ page }) => {
+test('responsive overflow matrix: nine widths, five palettes, two themes', async ({ page }) => {
   await mockApi(page, { authenticated: true })
   await page.goto('/')
   const issues: string[] = []
 
   for (const [paletteLabel, paletteKey] of palettes) {
-    await page.getByTitle('Alternar Paleta de Cores do Sistema').click()
+    await page.getByRole('button', { name: 'Abrir configurações' }).click()
     await page.getByRole('button', { name: paletteLabel, exact: true }).last().click()
+    await page.getByTestId('settings-close').click()
     expect(await page.evaluate(() => localStorage.getItem('app_palette'))).toBe(paletteKey)
 
     for (const theme of ['light', 'dark'] as const) {
@@ -469,6 +472,7 @@ test('responsive overflow matrix: seven widths, five palettes, two themes', asyn
 })
 
 test('custom models save, reload, fill CPF, emit, and preserve homologation', async ({ page }) => {
+  page.on('dialog', (dialog) => void dialog.accept())
   await mockApi(page, { authenticated: true })
   type Model = { id: string; name: string; title: string; body: string; fields: Array<{ key: string; label: string }>; revision: number; updated_at: string }
   const stored: Model[] = []
@@ -511,6 +515,7 @@ test('custom models save, reload, fill CPF, emit, and preserve homologation', as
   expect(stored[0].fields).toEqual([{ key: 'nome', label: 'Nome' }, { key: 'cpf', label: 'CPF' }, { key: 'cargo', label: 'Cargo' }])
   await page.getByRole('navigation', { name: 'Navegação principal' }).getByRole('button', { name: 'Nova homologação', exact: true }).click()
   await expect(page.getByPlaceholder('Ex: Empresa XYZ Ltda')).toHaveValue('Empresa preservada ao abrir modelos')
+  await page.locator('.model-shortcuts summary').click()
   await page.getByRole('region', { name: 'Seus modelos' }).getByRole('button', { name: 'Modelo de aptidão', exact: true }).click()
   await page.getByRole('button', { name: 'Emitir documento', exact: true }).click()
   expect(emitted).toHaveLength(0)
@@ -625,8 +630,9 @@ test('overlays fit all supported widths and themes', async ({ page }) => {
   }
   for (const [label, key] of palettes) {
     await page.setViewportSize({ width: 1440, height: 900 })
-    await page.getByTitle('Alternar Paleta de Cores do Sistema').click()
+    await page.getByRole('button', { name: 'Abrir configurações' }).click()
     await page.getByRole('button', { name: label, exact: true }).last().click()
+    await page.getByTestId('settings-close').click()
     for (const theme of ['light', 'dark']) {
       const dark = await page.locator('html').evaluate((html) => html.classList.contains('dark'))
       if (dark !== (theme === 'dark')) await page.getByTitle('Alternar Tema Claro/Escuro').click()
@@ -639,7 +645,7 @@ test('overlays fit all supported widths and themes', async ({ page }) => {
         await checkDialog(`${context} patients`)
         await page.locator('.record-picker').last().click()
         await checkDialog(`${context} doctors`)
-        await page.getByRole('button', { name: 'Gerar Declaração' }).click()
+        await page.getByRole('button', { name: 'Gerar e imprimir' }).click()
         await checkDialog(`${context} validation`)
       }
     }
@@ -651,7 +657,7 @@ test('document model list, editor, and fill fit all widths, palettes, and themes
   test.setTimeout(180_000)
   await mockApi(page, { authenticated: true })
   const model = {
-    id: '123e4567-e89b-42d3-a456-426614174001', title: 'Modelo Sintético', body: 'Documento de teste para {{nome}} e {{cpf}}.',
+    id: '123e4567-e89b-42d3-a456-426614174001', name: 'Modelo Sintético', title: 'Modelo Sintético', body: 'Documento de teste para {{nome}} e {{cpf}}.',
     fields: [{ key: 'nome', label: 'Nome' }, { key: 'cpf', label: 'CPF' }], revision: 1, updated_at: '2026-10-02T12:00:00Z',
   }
   await page.route('**/api/document-models**', (route) => route.request().method() === 'GET'
@@ -685,8 +691,9 @@ test('document model list, editor, and fill fit all widths, palettes, and themes
 
   for (const [paletteLabel, paletteKey] of palettes) {
     await page.setViewportSize({ width: 1440, height: 900 })
-    await page.getByTitle('Alternar Paleta de Cores do Sistema').click()
+    await page.getByRole('button', { name: 'Abrir configurações' }).click()
     await page.getByRole('button', { name: paletteLabel, exact: true }).last().click()
+    await page.getByTestId('settings-close').click()
     for (const theme of ['light', 'dark'] as const) {
       const currentTheme = await page.locator('html').evaluate((html) => html.classList.contains('dark') ? 'dark' : 'light')
       if (currentTheme !== theme) await page.getByTitle('Alternar Tema Claro/Escuro').click()
@@ -704,6 +711,7 @@ test('document model list, editor, and fill fit all widths, palettes, and themes
 })
 
 test('preview capture: synthetic UI evidence', async ({ page }, testInfo) => {
+  page.on('dialog', (dialog) => void dialog.accept())
   test.setTimeout(180_000)
   test.skip(process.env.CAPTURE_PREVIEW !== '1', 'Set CAPTURE_PREVIEW=1 to refresh user-facing screenshots')
   const output = path.resolve(process.env.PREVIEW_OUTPUT_DIR || '../../../outputs/preview')
@@ -711,7 +719,7 @@ test('preview capture: synthetic UI evidence', async ({ page }, testInfo) => {
   const capture = async (name: string) => page.screenshot({ path: path.join(output, `${name}.png`), animations: 'disabled' })
   const api = await mockApi(page)
   const model = {
-    id: '123e4567-e89b-42d3-a456-426614174002', title: 'Modelo sintético de declaração',
+    id: '123e4567-e89b-42d3-a456-426614174002', name: 'Modelo sintético de declaração', title: 'Modelo sintético de declaração',
     body: 'Declaro para fins de teste que {{nome}} apresentou CPF {{cpf}}.',
     fields: [{ key: 'nome', label: 'Nome' }, { key: 'cpf', label: 'CPF' }], revision: 1, updated_at: '2026-10-02T12:00:00Z',
   }
@@ -757,7 +765,7 @@ test('preview capture: synthetic UI evidence', async ({ page }, testInfo) => {
     await openDarkPatientDirectory()
     await capture(`patients-${width}-dark`)
     await page.keyboard.press('Escape')
-    await page.getByRole('button', { name: 'Gerar Declaração' }).click()
+    await page.getByRole('button', { name: 'Gerar e imprimir' }).click()
     await capture(`validation-${width}-dark`)
     await page.getByRole('button', { name: 'Entendi, vou preencher' }).click()
     await page.getByTitle('Alternar Tema Claro/Escuro').click()
@@ -782,7 +790,7 @@ test('preview capture: synthetic UI evidence', async ({ page }, testInfo) => {
     await capture(`consultation-${width}`)
     await page.keyboard.press('Escape')
 
-    await page.getByRole('button', { name: 'Gerar Declaração' }).click()
+    await page.getByRole('button', { name: 'Gerar e imprimir' }).click()
     await capture(`validation-${width}`)
     await page.getByRole('button', { name: 'Entendi, vou preencher' }).click()
 
@@ -795,7 +803,7 @@ test('preview capture: synthetic UI evidence', async ({ page }, testInfo) => {
     await page.getByLabel('Não Informado').check()
     await page.getByPlaceholder('Dr. Nome do Médico').fill('Profissional Sintético Payload')
     await page.getByPlaceholder('123456').fill('98765')
-    await page.getByRole('button', { name: 'Gerar Declaração' }).click()
+    await page.getByRole('button', { name: 'Gerar e imprimir' }).click()
     await expect(page.getByText('Pré-visualização do Documento')).toBeVisible()
     await capture(`preview-${width}`)
     await page.getByRole('button', { name: 'Fechar pré-visualização' }).click()
@@ -838,8 +846,9 @@ test('preview capture: synthetic UI evidence', async ({ page }, testInfo) => {
   await page.getByRole('navigation', { name: 'Navegação principal' }).getByRole('button', { name: 'Nova homologação', exact: true }).click()
   for (const [label] of palettes) {
     for (const theme of ['light', 'dark'] as const) {
-      await page.getByTitle('Alternar Paleta de Cores do Sistema').click()
+      await page.getByRole('button', { name: 'Abrir configurações' }).click()
       await page.getByRole('button', { name: label, exact: true }).last().click()
+    await page.getByTestId('settings-close').click()
       const currentTheme = await page.locator('html').evaluate((html) => html.classList.contains('dark') ? 'dark' : 'light')
       if (currentTheme !== theme) await page.getByTitle('Alternar Tema Claro/Escuro').click()
       await expect.poll(() => page.locator('html').evaluate((html) => html.classList.contains('dark') ? 'dark' : 'light')).toBe(theme)
@@ -851,4 +860,205 @@ test('preview capture: synthetic UI evidence', async ({ page }, testInfo) => {
     }
   }
   await testInfo.attach('preview-output-directory.txt', { body: output, contentType: 'text/plain' })
+})
+
+
+test('flow measurement: synthetic critical path', async ({ page }, testInfo) => {
+  test.skip(process.env.MEASURE_FLOW !== '1', 'Opt-in baseline/final measurement')
+  await mockApi(page, { authenticated: true })
+  await page.goto('/')
+  await expect(page.locator('#patient-name')).toBeVisible()
+  await page.evaluate(() => {
+    const measurement = { clicks: 0, keys: 0, start: performance.now(), printAt: 0, feedbackAt: 0 }
+    Object.assign(window, { __flow: measurement })
+    document.addEventListener('click', () => measurement.clicks++)
+    document.addEventListener('keydown', () => measurement.keys++)
+  })
+  await page.locator('#patient-name').fill('Pessoa Sintética Um')
+  await page.locator('#patient-name').press('ArrowDown')
+  await page.locator('#patient-name').press('Enter')
+  await page.locator('#doctor-name').fill('Profissional Sintético Um')
+  await page.locator('#doctor-name').press('ArrowDown')
+  await page.locator('#doctor-name').press('Enter')
+  await page.locator('#certificate-days').fill('3')
+  await page.getByLabel('Não Informado').check()
+  const generatedAt = await page.evaluate(() => performance.now())
+  await page.locator('.clinic-footer .btn-primary').click()
+  await expect(page.getByRole('dialog', { name: 'Pré-visualização do Documento' })).toBeVisible()
+  const feedbackAt = await page.evaluate(() => performance.now())
+  await expect.poll(() => page.evaluate(() => (window as Window & { __printCalls?: number }).__printCalls)).toBe(1)
+  const measurements = await page.evaluate(({ generatedAt, feedbackAt }) => ({
+    ...(window as Window & { __flow?: object }).__flow,
+    feedbackMs: feedbackAt - generatedAt,
+    printObservedMs: performance.now() - generatedAt,
+    printCalls: (window as Window & { __printCalls?: number }).__printCalls,
+    patientFieldTop: document.querySelector('#patient-name')!.getBoundingClientRect().top,
+  }), { generatedAt, feedbackAt })
+  await mkdir(process.env.EVIDENCE_DIR || '/workspace/clinical-evidence/baseline', { recursive: true })
+  const { writeFile } = await import('node:fs/promises')
+  await writeFile(path.join(process.env.EVIDENCE_DIR || '/workspace/clinical-evidence/baseline', `flow-${testInfo.project.name}.json`), JSON.stringify(measurements, null, 2))
+})
+
+async function fillCriticalForm(page: Page) {
+  await page.locator('#patient-name').fill('Pessoa Sintética Um')
+  await page.locator('#patient-name').press('ArrowDown')
+  await page.locator('#patient-name').press('Enter')
+  await page.locator('#doctor-name').fill('Profissional Sintético Um')
+  await page.locator('#doctor-name').press('ArrowDown')
+  await page.locator('#doctor-name').press('Enter')
+  await page.locator('#certificate-days').fill('3')
+  await page.getByLabel('Não Informado').check()
+}
+
+test('fastflow: clear confirms only edited work and focuses first missing field', async ({ page }) => {
+  await mockApi(page, { authenticated: true })
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Limpar Formulário' }).click()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await page.locator('#patient-name').fill('Pessoa Sintética Edição')
+  await page.getByRole('button', { name: 'Limpar Formulário' }).click()
+  const confirm = page.getByRole('dialog', { name: 'Limpar formulário?' })
+  await expect(confirm.getByRole('button', { name: 'Cancelar' })).toBeFocused()
+  await confirm.getByRole('button', { name: 'Cancelar' }).click()
+  await expect(page.locator('#patient-name')).toHaveValue('Pessoa Sintética Edição')
+  await page.getByRole('button', { name: 'Limpar Formulário' }).click()
+  await confirm.getByRole('button', { name: 'Limpar atendimento' }).click()
+  await expect(page.locator('#patient-name')).toHaveValue('')
+  await page.getByRole('button', { name: 'Gerar e imprimir' }).click()
+  await page.getByRole('button', { name: 'Entendi, vou preencher' }).click()
+  await expect(page.locator('#patient-name')).toBeFocused()
+})
+
+test('fastflow: local calendar date respects Brazilian day boundaries', async ({ browser }) => {
+  const context = await browser.newContext({ timezoneId: 'America/Sao_Paulo' })
+  const page = await context.newPage()
+  await mockApi(page, { authenticated: true })
+  await page.clock.setFixedTime(new Date('2026-10-09T01:30:00Z'))
+  await page.goto('/')
+  await expect(page.locator('#certificate-date')).toHaveValue('2026-10-08')
+  await page.clock.setFixedTime(new Date('2026-10-09T03:30:00Z'))
+  await page.getByRole('button', { name: 'Limpar Formulário' }).click()
+  await expect(page.locator('#certificate-date')).toHaveValue('2026-10-09')
+  await context.close()
+})
+
+test('fastflow: one automatic print per identical HTML generation, rerender, load and manual retry', async ({ page }) => {
+  const state = await mockApi(page, { authenticated: true })
+  await page.goto('/')
+  await fillCriticalForm(page)
+  await page.getByRole('button', { name: 'Gerar e imprimir' }).click()
+  await expect.poll(() => page.evaluate(() => (window as Window & { __printCalls?: number }).__printCalls)).toBe(1)
+  await page.locator('iframe').evaluate((frame) => { frame.dispatchEvent(new Event('load')); frame.dispatchEvent(new Event('load')) })
+  await page.getByRole('button', { name: 'Tela cheia', exact: true }).click()
+  await expect.poll(() => page.evaluate(() => (window as Window & { __printCalls?: number }).__printCalls)).toBe(1)
+  await page.getByRole('button', { name: 'Imprimir documento', exact: true }).click()
+  expect(await page.evaluate(() => (window as Window & { __printCalls?: number }).__printCalls)).toBe(2)
+  await page.getByRole('button', { name: 'Fechar pré-visualização' }).click()
+  await page.getByRole('button', { name: 'Gerar e imprimir' }).click()
+  await expect.poll(() => page.evaluate(() => (window as Window & { __printCalls?: number }).__printCalls)).toBe(3)
+  expect(state.generateRequests).toHaveLength(2)
+  await expect(page.getByRole('dialog', { name: 'Pré-visualização do Documento' })).toBeVisible()
+})
+
+test('fastflow: 401 and delayed generation cannot restore data in the next session', async ({ page }) => {
+  const state = await mockApi(page, { authenticated: true })
+  let release!: () => void
+  const response = new Promise<void>((resolve) => { release = resolve })
+  let started = false
+  await page.route('**/api/generate-html', async (route) => { started = true; await response; await route.fulfill({ contentType: 'text/html', body: previewHtml }) })
+  await page.goto('/')
+  await fillCriticalForm(page)
+  await page.getByRole('button', { name: 'Gerar e imprimir' }).click()
+  await expect.poll(() => started).toBe(true)
+  await expect(page.locator('.clinic-footer .btn-primary')).toBeDisabled()
+  state.directoryStatus = 401
+  await page.getByRole('button', { name: 'Atualizar cadastros' }).click()
+  await expect(page.getByLabel(/Usuário/)).toBeVisible()
+  await page.getByLabel(/Usuário/).fill('usuario-sintetico')
+  await page.getByPlaceholder('Sua senha secreta').fill('senha-sintetica')
+  state.directoryStatus = 200
+  await page.getByRole('button', { name: 'Entrar no Sistema' }).click()
+  release()
+  await expect(page.locator('#patient-name')).toHaveValue('')
+  await expect(page.locator('#doctor-name')).toHaveValue('')
+  await expect(page.getByRole('dialog', { name: 'Pré-visualização do Documento' })).toHaveCount(0)
+  await expect(page.locator('.clinic-footer .btn-primary')).toBeEnabled()
+})
+
+test('fastflow: service worker controllerchange preserves dirty work and exposes safe update', async ({ page }) => {
+  await mockApi(page, { authenticated: true })
+  await page.addInitScript(() => {
+    const container = new EventTarget()
+    Object.assign(container, { controller: {}, register: async () => ({ update: async () => undefined, waiting: null, installing: null, addEventListener: () => undefined }) })
+    Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: container })
+  })
+  await page.goto('/')
+  await page.locator('#patient-name').fill('Pessoa Sintética Atualização')
+  await page.evaluate(() => navigator.serviceWorker.dispatchEvent(new Event('controllerchange')))
+  await expect(page.getByText('Atualização disponível')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Atualizar agora' })).toBeDisabled()
+  await expect(page.locator('#patient-name')).toHaveValue('Pessoa Sintética Atualização')
+  await page.getByRole('button', { name: 'Limpar Formulário' }).click()
+  await page.getByRole('button', { name: 'Limpar atendimento' }).click()
+  await expect(page.getByRole('button', { name: 'Atualizar agora' })).toBeEnabled()
+})
+
+test('fastflow: template draft, separate titles, assisted fields, search and sort remain safe', async ({ page }) => {
+  await mockApi(page, { authenticated: true })
+  const models = [
+    { id: '123e4567-e89b-42d3-a456-426614174010', name: 'Modelo Zeta', title: 'Título clínico Z', body: 'Olá {{nome}}', fields: [{ key: 'nome', label: 'Nome' }], revision: 2, updated_at: '2026-10-08T12:00:00Z' },
+    { id: '123e4567-e89b-42d3-a456-426614174011', name: 'Modelo Alfa', title: 'Título clínico A', body: 'Texto sintético', fields: [], revision: 1, updated_at: '2026-10-01T12:00:00Z' },
+  ]
+  await page.route('**/api/document-models', (route) => route.fulfill({ json: models }))
+  await page.goto('/')
+  await page.getByRole('navigation').getByRole('button', { name: 'Modelos', exact: true }).click()
+  await page.getByLabel('Ordenar modelos').selectOption('name')
+  await expect(page.getByRole('article').first().getByRole('heading')).toHaveText('Modelo Alfa')
+  await page.getByLabel('Buscar modelos').fill('Zeta')
+  await expect(page.getByRole('article')).toHaveCount(1)
+  await page.getByRole('button', { name: 'Editar', exact: true }).click()
+  await page.getByLabel('Nome do modelo').fill('Rascunho sintético')
+  await expect(page.getByLabel('Título do documento')).toHaveValue('Título clínico Z')
+  await page.getByLabel('Nome do campo').fill('Cargo')
+  await page.getByRole('button', { name: 'Adicionar campo', exact: true }).click()
+  await expect(page.getByLabel('Texto do modelo')).toHaveValue(/{{cargo}}/)
+  await page.getByText('Prévia do texto', { exact: true }).click()
+  await expect(page.locator('.model-live-preview')).toContainText('[Cargo]')
+  page.once('dialog', (dialog) => void dialog.dismiss())
+  await page.getByRole('button', { name: 'Voltar aos modelos', exact: true }).click()
+  await expect(page.getByLabel('Nome do modelo')).toHaveValue('Rascunho sintético')
+  await page.getByRole('navigation').getByRole('button', { name: 'Nova homologação', exact: true }).click()
+  await page.getByRole('navigation').getByRole('button', { name: 'Modelos', exact: true }).click()
+  await expect(page.getByLabel('Nome do modelo')).toHaveValue('Rascunho sintético')
+  page.once('dialog', (dialog) => void dialog.dismiss())
+  await page.getByRole('navigation').getByRole('button', { name: 'Modelos', exact: true }).click()
+  await expect(page.getByLabel('Título do documento')).toHaveValue('Título clínico Z')
+})
+
+test('fastflow: languages, collapse, density, reduced effects and 200 percent layout', async ({ page }) => {
+  await mockApi(page, { authenticated: true })
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Recolher navegação' }).click()
+  await expect(page.getByRole('navigation').getByRole('button', { name: 'Modelos', exact: true })).toHaveAttribute('title', 'Modelos')
+  await page.getByRole('button', { name: 'Abrir configurações' }).click()
+  await page.getByLabel('Modo compacto').check()
+  await page.getByLabel('Reduzir transparência').check()
+  await page.getByRole('button', { name: 'English (US)' }).click()
+  await expect(page.getByRole('dialog', { name: 'System settings' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Dark mode', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Español' }).click()
+  await expect(page.getByRole('dialog', { name: 'Configuración del sistema' })).toBeVisible()
+  await page.getByTestId('settings-close').click()
+  await expect(page.locator('.clinic-footer .btn-primary')).toContainText('Generar e imprimir')
+  await page.reload()
+  await expect(page.locator('html')).toHaveAttribute('data-density', 'compact')
+  await expect(page.locator('html')).toHaveAttribute('data-transparency', 'reduced')
+  await expect(page.locator('.clinic-shell')).toHaveClass(/collapsed/)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.setViewportSize({ width: 640, height: 450 })
+  await page.evaluate(() => { document.documentElement.style.zoom = '2' })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true)
+  await page.locator('#doctor-register-number').focus()
+  const effects = await page.locator('.clinic-topbar').evaluate((element) => ({ blur: getComputedStyle(element).backdropFilter, animation: getComputedStyle(element).animationDuration }))
+  expect(effects.blur).toBe('none')
 })

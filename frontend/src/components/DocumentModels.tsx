@@ -5,6 +5,7 @@ import { generateModelDocument, modelFieldKeys, saveDocumentModel, type Document
 import { maskCPF } from '../utils/maskCPF'
 import { useTranslation } from '../utils/i18n'
 import Field from './Field'
+import { normalizeText } from '../utils/normalize'
 import './DocumentModels.css'
 
 const COPY = {
@@ -98,6 +99,8 @@ const COPY = {
 } as const
 
 interface Props {
+  onDirtyChange: (dirty: boolean) => void
+  onBusyChange: (busy: boolean) => void
   models: DocumentModel[]
   loading: boolean
   error: boolean
@@ -107,9 +110,18 @@ interface Props {
   onPreview: (html: string, title: string) => void
 }
 
-export default function DocumentModels({ models, loading, error, selected, onRefresh, onSaved, onPreview }: Props) {
+export default function DocumentModels({ onDirtyChange, onBusyChange, models, loading, error, selected, onRefresh, onSaved, onPreview }: Props) {
   const { lang } = useTranslation()
   const c = COPY[lang]
+  const m = {
+    pt: { search: 'Buscar modelos', sort: 'Ordenar modelos', recent: 'Mais recentes', alphabetical: 'Nome (A–Z)', found: 'modelos encontrados', updated: 'Atualizado', revision: 'Revisão', preview: 'Prévia do texto', nameHint: 'Identifica o modelo na lista.', titleHint: 'Aparece no documento emitido.', noResults: 'Nenhum modelo corresponde à busca.', chips: 'Campos inseridos' },
+    en: { search: 'Search templates', sort: 'Sort templates', recent: 'Most recent', alphabetical: 'Name (A–Z)', found: 'templates found', updated: 'Updated', revision: 'Revision', preview: 'Text preview', nameHint: 'Identifies the template in the list.', titleHint: 'Appears in the issued document.', noResults: 'No templates match your search.', chips: 'Inserted fields' },
+    es: { search: 'Buscar modelos', sort: 'Ordenar modelos', recent: 'Más recientes', alphabetical: 'Nombre (A–Z)', found: 'modelos encontrados', updated: 'Actualizado', revision: 'Revisión', preview: 'Vista previa del texto', nameHint: 'Identifica el modelo en la lista.', titleHint: 'Aparece en el documento emitido.', noResults: 'Ningún modelo coincide con la búsqueda.', chips: 'Campos insertados' },
+  }[lang]
+  const [search, setSearch] = useState('')
+  const [sort, setSort] = useState('recent')
+  const visibleModels = useMemo(() => models.filter((model) => normalizeText(`${model.name} ${model.title}`).includes(normalizeText(search))).sort((a, b) => sort === 'name' ? (a.name || a.title).localeCompare(b.name || b.title, lang) : Date.parse(b.updated_at) - Date.parse(a.updated_at)), [models, search, sort, lang])
+  const pending = useRef(false)
   const [mode, setMode] = useState<'list' | 'edit' | 'fill'>('list')
   const [current, setCurrent] = useState<DocumentModel | undefined>()
   const [name, setName] = useState('')
@@ -120,6 +132,12 @@ export default function DocumentModels({ models, loading, error, selected, onRef
   const [fieldName, setFieldName] = useState('')
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
+  const baseline = useRef('')
+  const currentDraft = JSON.stringify({ name, title, body, labels })
+  const dirty = mode === 'edit' ? currentDraft !== baseline.current : mode === 'fill' && Object.values(values).some(Boolean)
+  useEffect(() => { onDirtyChange(dirty); return () => onDirtyChange(false) }, [dirty, onDirtyChange])
+  useEffect(() => { onBusyChange(busy); return () => onBusyChange(false) }, [busy, onBusyChange])
+  const canDiscard = () => !dirty || window.confirm({ pt: 'Descartar alterações do modelo?', en: 'Discard template changes?', es: '¿Descartar cambios del modelo?' }[lang])
   const mounted = useRef(false)
   useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
   const textRef = useRef<HTMLTextAreaElement>(null)
@@ -134,31 +152,35 @@ export default function DocumentModels({ models, loading, error, selected, onRef
 
   const edit = (model?: DocumentModel) => {
     setCurrent(model); setName(model?.name || model?.title || ''); setTitle(model?.title || ''); setBody(model?.body || '')
-    setLabels(Object.fromEntries((model?.fields || []).map((field) => [field.key, field.label])))
+    const nextLabels = Object.fromEntries((model?.fields || []).map((field) => [field.key, field.label]))
+    baseline.current = JSON.stringify({ name: model?.name || model?.title || '', title: model?.title || '', body: model?.body || '', labels: nextLabels })
+    setLabels(nextLabels)
     setMessage(''); setMode('edit')
   }
   const fill = (model: DocumentModel) => { setCurrent(model); setValues({}); setMessage(''); setMode('fill') }
   const fail = (error: unknown) => setMessage(axios.isAxiosError(error) && error.response?.status === 409 ? c.conflict : c.failure)
   const save = async (event: React.FormEvent) => {
     event.preventDefault()
+    if (pending.current) return
     const remainder = body.replace(/\{\{([a-z][a-z0-9_]{0,39})\}\}/g, '')
     if (remainder.includes('{{') || remainder.includes('}}') || keys.length > 30) { setMessage(c.invalid); return }
-    setBusy(true); setMessage('')
+    pending.current = true; setBusy(true); setMessage('')
     try {
       const model = await saveDocumentModel({ name, title, body, fields: keys.map((key) => ({ key, label: labels[key]?.trim() || (key === 'cpf' ? 'CPF' : key.replace(/_/g, ' ')) })) }, current)
       if (!mounted.current) return
       onSaved(model); setCurrent(model); setMode('list')
-    } catch (error) { fail(error) }
-    finally { setBusy(false) }
+    } catch (error) { if (mounted.current) fail(error) }
+    finally { pending.current = false; if (mounted.current) setBusy(false) }
   }
   const emit = async (event: React.FormEvent) => {
     event.preventDefault()
+    if (pending.current) return
     if (!current) return
     if (current.fields.some(({ key }) => !values[key]?.trim() || (key === 'cpf' && values[key].replace(/\D/g, '').length !== 11))) { setMessage(c.required); return }
-    setBusy(true); setMessage('')
+    pending.current = true; setBusy(true); setMessage('')
     try { const html = await generateModelDocument(current, values); if (mounted.current) onPreview(html, current.title) }
-    catch (error) { fail(error) }
-    finally { setBusy(false) }
+    catch (error) { if (mounted.current) fail(error) }
+    finally { pending.current = false; if (mounted.current) setBusy(false) }
   }
   const insert = () => {
     const key = fieldName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/\s+/g, '_')
@@ -178,24 +200,29 @@ export default function DocumentModels({ models, loading, error, selected, onRef
         <div><h2 ref={headingRef} tabIndex={-1}>{mode === 'fill' ? current?.name : c.title}</h2><p>{c.intro}</p></div>
         {mode === 'list'
           ? <div className="models-card-actions"><button className="btn-secondary" type="button" onClick={onRefresh} disabled={loading}><RefreshCw className="h-4 w-4" aria-hidden="true" />{c.refresh}</button><button className="btn-primary" type="button" onClick={() => edit()}><FilePlus2 className="h-4 w-4" aria-hidden="true" />{c.new}</button></div>
-          : <button className="btn-secondary" type="button" disabled={busy} onClick={() => { setMode('list'); setMessage('') }}><ArrowLeft className="h-4 w-4" aria-hidden="true" />{c.back}</button>}
+          : <button className="btn-secondary" type="button" disabled={busy} onClick={() => { if (canDiscard()) { setMode('list'); setMessage('') } }}><ArrowLeft className="h-4 w-4" aria-hidden="true" />{c.back}</button>}
       </header>
       {message && <p role="alert" className="models-error">{message}</p>}
       {mode === 'list' && <>
         {loading && <p role="status" className="models-status"><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />{c.loading}</p>}
         {error && <div role="alert" className="models-error">{c.unavailable} <button type="button" className="btn-secondary" onClick={onRefresh}><RefreshCw className="h-4 w-4" aria-hidden="true" />{c.retry}</button></div>}
         {!loading && !error && models.length === 0 && <div className="models-empty"><FileText className="h-8 w-8" aria-hidden="true" /><p>{c.empty}</p></div>}
-        <div className="models-grid">{models.map((model) => <article key={model.id} className="models-card">
-          <FileText className="h-5 w-5 text-brand-foreground" aria-hidden="true" /><h3>{model.name}</h3><p className="models-document-title">{model.title}</p><p className="models-excerpt">{model.body}</p>
+        <div className="models-toolbar"><Field id="model-search" label={m.search}><input id="model-search" type="search" className="input-field" value={search} onChange={(event) => setSearch(event.target.value)} /></Field><Field id="model-sort" label={m.sort}><select id="model-sort" className="input-field" value={sort} onChange={(event) => setSort(event.target.value)}><option value="recent">{m.recent}</option><option value="name">{m.alphabetical}</option></select></Field><p role="status">{visibleModels.length} {m.found}</p></div>
+        {!loading && !error && models.length > 0 && visibleModels.length === 0 && <p className="models-status">{m.noResults}</p>}
+        <div className="models-grid">{visibleModels.map((model) => <article key={model.id} className="models-card">
+          <FileText className="h-5 w-5 text-brand-foreground" aria-hidden="true" /><h3>{model.name || model.title}</h3><p className="models-document-title">{model.title}</p><p className="models-excerpt">{model.body}</p>
+          <p className="models-meta">{m.revision} {model.revision} · {m.updated} {Number.isFinite(Date.parse(model.updated_at)) ? new Intl.DateTimeFormat(lang === 'pt' ? 'pt-BR' : lang, { dateStyle: 'short' }).format(new Date(model.updated_at)) : '—'}</p>
           <div className="models-card-actions"><button type="button" className="btn-primary" onClick={() => fill(model)}>{c.fill}</button><button type="button" className="btn-secondary" onClick={() => edit(model)}><Pencil className="h-4 w-4" aria-hidden="true" />{c.edit}</button></div>
         </article>)}</div>
       </>}
       {mode === 'edit' && <form onSubmit={save} className="models-editor" aria-busy={busy}>
         <fieldset disabled={busy} className="models-fields">
-          <Field id="model-name" label={c.modelName}><input id="model-name" required maxLength={120} className="input-field" value={name} onChange={(event) => setName(event.target.value)} /></Field>
-          <Field id="model-title" label={c.documentTitle}><input id="model-title" required maxLength={120} className="input-field" value={title} onChange={(event) => setTitle(event.target.value)} /></Field>
+          <Field id="model-name" label={c.modelName} hint={m.nameHint}><input id="model-name" required maxLength={120} className="input-field" value={name} onChange={(event) => setName(event.target.value)} /></Field>
+          <Field id="model-title" label={c.documentTitle} hint={m.titleHint}><input id="model-title" required maxLength={120} className="input-field" value={title} onChange={(event) => setTitle(event.target.value)} /></Field>
           <Field id="model-body" label={c.body} hint={c.help}><textarea ref={textRef} id="model-body" required maxLength={20000} rows={12} className="input-field models-textarea" value={body} onChange={(event) => setBody(event.target.value)} /></Field>
           <div className="models-insert"><Field id="model-field-name" label={c.field}><input id="model-field-name" maxLength={40} className="input-field" value={fieldName} onChange={(event) => setFieldName(event.target.value)} placeholder="nome, cpf, cargo" /></Field><button type="button" className="btn-secondary" onClick={insert} disabled={!fieldName.trim()}><Plus className="h-4 w-4" aria-hidden="true" />{c.add}</button></div>
+          {keys.length > 0 && <div aria-label={m.chips} className="model-chips">{keys.map((key) => <span key={key}>{labels[key] || key}</span>)}</div>}
+          <details className="model-live-preview"><summary>{m.preview}</summary><h3>{title}</h3><p>{body.replace(/\{\{([a-z][a-z0-9_]{0,39})\}\}/g, (_, key: string) => `[${labels[key] || key}]`)}</p></details>
           {keys.length > 0 && <div className="models-field-labels"><h3>{c.labels}</h3>{keys.map((key) => <Field key={key} id={`model-label-${key}`} label={`{{${key}}}`}><input id={`model-label-${key}`} className="input-field" maxLength={80} value={labels[key] ?? (key === 'cpf' ? 'CPF' : key.replace(/_/g, ' '))} onChange={(event) => setLabels((previous) => ({ ...previous, [key]: event.target.value }))} /></Field>)}</div>}
         </fieldset>
         <button type="submit" className="btn-primary" disabled={busy}>{busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Save className="h-4 w-4" aria-hidden="true" />}{busy ? c.saving : c.save}</button>

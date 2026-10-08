@@ -199,7 +199,7 @@ class ThemeManager {
     let hexColor: string
     if (isDark) {
       // No modo escuro, utiliza a cor escura de fundo real da paleta ativa (#0d0000 para Garnet)
-      hexColor = rgbToHex(palette.bgPage || palette[900])
+      hexColor = rgbToHex('15 20 28')
     } else {
       // No modo claro, utiliza a cor primária de destaque (500) da paleta ativa (#6e2d29 para Garnet)
       hexColor = rgbToHex(palette[500])
@@ -236,9 +236,9 @@ class ThemeManager {
     root.style.setProperty('--color-primary-900', palette[900])
     root.style.setProperty('--color-primary-950', palette[950])
 
-    root.style.setProperty('--color-dark-bg-page', palette.bgPage)
-    root.style.setProperty('--color-dark-bg-card', palette.bgCard)
-    root.style.setProperty('--color-dark-bg-input', palette.bgInput)
+    root.style.setProperty('--color-dark-bg-page', '15 20 28')
+    root.style.setProperty('--color-dark-bg-card', '24 31 41')
+    root.style.setProperty('--color-dark-bg-input', '20 27 36')
 
     this.updateThemeColor()
 
