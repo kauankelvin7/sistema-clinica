@@ -417,7 +417,6 @@ function App() {
           }
         >
           <SectionCard
-            step="01"
             title={t.patientDataTitle}
             description={t.patientSectionHint}
             icon={User}
@@ -426,7 +425,6 @@ function App() {
           </SectionCard>
 
           <SectionCard
-            step="02"
             title={t.certificateDataTitle}
             description={t.certificateSectionHint}
             icon={FileText}
@@ -435,7 +433,6 @@ function App() {
           </SectionCard>
 
           <SectionCard
-            step="03"
             title={t.doctorDataTitle}
             description={t.doctorSectionHint}
             icon={Stethoscope}

@@ -5,7 +5,6 @@ interface SectionCardProps {
   title: string
   description: string
   icon: LucideIcon
-  step?: string
   children: ReactNode
 }
 
@@ -13,7 +12,6 @@ export default function SectionCard({
   title,
   description,
   icon: Icon,
-  step,
   children,
 }: SectionCardProps) {
   return (
@@ -28,7 +26,6 @@ export default function SectionCard({
           </div>
           <p className="section-shell__description">{description}</p>
         </div>
-        {step && <span className="section-shell__step" aria-hidden="true">{step}</span>}
       </header>
       <div className="section-shell__body">{children}</div>
     </article>

@@ -3,9 +3,9 @@ import { useState } from 'react'
 import { ArrowRight, Eye, EyeOff, Loader2, Lock, Settings, User as UserIcon } from 'lucide-react'
 import { loginUser } from '../services/api'
 import { useTranslation } from '../utils/i18n'
+import ClinicalArtwork from './ClinicalArtwork'
 import SettingsModal from './SettingsModal'
 import './AppShell.css'
-import './ClinicSignature.css'
 
 interface LoginProps {
   onLoginSuccess: () => void
@@ -47,6 +47,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
           <div className="login-story-eyebrow">{t.loginAppTitle}</div>
           <h1>{t.loginHeroTitle}</h1>
           <p className="login-story-description">{t.loginAppSubtitle}</p>
+          <ClinicalArtwork className="login-art" />
         </aside>
         <main className="login-panel">
           <div className="login-panel-inner">
