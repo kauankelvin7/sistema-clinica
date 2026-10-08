@@ -241,7 +241,7 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     btnGotIt: 'Entendi, vou preencher',
 
     // Login Screen
-    loginAppTitle: 'NOVA Medicina e Segurança do Trabalho',
+    loginAppTitle: 'Sistema Clínica',
     loginAppSubtitle: 'Sistema de Homologação e Validação de Atestados Médicos',
     loginUserLabel: 'Usuário / E-mail',
     loginUserPlaceholder: 'Seu usuário de acesso',
@@ -364,7 +364,7 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     btnGotIt: 'Got it, I will fill them in',
 
     // Login Screen
-    loginAppTitle: 'NOVA Occupational Health & Safety',
+    loginAppTitle: 'Sistema Clínica',
     loginAppSubtitle: 'Medical Certificate Homologation & Validation System',
     loginUserLabel: 'Username / Email',
     loginUserPlaceholder: 'Enter your username',
@@ -487,7 +487,7 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     btnGotIt: 'Entendido, voy a completar',
 
     // Login Screen
-    loginAppTitle: 'NOVA Medicina y Seguridad del Trabajo',
+    loginAppTitle: 'Sistema Clínica',
     loginAppSubtitle: 'Sistema de Homologación y Validación de Certificados Médicos',
     loginUserLabel: 'Usuario / Correo',
     loginUserPlaceholder: 'Su usuario de acceso',
