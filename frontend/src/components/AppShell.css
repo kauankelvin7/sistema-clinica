@@ -375,3 +375,24 @@ html[data-transparency="reduced"] .preview-toolbar {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
+
+/* Clear wordmark hierarchy: branding is visible even on the mobile login. */
+.login-brand-label strong {
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -.065em;
+}
+.login-brand-label span {
+  font-size: 11px;
+  letter-spacing: .005em;
+}
+.login-story-eyebrow {
+  text-transform: none;
+  letter-spacing: .015em;
+  font-size: 12px;
+  font-weight: 600;
+}
+.login-story-description { line-height: 1.65; }
+.login-panel-top { margin-bottom: 24px; }
+.login-form { gap: 16px; }
