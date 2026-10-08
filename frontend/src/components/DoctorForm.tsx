@@ -1,7 +1,7 @@
 import { useUiCopy } from '../utils/uiCopy'
 import { AlertCircle, ChevronDown, ExternalLink, Eye, Stethoscope } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
-import { checkDuplicate } from '../services/api'
+import { useMemo, useState } from 'react'
+import { normalizeText } from '../utils/normalize'
 import type { DoctorFormProps } from '../types'
 import { useTranslation } from '../utils/i18n'
 import AutocompleteInput from './AutocompleteInput'
@@ -23,7 +23,6 @@ export default function DoctorForm({ formData, updateFormData, doctors, onLoadDo
   const { t } = useTranslation()
   const [showListModal, setShowListModal] = useState(false)
   const [isConsultaModalOpen, setIsConsultaModalOpen] = useState(false)
-  const [isDuplicate, setIsDuplicate] = useState(false)
 
   const doctorOptions = useMemo(() => doctors.map((doctor) => ({
     label: doctor.nome_completo,
@@ -31,29 +30,21 @@ export default function DoctorForm({ formData, updateFormData, doctors, onLoadDo
     data: doctor,
   })), [doctors])
 
-  useEffect(() => {
+  // The same registration number in a different UF is not the same identity.
+  const conflictingDoctor = useMemo(() => {
     const register = normalizeRegister(formData.numeroRegistro)
-    if (register.length < 4) {
-      setIsDuplicate(false)
-      return
-    }
-
-    const localMatch = doctors.some((doctor) =>
-      doctor.tipo_crm === formData.tipoRegistro && normalizeRegister(doctor.crm) === register
+    if (register.length < 4) return false
+    const matching = doctors.filter((doctor) =>
+      doctor.tipo_crm === formData.tipoRegistro &&
+      doctor.uf_crm === formData.ufRegistro &&
+      normalizeRegister(doctor.crm) === register
     )
-
-    if (localMatch || doctors.length > 0) {
-      setIsDuplicate(localMatch)
-      return
-    }
-
-    const timer = setTimeout(() => {
-      void checkDuplicate('medico', formData.numeroRegistro)
-        .then(setIsDuplicate)
-        .catch(() => setIsDuplicate(false))
-    }, 350)
-    return () => clearTimeout(timer)
-  }, [doctors, formData.numeroRegistro, formData.tipoRegistro])
+    if (!matching.length) return false
+    const name = normalizeText(formData.nomeMedico.trim())
+    return Boolean(name) && !matching.some((doctor) =>
+      normalizeText(doctor.nome_completo.trim()) === name
+    )
+  }, [doctors, formData.numeroRegistro, formData.tipoRegistro, formData.ufRegistro, formData.nomeMedico])
 
   return (
     <div className="relative space-y-4">
@@ -116,7 +107,7 @@ export default function DoctorForm({ formData, updateFormData, doctors, onLoadDo
           <input
             id="doctor-register-number"
             type="text"
-            className={`input-field ${isDuplicate ? 'border-amber-500/80 bg-amber-500/5 focus:border-amber-500' : ''}`}
+            className={`input-field ${conflictingDoctor ? 'border-amber-500/80 bg-amber-500/5 focus:border-amber-500' : ''}`}
             placeholder={t.regNumberPlaceholder}
             value={formData.numeroRegistro}
             onChange={(event) => updateFormData('numeroRegistro', event.target.value)}
@@ -137,10 +128,10 @@ export default function DoctorForm({ formData, updateFormData, doctors, onLoadDo
           </div>
         </div>
 
-        {isDuplicate && (
+        {conflictingDoctor && (
           <div className="field-warning">
             <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            <span>{c.duplicateRegister}</span>
+            <span>{c.doctorMismatch}</span>
           </div>
         )}
 
