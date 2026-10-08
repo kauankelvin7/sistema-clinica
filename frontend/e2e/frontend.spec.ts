@@ -1157,3 +1157,101 @@ test('layout regression: readable mobile workspace and restored original sidebar
   expect(result.htmlOverflow).toBe(false)
   expect(result.footerWidth).toBeGreaterThan(320)
 })
+
+
+test('unique patient and doctor names complete all saved fields on Tab or blur', async ({ page }) => {
+  await mockApi(page, { authenticated: true })
+  await page.goto('/')
+  const patient = page.locator('#patient-name')
+  await patient.fill('PESSOA SINTETICA U')
+  await expect(page.getByRole('option', { name: 'Pessoa Sintética Um' })).toBeVisible()
+  // The name remains editable while typing; accepting it requires no mouse click.
+  await expect(patient).toHaveValue('PESSOA SINTETICA U')
+  await expect(page.locator('#patient-document')).toHaveValue('')
+  await patient.press('Tab')
+  await expect(patient).toHaveValue('Pessoa Sintética Um')
+  await expect(page.locator('#patient-document')).toHaveValue('111.222.333-44')
+  await expect(page.locator('#patient-position')).toHaveValue('Analista de Teste')
+  await expect(page.locator('#patient-company')).toHaveValue('Empresa Fictícia A')
+  await expect(page.getByText(/Os dados digitados diferem do cadastro/)).toHaveCount(0)
+
+  const doctor = page.locator('#doctor-name')
+  await doctor.fill('PROFISSIONAL SINTETICO U')
+  await expect(page.getByRole('option', { name: 'Profissional Sintético Um' })).toBeVisible()
+  await page.locator('#doctor-register-number').focus()
+  await expect(doctor).toHaveValue('Profissional Sintético Um')
+  await expect(page.locator('#doctor-register-number')).toHaveValue('12345')
+  await expect(page.locator('#doctor-register-type')).toHaveValue('CRM')
+  await expect(page.locator('#doctor-register-state')).toHaveValue('DF')
+  await expect(page.getByText(/O nome informado difere do cadastro/)).toHaveCount(0)
+})
+
+test('ambiguous prefix or Escape never silently selects a medical record', async ({ page }) => {
+  await mockApi(page, { authenticated: true })
+  await page.goto('/')
+  const patient = page.locator('#patient-name')
+  await patient.fill('Pessoa Sintetica')
+  await expect(page.getByRole('option', { name: 'Pessoa Sintética Um' })).toBeVisible()
+  await expect(page.getByRole('option', { name: 'Pessoa Sintética Dois' })).toBeVisible()
+  await patient.press('Tab')
+  await expect(patient).toHaveValue('Pessoa Sintetica')
+  await expect(page.locator('#patient-document')).toHaveValue('')
+
+  await patient.fill('Pessoa Sintetica U')
+  await expect(page.getByRole('option', { name: 'Pessoa Sintética Um' })).toBeVisible()
+  await patient.press('Escape')
+  await page.locator('#patient-company').focus()
+  await expect(patient).toHaveValue('Pessoa Sintetica U')
+  await expect(page.locator('#patient-document')).toHaveValue('')
+})
+
+test('unique name never overwrites a conflicting patient document or medical registration', async ({ page }) => {
+  await mockApi(page, { authenticated: true })
+  await page.goto('/')
+  await page.locator('#patient-document').fill('99988877766')
+  const patient = page.locator('#patient-name')
+  await patient.fill('Pessoa Sintetica U')
+  await expect(page.getByRole('option', { name: 'Pessoa Sintética Um' })).toBeVisible()
+  await patient.press('Tab')
+  await expect(patient).toHaveValue('Pessoa Sintetica U')
+  await expect(page.locator('#patient-document')).toHaveValue('999.888.777-66')
+
+  await page.locator('#doctor-register-number').fill('99999')
+  const doctor = page.locator('#doctor-name')
+  await doctor.fill('Profissional Sintetico U')
+  await expect(page.getByRole('option', { name: 'Profissional Sintético Um' })).toBeVisible()
+  await doctor.press('Tab')
+  await expect(doctor).toHaveValue('Profissional Sintetico U')
+  await expect(page.locator('#doctor-register-number')).toHaveValue('99999')
+})
+
+test('duplicate names with different records require explicit selection', async ({ page }) => {
+  await mockApi(page, {
+    authenticated: true,
+    directory: {
+      patients: [
+        ...patients,
+        { id: 3, nome_completo: 'Pessoa Sintética Um', tipo_doc: 'CPF', numero_doc: '222.333.444-55', cargo: 'Outro Cargo', empresa: 'Empresa Fictícia C' },
+      ],
+      doctors: [
+        ...doctors,
+        { id: 3, nome_completo: 'Profissional Sintético Um', tipo_crm: 'CRM', crm: '99999', uf_crm: 'SP' },
+      ],
+      synced_at: '2026-10-02T12:00:00Z',
+    },
+  })
+  await page.goto('/')
+  const patient = page.locator('#patient-name')
+  await patient.fill('Pessoa Sintetica U')
+  await expect(page.getByRole('option', { name: 'Pessoa Sintética Um' })).toHaveCount(2)
+  await patient.press('Enter')
+  await expect(patient).toHaveValue('Pessoa Sintetica U')
+  await expect(page.locator('#patient-document')).toHaveValue('')
+
+  const doctor = page.locator('#doctor-name')
+  await doctor.fill('Profissional Sintetico U')
+  await expect(page.getByRole('option', { name: 'Profissional Sintético Um' })).toHaveCount(2)
+  await doctor.press('Tab')
+  await expect(doctor).toHaveValue('Profissional Sintetico U')
+  await expect(page.locator('#doctor-register-number')).toHaveValue('')
+})

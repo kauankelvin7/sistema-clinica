@@ -80,6 +80,16 @@ export default function DoctorForm({ formData, updateFormData, doctors, onLoadDo
           value={formData.nomeMedico}
           onChange={(value) => updateFormData('nomeMedico', value)}
           onSelect={(option) => option.data && onLoadDoctor(option.data)}
+          autoSelectUnique
+          canAutoSelect={(option) => {
+            const doctor = option.data
+            if (!doctor) return false
+            // Multiple councils/states may share registration numbers.
+            if (!formData.numeroRegistro.trim()) return true
+            return doctor.tipo_crm === formData.tipoRegistro &&
+              doctor.uf_crm === formData.ufRegistro &&
+              normalizeRegister(doctor.crm) === normalizeRegister(formData.numeroRegistro)
+          }}
           options={doctorOptions}
           placeholder={t.doctorNamePlaceholder}
           minChars={2}

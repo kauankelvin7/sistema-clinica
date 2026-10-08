@@ -84,6 +84,15 @@ export default function PatientForm({ formData, updateFormData, patients, onLoad
             value={formData.nomePaciente}
             onChange={(value) => updateFormData('nomePaciente', value)}
             onSelect={(option) => option.data && onLoadPatient(option.data)}
+            autoSelectUnique
+            canAutoSelect={(option) => {
+              const patient = option.data
+              if (!patient) return false
+              // Never replace a previously entered identity on partial-name match.
+              if (!formData.numeroDocumento.trim()) return true
+              return patient.tipo_doc === formData.tipoDocumento &&
+                documentKey(patient.numero_doc) === documentKey(formData.numeroDocumento)
+            }}
             options={patientOptions}
             placeholder={t.patientNamePlaceholder}
             minChars={2}
