@@ -1072,6 +1072,8 @@ test('selected patients and doctors are not misleadingly marked as duplicates', 
   await page.getByRole('option', { name: 'Pessoa Sintética Um' }).click()
   await expect(page.locator('#patient-document')).toHaveValue('111.222.333-44')
   await expect(page.getByText(/Os dados digitados diferem do cadastro/)).toHaveCount(0)
+  await page.locator('#patient-company').fill('Outra empresa legítima')
+  await expect(page.getByText(/Os dados digitados diferem do cadastro/)).toHaveCount(0)
   await patient.fill('Nome divergente')
   await expect(page.getByText(/Os dados digitados diferem do cadastro/)).toBeVisible()
   await patient.fill('Pessoa Sintética Um')
