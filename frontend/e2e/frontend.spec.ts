@@ -1107,64 +1107,53 @@ test('autocomplete keeps keyboard options available when records load after typi
 })
 
 
-test('visual identity: new typography, distinct controls and floating desktop navigation', async ({ page }) => {
-  const api = await mockApi(page, { authenticated: false })
-  await page.setViewportSize({ width: 1440, height: 900 })
+test('layout regression: collapsed sidebar, hero data and printing actions fit 1364x768', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('sidebar_collapsed', 'true')
+    localStorage.setItem('theme', 'dark')
+  })
+  await mockApi(page, { authenticated: true })
+  await page.setViewportSize({ width: 1364, height: 768 })
   await page.goto('/')
-  await expect(page.locator('.login-brand-label strong')).toHaveText('Sistema Clínica')
-  await expect(page.locator('.login-story')).toBeVisible()
-  const loginVisual = await page.locator('.login-heading').evaluate((node) => ({
-    family: getComputedStyle(node).fontFamily,
-    weight: Number(getComputedStyle(node).fontWeight),
-  }))
-  expect(loginVisual.family).toContain('Nunito')
-  expect(loginVisual.weight).toBeGreaterThanOrEqual(800)
-  api.authenticated = true
-  await page.reload()
-  const sidebar = page.locator('.clinic-sidebar--desktop')
-  await expect(sidebar).toBeVisible()
-  const layout = await page.evaluate(() => {
-    const sidebar = document.querySelector('.clinic-sidebar--desktop')!
-    const panel = document.querySelector('.clinic-topbar')!
-    const primary = document.querySelector('.clinic-footer .btn-primary')!
-    const card = document.querySelector('.section-shell')!
+  await expect(page.getByRole('heading', { name: 'Nova homologação médica' })).toBeVisible()
+  const measured = await page.evaluate(() => {
+    const rect = (sel: string) => document.querySelector(sel)!.getBoundingClientRect()
+    const side = document.querySelector<HTMLElement>('.clinic-sidebar--desktop')!
+    const hero = rect('.clinic-hero')
+    const title = rect('.clinic-hero-copy')
+    const status = rect('.clinic-status-panel')
+    const footer = rect('.clinic-footer')
     return {
-      sidebarTop: sidebar.getBoundingClientRect().top,
-      sidebarRadius: parseFloat(getComputedStyle(sidebar).borderTopLeftRadius),
-      headerRadius: parseFloat(getComputedStyle(panel).borderTopLeftRadius),
-      actionGradient: getComputedStyle(primary).backgroundImage,
-      cardRadius: parseFloat(getComputedStyle(card).borderTopLeftRadius),
+      sidebarWidth: rect('.clinic-sidebar--desktop').width,
+      sidebarOverflow: side.scrollWidth - side.clientWidth,
+      heroContained: title.right <= hero.right + 1 && status.right <= hero.right + 1,
+      footerContained: footer.left >= 0 && footer.right <= innerWidth + 1,
+      actionVisible: rect('.clinic-footer .btn-primary').right <= innerWidth + 1,
+      horizontalOverflow: document.documentElement.scrollWidth > innerWidth + 1,
+      titleWeight: Number(getComputedStyle(document.querySelector('.workspace-title')!).fontWeight),
     }
   })
-  expect(layout.sidebarTop).toBeGreaterThan(5)
-  expect(layout.sidebarRadius).toBeGreaterThanOrEqual(23)
-  expect(layout.headerRadius).toBeGreaterThanOrEqual(19)
-  expect(layout.cardRadius).toBeGreaterThanOrEqual(21)
-  expect(layout.actionGradient).toContain('linear-gradient')
-  await expect(page.locator('.section-shell__step')).toHaveText(['01', '02', '03'])
-  await page.setViewportSize({ width: 375, height: 812 })
-  await expect(page.getByRole('button', { name: 'Gerar e imprimir' })).toBeVisible()
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true)
+  expect(measured.sidebarWidth).toBeGreaterThanOrEqual(72)
+  expect(measured.sidebarWidth).toBeLessThanOrEqual(82)
+  expect(measured.sidebarOverflow).toBeLessThanOrEqual(1)
+  expect(measured.heroContained).toBe(true)
+  expect(measured.footerContained).toBe(true)
+  expect(measured.actionVisible).toBe(true)
+  expect(measured.horizontalOverflow).toBe(false)
+  expect(measured.titleWeight).toBeLessThanOrEqual(750)
 })
 
-test('visual identity: synthetic mobile and desktop screenshot evidence', async ({ page }) => {
-  test.skip(process.env.CAPTURE_SIGNATURE !== '1', 'Opt-in synthetic screenshot capture')
-  const output = path.resolve(process.env.PREVIEW_OUTPUT_DIR || '../../../outputs/clinic-signature')
-  await mkdir(output, { recursive: true })
-  const api = await mockApi(page, { authenticated: false })
-  await page.setViewportSize({ width: 1440, height: 900 })
+test('layout regression: readable mobile workspace and restored original sidebar wordmark', async ({ page }) => {
+  await mockApi(page, { authenticated: true })
+  await page.setViewportSize({ width: 375, height: 812 })
   await page.goto('/')
-  await expect(page.locator('.login-story')).toBeVisible()
-  await page.screenshot({ path: path.join(output, 'login-desktop.png'), animations: 'disabled' })
-  await page.setViewportSize({ width: 375, height: 812 })
-  await page.screenshot({ path: path.join(output, 'login-mobile.png'), animations: 'disabled', fullPage: true })
-  api.authenticated = true
-  await page.setViewportSize({ width: 1440, height: 900 })
-  await page.reload()
-  await expect(page.getByRole('heading', { name: 'Nova homologação médica' })).toBeVisible()
-  await page.screenshot({ path: path.join(output, 'workspace-desktop.png'), animations: 'disabled', fullPage: true })
-  await page.setViewportSize({ width: 375, height: 812 })
-  await page.screenshot({ path: path.join(output, 'workspace-mobile.png'), animations: 'disabled', fullPage: true })
-  await page.getByTitle('Alternar Tema Claro/Escuro').click()
-  await page.screenshot({ path: path.join(output, 'workspace-mobile-dark.png'), animations: 'disabled', fullPage: true })
+  await expect(page.getByRole('button', { name: 'Gerar e imprimir' })).toBeVisible()
+  await page.getByRole('button', { name: 'Abrir navegação' }).click()
+  await expect(page.getByRole('dialog', { name: 'Navegação principal' }).getByText('Sistema de Homologação')).toBeVisible()
+  const result = await page.evaluate(() => ({
+    htmlOverflow: document.documentElement.scrollWidth > innerWidth + 1,
+    footerWidth: document.querySelector('.clinic-footer')!.getBoundingClientRect().width,
+  }))
+  expect(result.htmlOverflow).toBe(false)
+  expect(result.footerWidth).toBeGreaterThan(320)
 })

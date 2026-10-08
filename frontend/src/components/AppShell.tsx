@@ -7,7 +7,7 @@ import Dialog from './Dialog'
 import Header from './Header'
 import SettingsModal from './SettingsModal'
 import './AppShell.css'
-import './ClinicSignature.css'
+import './ClinicLayoutFixes.css'
 
 interface AppShellProps {
   children: ReactNode
@@ -54,9 +54,8 @@ export default function AppShell({ children, layoutMode, onToggleLayout, onLogou
       {mobile && <div className="mobile-sidebar-close"><button type="button" className="icon-button" aria-label={t.navCloseMenu} onClick={() => setMenuOpen(false)}><X className="h-5 w-5" aria-hidden="true" /></button></div>}
       <div className="sidebar-brand">
         <div className="brand-mark"><BrandMark /></div>
-        <div><strong className="clinic-wordmark">Clínica<span>.</span></strong><p>{t.headerSubtitle}</p></div>
+        <div><strong>{t.headerTitle}</strong><p>{t.headerSubtitle}</p></div>
       </div>
-      <p className="sidebar-nav-label">{({ pt: 'Atendimento', en: 'Workspace', es: 'Atención' } as const)[lang]}</p>
       <nav className="sidebar-nav" aria-label={t.navTitle}>
         <button type="button" className="sidebar-link" aria-current={view === 'homologation' ? 'page' : undefined} onClick={() => navigate(focusForm)} title={t.navHomologation}><FileText aria-hidden="true" /><span>{t.navHomologation}</span></button>
         <button type="button" className="sidebar-link" aria-current={view === 'models' ? 'page' : undefined} onClick={() => navigate(onOpenModels)} title={t.navModels}><ClipboardList aria-hidden="true" /><span>{t.navModels}</span></button>
