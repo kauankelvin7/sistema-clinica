@@ -1,9 +1,15 @@
-export type PaletteName = 'garnet' | 'emerald' | 'sapphire' | 'amber' | 'graphite'
+import { colorThemes, colorThemeIds, type ColorTheme } from './leveThemes'
+
+export type LegacyPaletteName = 'garnet' | 'emerald' | 'sapphire' | 'amber' | 'graphite'
+export type LevePaletteName = `leve-${ColorTheme}`
+export type PaletteName = LegacyPaletteName | LevePaletteName
 export type Theme = 'light' | 'dark'
+export type Appearance = Theme | 'system'
 
 export interface ColorPalette {
   name: PaletteName
   label: string
+  leve?: ColorTheme
   colors: {
     50: string
     100: string
@@ -22,7 +28,7 @@ export interface ColorPalette {
   }
 }
 
-export const THEME_PALETTES: Record<PaletteName, ColorPalette> = {
+const LEGACY_PALETTES: Record<LegacyPaletteName, ColorPalette> = {
   garnet: {
     name: 'garnet',
     label: 'Garnet Burgundy',
@@ -125,124 +131,194 @@ export const THEME_PALETTES: Record<PaletteName, ColorPalette> = {
   },
 }
 
-function rgbToHex(rgbStr: string): string {
-  if (!rgbStr) return '#6e2d29'
-  const parts = rgbStr.trim().split(/\s+/).map(Number)
-  if (parts.length < 3 || parts.some(isNaN)) return '#6e2d29'
-  const [r, g, b] = parts
-  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`
+
+const STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const
+type Shade = typeof STEPS[number]
+const MIXES: Record<Shade, [string, number]> = {
+  50: ['ffffff', .95], 100: ['ffffff', .87], 200: ['ffffff', .72],
+  300: ['ffffff', .52], 400: ['ffffff', .24], 500: ['ffffff', 0],
+  600: ['000000', .15], 700: ['000000', .31], 800: ['000000', .48],
+  900: ['000000', .65], 950: ['000000', .81],
 }
+
+function parseHex(value: string): [number, number, number] {
+  const hex = value.replace('#', '')
+  return [0, 2, 4].map((offset) => parseInt(hex.slice(offset, offset + 2), 16)) as [number, number, number]
+}
+
+function rgb(value: string): string {
+  return parseHex(value).join(' ')
+}
+
+function mix(color: string, other: string, part: number): string {
+  const a = parseHex(color), b = parseHex(other)
+  return a.map((component, index) => Math.round(component * (1 - part) + b[index] * part)).join(' ')
+}
+
+function shades(accent: string): Pick<ColorPalette['colors'], Shade> {
+  return Object.fromEntries(STEPS.map((step) => {
+    const [target, amount] = MIXES[step]
+    return [step, mix(accent, target, amount)]
+  })) as Pick<ColorPalette['colors'], Shade>
+}
+
+// Leve uses independently defined light/dark surfaces, not just a recolored accent.
+// Prefix the 11 IDs to preserve all five existing clinical theme preferences.
+const LEVE_PALETTES = Object.fromEntries(colorThemeIds.map((id) => {
+  const source = colorThemes[id]
+  const name = `leve-${id}` as LevePaletteName
+  const colors: ColorPalette['colors'] = {
+    ...shades(source.accent),
+    bgPage: rgb(source.dark.canvas),
+    bgCard: rgb(source.dark.solid),
+    bgInput: rgb(source.dark.field),
+  }
+  return [name, { name, label: `Leve · ${source.label}`, leve: id, colors }]
+})) as Record<LevePaletteName, ColorPalette>
+
+export const THEME_PALETTES: Record<PaletteName, ColorPalette> = {
+  ...LEGACY_PALETTES,
+  ...LEVE_PALETTES,
+}
+
+function toHex(rgbStr: string): string {
+  const [r, g, b] = rgbStr.trim().split(/\s+/).map(Number)
+  return `#${[r, g, b].map((n) => Math.max(0, Math.min(255, n)).toString(16).padStart(2, '0')).join('')}`
+}
+
+const SEMANTIC_KEYS = [
+  '--color-light-bg-page', '--color-light-panel', '--color-light-input',
+  '--color-light-ink', '--color-light-muted', '--color-light-border',
+  '--color-dark-bg-page', '--color-dark-bg-card', '--color-dark-bg-input',
+  '--color-dark-ink', '--color-dark-muted', '--color-dark-border',
+  '--color-dark-on-brand',
+] as const
 
 class ThemeManager {
   private currentPalette: PaletteName = 'garnet'
+  private appearance: Appearance = 'system'
   private currentTheme: Theme = 'light'
+  private media: MediaQueryList | null = null
 
   constructor() {
-    this.init()
-  }
-
-  private init() {
+    if (typeof document === 'undefined' || typeof window === 'undefined') return
     try {
-      const saved = localStorage.getItem('app_palette') as PaletteName
-      if (saved && THEME_PALETTES[saved]) {
-        this.currentPalette = saved
+      const stored = localStorage.getItem('app_palette')
+      if (stored && Object.prototype.hasOwnProperty.call(THEME_PALETTES, stored)) {
+        this.currentPalette = stored as PaletteName
       }
-    } catch {}
-    let savedTheme: string | null = null
-    try {
-      savedTheme = localStorage.getItem('theme')
-    } catch {}
-    if (savedTheme === 'light' || savedTheme === 'dark') {
-      this.currentTheme = savedTheme
-    } else {
-      try {
-        this.currentTheme = typeof window !== 'undefined' &&
-          window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-      } catch {
-        this.currentTheme = 'light'
+      const mode = localStorage.getItem('theme')
+      if (mode === 'light' || mode === 'dark' || mode === 'system') {
+        this.appearance = mode
       }
+    } catch { /* Appearance remains usable without local storage. */ }
+    if (typeof window.matchMedia === 'function') {
+      this.media = window.matchMedia('(prefers-color-scheme: dark)')
+      this.media.addEventListener('change', () => {
+        if (this.appearance === 'system') this.refresh()
+      })
     }
-    document.documentElement.classList.toggle('dark', this.currentTheme === 'dark')
-    this.applyPalette(this.currentPalette)
+    window.addEventListener('storage', (event) => {
+      if (event.key !== 'theme' && event.key !== 'app_palette') return
+      try {
+        const saved = localStorage.getItem('app_palette')
+        if (saved && Object.prototype.hasOwnProperty.call(THEME_PALETTES, saved)) this.currentPalette = saved as PaletteName
+        const mode = localStorage.getItem('theme')
+        this.appearance = mode === 'light' || mode === 'dark' || mode === 'system' ? mode : 'system'
+      } catch { /* Keep active session preferences. */ }
+      this.refresh()
+      window.dispatchEvent(new CustomEvent('palette_changed', { detail: this.currentPalette }))
+    })
+    this.refresh()
   }
 
-  public getPalette(): PaletteName {
-    return this.currentPalette
-  }
-
-  public getTheme(): Theme {
-    return this.currentTheme
-  }
-
-  public setTheme(theme: Theme) {
-    if (theme !== 'light' && theme !== 'dark') return
-    this.currentTheme = theme
-    document.documentElement.classList.toggle('dark', theme === 'dark')
-    try {
-      localStorage.setItem('theme', theme)
-    } catch {}
+  private refresh() {
+    this.currentTheme = this.appearance === 'system'
+      ? (this.media?.matches ? 'dark' : 'light')
+      : this.appearance
+    const root = document.documentElement
+    root.classList.toggle('dark', this.currentTheme === 'dark')
+    root.dataset.appearance = this.currentTheme
+    root.dataset.appearancePreference = this.appearance
+    root.style.colorScheme = this.currentTheme
+    this.applyColors()
     this.updateThemeColor()
-    window.dispatchEvent(new CustomEvent('theme_changed', { detail: theme }))
+    window.dispatchEvent(new CustomEvent('theme_changed', { detail: this.currentTheme }))
   }
 
-  public toggleTheme() {
-    this.setTheme(this.currentTheme === 'dark' ? 'light' : 'dark')
+  public getPalette(): PaletteName { return this.currentPalette }
+  public getTheme(): Theme { return this.currentTheme }
+  public getAppearance(): Appearance { return this.appearance }
+
+  public setAppearance(next: Appearance) {
+    if (next !== 'light' && next !== 'dark' && next !== 'system') return
+    this.appearance = next
+    try { localStorage.setItem('theme', next) } catch { /* preference only */ }
+    this.refresh()
+  }
+
+  public setTheme(next: Theme) { this.setAppearance(next) }
+  public toggleTheme() { this.setAppearance(this.currentTheme === 'dark' ? 'light' : 'dark') }
+
+  public applyPalette(name: PaletteName) {
+    if (!Object.prototype.hasOwnProperty.call(THEME_PALETTES, name)) return
+    this.currentPalette = name
+    try { localStorage.setItem('app_palette', name) } catch { /* preference only */ }
+    this.applyColors()
+    this.updateThemeColor()
+    window.dispatchEvent(new CustomEvent('palette_changed', { detail: name }))
+  }
+
+  private applyColors() {
+    const root = document.documentElement
+    const chosen = THEME_PALETTES[this.currentPalette]
+    const source = chosen.leve ? colorThemes[chosen.leve] : null
+    const primary = source && this.currentTheme === 'dark'
+      ? shades(source.dark.accent)
+      : chosen.colors
+
+    for (const step of STEPS) root.style.setProperty(`--color-primary-${step}`, primary[step])
+    root.dataset.palette = this.currentPalette
+
+    if (!source) {
+      for (const key of SEMANTIC_KEYS) root.style.removeProperty(key)
+      root.style.setProperty('--color-dark-bg-page', '15 20 28')
+      root.style.setProperty('--color-dark-bg-card', '24 31 41')
+      root.style.setProperty('--color-dark-bg-input', '20 27 36')
+      return
+    }
+
+    const dark = source.dark
+    const ink = mix(source.accent, '1e2931', .8)
+    root.style.setProperty('--color-light-bg-page', rgb(source.canvas))
+    root.style.setProperty('--color-light-panel', '255 253 248')
+    root.style.setProperty('--color-light-input', '252 253 249')
+    root.style.setProperty('--color-light-ink', ink)
+    root.style.setProperty('--color-light-muted', mix(source.accent, '566272', .73))
+    root.style.setProperty('--color-light-border', mix(source.accent, 'ffffff', .75))
+    root.style.setProperty('--color-dark-bg-page', rgb(dark.canvas))
+    root.style.setProperty('--color-dark-bg-card', rgb(dark.solid))
+    root.style.setProperty('--color-dark-bg-input', rgb(dark.field))
+    root.style.setProperty('--color-dark-ink', rgb(dark.text))
+    root.style.setProperty('--color-dark-muted', rgb(dark.textMuted))
+    root.style.setProperty('--color-dark-border', rgb(dark.border))
+    root.style.setProperty('--color-dark-on-brand', rgb(dark.actionForeground))
   }
 
   public updateThemeColor() {
     if (typeof document === 'undefined') return
-    const isDark = this.currentTheme === 'dark'
-
-    const palette = THEME_PALETTES[this.currentPalette]?.colors
-    if (!palette) return
-
-    let hexColor: string
-    if (isDark) {
-      // No modo escuro, utiliza a cor escura de fundo real da paleta ativa (#0d0000 para Garnet)
-      hexColor = rgbToHex('15 20 28')
-    } else {
-      // No modo claro, utiliza a cor primária de destaque (500) da paleta ativa (#6e2d29 para Garnet)
-      hexColor = rgbToHex(palette[500])
-    }
-
-    let meta = document.querySelector('meta[name="theme-color"]')
+    const palette = THEME_PALETTES[this.currentPalette]
+    const source = palette.leve ? colorThemes[palette.leve] : null
+    const color = source
+      ? (this.currentTheme === 'dark' ? source.dark.canvas : source.canvas)
+      : (this.currentTheme === 'dark' ? toHex('15 20 28') : toHex(palette.colors[500]))
+    let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
     if (!meta) {
       meta = document.createElement('meta')
-      meta.setAttribute('name', 'theme-color')
+      meta.name = 'theme-color'
       document.head.appendChild(meta)
     }
-    meta.setAttribute('content', hexColor)
-  }
-
-  public applyPalette(name: PaletteName) {
-    if (!THEME_PALETTES[name]) return
-    this.currentPalette = name
-    try {
-      localStorage.setItem('app_palette', name)
-    } catch {}
-
-    const palette = THEME_PALETTES[name].colors
-    const root = document.documentElement
-
-    root.style.setProperty('--color-primary-50', palette[50])
-    root.style.setProperty('--color-primary-100', palette[100])
-    root.style.setProperty('--color-primary-200', palette[200])
-    root.style.setProperty('--color-primary-300', palette[300])
-    root.style.setProperty('--color-primary-400', palette[400])
-    root.style.setProperty('--color-primary-500', palette[500])
-    root.style.setProperty('--color-primary-600', palette[600])
-    root.style.setProperty('--color-primary-700', palette[700])
-    root.style.setProperty('--color-primary-800', palette[800])
-    root.style.setProperty('--color-primary-900', palette[900])
-    root.style.setProperty('--color-primary-950', palette[950])
-
-    root.style.setProperty('--color-dark-bg-page', '15 20 28')
-    root.style.setProperty('--color-dark-bg-card', '24 31 41')
-    root.style.setProperty('--color-dark-bg-input', '20 27 36')
-
-    this.updateThemeColor()
-
-    window.dispatchEvent(new CustomEvent('palette_changed', { detail: name }))
+    meta.content = color
   }
 }
 
