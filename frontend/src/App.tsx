@@ -12,6 +12,7 @@ import AppShell from './components/AppShell'
 import Dialog from './components/Dialog'
 import { ValidationContext } from './utils/validationContext'
 import { localCalendarDate } from './utils/localDate'
+import { requiresLateAuthorization } from './utils/homologationDeadline'
 import { applyAppUpdate, hasAppUpdate } from './utils/appUpdates'
 import PatientsListModal from './components/PatientsListModal'
 import DoctorsListModal from './components/DoctorsListModal'
@@ -35,6 +36,7 @@ function getDefaultFormData(): AppFormData {
     cargo: '',
     empresa: '',
     dataAtestado: localCalendarDate(),
+    autorizacaoForaPrazo: false,
     diasAfastamento: '',
     cid: '',
     cidNaoInformado: false,
@@ -178,7 +180,11 @@ function App() {
   }, [formData])
 
   const updateFormData = (field: keyof AppFormData, value: string | boolean) => {
-    setFormData((current) => ({ ...current, [field]: value }))
+    setFormData((current) => ({
+      ...current,
+      [field]: value,
+      ...(field === 'dataAtestado' && current.dataAtestado !== value ? { autorizacaoForaPrazo: false } : {}),
+    }))
     setMessage(null)
   }
 
@@ -234,6 +240,12 @@ function App() {
       return
     }
 
+    if (requiresLateAuthorization(formData.dataAtestado) && !formData.autorizacaoForaPrazo) {
+      setMessage({ type: 'error', text: t.lateAuthorizationHint })
+      requestAnimationFrame(() => document.getElementById('late-authorization-checkbox')?.focus())
+      return
+    }
+
     generationPending.current = true
     const operationEpoch = authEpoch.current
     setLoading('html')
@@ -250,6 +262,7 @@ function App() {
         },
         atestado: {
           data_atestado: formData.dataAtestado,
+          autorizacao_fora_prazo: requiresLateAuthorization(formData.dataAtestado) && formData.autorizacaoForaPrazo,
           dias_afastamento: parseInt(formData.diasAfastamento, 10) || 0,
           cid: formData.cid,
           cid_nao_informado: formData.cidNaoInformado,
