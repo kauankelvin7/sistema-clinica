@@ -1,0 +1,225 @@
+/*
+ * Homologação · Leve editorial
+ * Scope intentionally limited to the homologation workspace.
+ * Colors come exclusively from themeManager semantic tokens;
+ * every clinical/Leve palette supports dark and light appearances.
+ */
+.clinic-shell--homologation {
+  font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  --radius-card: 18px;
+  --elevation-card: none;
+}
+
+.clinic-shell--homologation :is(.workspace-title, .section-shell__title, .topbar-identity strong) {
+  font-family: 'Nunito', 'DM Sans', ui-sans-serif, sans-serif;
+}
+
+.clinic-shell--homologation .clinic-workspace {
+  background:
+    radial-gradient(ellipse at 6% 2%, rgb(var(--color-primary-400) / .06), transparent 39rem),
+    rgb(var(--color-bg-page));
+}
+
+.clinic-shell--homologation .clinic-topbar {
+  border-color: rgb(var(--color-border) / .72);
+  background: rgb(var(--color-panel) / .96);
+  box-shadow: none;
+}
+.clinic-shell--homologation .topbar-identity strong {
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: -.03em;
+}
+.clinic-shell--homologation .topbar-identity p { font-size: 11px; }
+
+.clinic-shell--homologation .clinic-sidebar {
+  border-color: rgb(255 255 255 / .09);
+  background:
+    radial-gradient(circle at 12% -8%, rgb(var(--color-primary-400) / .3), transparent 220px),
+    linear-gradient(160deg, rgb(var(--color-primary-900)), rgb(var(--color-primary-950)));
+}
+.clinic-shell--homologation .sidebar-link { border-radius: 13px; }
+.clinic-shell--homologation .sidebar-link[aria-current] {
+  background: rgb(255 255 255 / .15);
+  border-color: rgb(255 255 255 / .2);
+  box-shadow: inset 3px 0 0 rgb(var(--color-primary-300));
+}
+
+.clinic-shell--homologation .clinic-main { padding-top: 20px; }
+.clinic-shell--homologation .clinic-hero {
+  gap: 20px;
+  padding: clamp(20px, 2.4vw, 30px);
+  border: 1px solid rgb(var(--color-border) / .86);
+  border-radius: 22px;
+  background: rgb(var(--color-panel));
+  box-shadow: none;
+  margin-bottom: 16px;
+}
+.clinic-shell--homologation .clinic-hero-copy .workspace-title {
+  font-size: clamp(24px, 2.4vw, 32px);
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -.045em;
+  color: rgb(var(--color-ink));
+}
+.clinic-shell--homologation .clinic-hero-copy .workspace-description {
+  font-size: 13px;
+  line-height: 1.55;
+  margin-top: 8px;
+  max-width: 58ch;
+}
+.clinic-shell--homologation .clinic-status-panel { gap: 18px; }
+.clinic-shell--homologation .clinic-status-panel .directory-status {
+  border: 1px solid rgb(var(--color-border) / .8);
+  border-radius: 14px;
+  box-shadow: none;
+  background: rgb(var(--color-bg-page) / .6);
+  backdrop-filter: none;
+}
+.clinic-shell--homologation .clinic-progress-label { font-size: 12px; line-height: 1.4; }
+
+.clinic-shell--homologation .model-shortcuts {
+  border-radius: 17px;
+  background: rgb(var(--color-panel));
+  border-color: rgb(var(--color-border) / .82);
+  backdrop-filter: none;
+  box-shadow: none;
+  margin-bottom: 16px;
+}
+.clinic-shell--homologation .workspace-grid { gap: 18px; }
+.clinic-shell--homologation .section-shell {
+  border: 1px solid rgb(var(--color-border) / .88);
+  background: rgb(var(--color-panel));
+  border-radius: 19px;
+  box-shadow: none;
+  overflow: hidden;
+}
+.clinic-shell--homologation .section-shell:focus-within {
+  border-color: rgb(var(--color-brand) / .47);
+  box-shadow: 0 0 0 2px rgb(var(--color-brand) / .065);
+}
+.clinic-shell--homologation .section-shell__header {
+  align-items: center;
+  padding: 19px 19px 16px;
+  gap: 12px;
+  border-color: rgb(var(--color-border) / .68);
+}
+.clinic-shell--homologation .section-shell__title {
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -.027em;
+  color: rgb(var(--color-ink));
+}
+.clinic-shell--homologation .section-shell__description {
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgb(var(--color-muted));
+}
+.clinic-shell--homologation .section-shell__icon {
+  width: 41px;
+  height: 41px;
+  border-radius: 13px;
+  border-color: rgb(var(--color-brand) / .2);
+  background: rgb(var(--color-brand) / .085);
+  color: rgb(var(--color-brand-foreground));
+}
+.clinic-shell--homologation .section-shell__body { padding: 19px; }
+
+.clinic-shell--homologation .field-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: rgb(var(--color-ink));
+}
+.clinic-shell--homologation .field-hint {
+  color: rgb(var(--color-muted));
+  font-size: 12px;
+}
+.clinic-shell--homologation .input-field {
+  min-height: 48px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  border-radius: 12px;
+  color: rgb(var(--color-ink));
+  border: 1px solid rgb(var(--color-border));
+  background: rgb(var(--color-input));
+  box-shadow: none;
+}
+.clinic-shell--homologation .input-field:focus-visible {
+  outline: 2px solid rgb(var(--color-brand));
+  outline-offset: 2px;
+  box-shadow: none;
+}
+.clinic-shell--homologation .record-picker {
+  min-height: 51px;
+  border: 1px solid rgb(var(--color-border));
+  background: rgb(var(--color-panel));
+  border-radius: 13px;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.clinic-shell--homologation .record-picker:hover {
+  border-color: rgb(var(--color-brand) / .48);
+  background: rgb(var(--color-bg-page) / .65);
+}
+.clinic-shell--homologation .record-picker__eyebrow { color: rgb(var(--color-muted)); font-size: 11px; }
+.clinic-shell--homologation .record-picker__value { color: rgb(var(--color-ink)); font-size: 13px; font-weight: 700; }
+
+.clinic-shell--homologation .btn-primary,
+.clinic-shell--homologation .btn-secondary {
+  border-radius: 12px;
+  min-height: 48px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: -.005em;
+  box-shadow: none;
+}
+.clinic-shell--homologation .btn-primary {
+  color: rgb(var(--color-on-brand));
+  background: rgb(var(--color-brand));
+}
+.clinic-shell--homologation .btn-primary:hover { background: rgb(var(--color-brand-hover)); }
+.clinic-shell--homologation .btn-secondary {
+  color: rgb(var(--color-ink));
+  border-color: rgb(var(--color-border));
+  background: rgb(var(--color-panel));
+}
+.clinic-shell--homologation .btn-secondary:hover { background: rgb(var(--color-bg-page)); }
+.clinic-shell--homologation .btn-primary:focus-visible,
+.clinic-shell--homologation .btn-secondary:focus-visible {
+  outline: 2px solid rgb(var(--color-brand-foreground));
+  outline-offset: 2px;
+}
+.clinic-shell--homologation .clinic-footer {
+  border-color: rgb(var(--color-border) / .82);
+  background: rgb(var(--color-panel) / .98);
+  backdrop-filter: none;
+  box-shadow: 0 -6px 26px rgb(var(--color-ink) / .045);
+}
+.clinic-shell--homologation .clinic-footer .btn-primary { min-width: 180px; }
+
+@media (max-width: 767px) {
+  .clinic-shell--homologation .clinic-hero { padding: 18px; border-radius: 17px; }
+  .clinic-shell--homologation .clinic-main { padding-top: 14px; }
+  .clinic-shell--homologation .clinic-hero-copy .workspace-title { font-size: clamp(22px, 5vw, 28px); }
+  .clinic-shell--homologation .section-shell__header { padding: 15px; }
+  .clinic-shell--homologation .section-shell__body { padding: 15px; }
+  .clinic-shell--homologation .clinic-hero-copy .workspace-description { font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clinic-shell--homologation *,
+  .clinic-shell--homologation *::before,
+  .clinic-shell--homologation *::after {
+    scroll-behavior: auto;
+    animation-duration: .01ms;
+    transition-duration: .01ms;
+  }
+}
