@@ -450,7 +450,7 @@ test('compact reception header and quick palette picker remain readable and inte
   await settings.getByRole('button', { name: 'Bordô' }).click()
   expect(await page.evaluate(() => localStorage.getItem('app_palette'))).toBe('garnet')
   await page.getByTestId('settings-close').click()
-  await page.reload()
+  await page.reload({ waitUntil: 'domcontentloaded' })
   await expect(page.locator('.sidebar-palette')).toContainText('Bordô')
 })
 
@@ -499,7 +499,7 @@ test('settings, header theme, and palette stay synchronized after reload', async
   await page.getByTestId('settings-close').click()
 })
 
-test('all eleven Leve palettes recolor the actual workspace and retain readable dark actions', async ({ page }) => {
+test('all eleven extended palettes recolor the workspace and retain dark action contrast', async ({ page }) => {
   test.setTimeout(90_000)
   await mockApi(page, { authenticated: true })
   await page.goto('/')
@@ -513,7 +513,7 @@ test('all eleven Leve palettes recolor the actual workspace and retain readable 
   ] as const
   const accents = new Set<string>()
   for (const [label, id] of selections) {
-    await dialog.getByRole('button', { name: `Leve · ${label}`, exact: true }).click()
+    await dialog.getByRole('button', { name: label, exact: true }).click()
     const colors = await page.evaluate(() => {
       const vars = getComputedStyle(document.documentElement)
       return {
