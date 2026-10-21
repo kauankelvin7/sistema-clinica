@@ -24,11 +24,11 @@ test.afterEach(async ({ page }, testInfo) => {
 })
 
 const palettes = [
-  ['Garnet Burgundy', 'garnet'],
-  ['Emerald Slate', 'emerald'],
-  ['Midnight Blue', 'sapphire'],
-  ['Amber Gold', 'amber'],
-  ['Graphite Sand', 'graphite'],
+  ['Bordô', 'garnet'],
+  ['Esmeralda', 'emerald'],
+  ['Safira', 'sapphire'],
+  ['Dourado', 'amber'],
+  ['Areia', 'graphite'],
 ] as const
 const viewports = [320, 375, 390, 430, 768, 1024, 1280, 1440, 1920]
 
@@ -280,7 +280,7 @@ test('preferences persist and directory cache survives offline refresh; empty/er
   await expect(page.getByRole('option', { name: 'Pessoa Sintética Um' })).toBeVisible()
   await expect(page.getByText('Cadastros sincronizados')).toBeVisible()
   await page.getByRole('button', { name: 'Abrir configurações' }).click()
-  await page.getByRole('button', { name: 'Emerald Slate' }).click()
+  await page.getByRole('button', { name: 'Esmeralda' }).click()
   await page.getByRole('button', { name: 'English (US)' }).click()
   await page.getByTestId('theme-dark').click()
   await page.getByTestId('settings-close').click()
@@ -414,16 +414,76 @@ test('keyboard selection, dialog focus, and mobile drawer preserve form state', 
   await expect(page.getByPlaceholder('Ex: 3 dias')).toHaveValue('4')
 })
 
+test('compact reception header and quick palette picker remain readable and interactive', async ({ page }) => {
+  await mockApi(page, { authenticated: true })
+  await page.setViewportSize({ width: 1364, height: 768 })
+  await page.goto('/')
+  const hero = page.locator('.clinic-hero')
+  await expect(hero.getByRole('heading', { name: 'Nova homologação médica' })).toBeVisible()
+  await expect(hero.getByText('Resumo do atendimento')).toBeVisible()
+  await expect(hero.getByText('Campos preenchidos')).toBeVisible()
+  await expect(hero.getByText('de 10 campos')).toBeVisible()
+  const geometry = await page.evaluate(() => ({
+    heroHeight: document.querySelector('.clinic-hero')!.getBoundingClientRect().height,
+    horizontalOverflow: document.documentElement.scrollWidth > innerWidth + 1,
+    progressWidth: document.querySelector('.clinic-progress')!.getBoundingClientRect().width,
+  }))
+  expect(geometry.heroHeight).toBeLessThan(300)
+  expect(geometry.progressWidth).toBeGreaterThan(250)
+  expect(geometry.horizontalOverflow).toBe(false)
+  await page.getByRole('button', { name: 'Escolher paleta' }).click()
+  const picker = page.getByRole('dialog', { name: 'Escolher paleta' })
+  await expect(picker).toBeVisible()
+  await expect(picker.locator('.theme-swatch')).toHaveCount(16)
+  await picker.getByRole('button', { name: 'Sálvia' }).click()
+  expect(await page.evaluate(() => localStorage.getItem('app_palette'))).toBe('leve-green')
+  await expect(picker.getByText('Sálvia', { exact: true })).toBeVisible()
+  await expect(page.locator('.sidebar-palette')).toContainText('Sálvia')
+  await page.keyboard.press('Escape')
+  await expect(picker).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Escolher paleta' })).toBeFocused()
+  await page.getByRole('button', { name: 'Abrir configurações' }).click()
+  const settings = page.getByRole('dialog', { name: 'Configurações do Sistema' })
+  await expect(settings.locator('.theme-swatch')).toHaveCount(16)
+  await expect(settings.getByRole('button', { name: 'Sálvia' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(settings.getByText('Paletas do Leve')).toHaveCount(0)
+  await settings.getByRole('button', { name: 'Bordô' }).click()
+  expect(await page.evaluate(() => localStorage.getItem('app_palette'))).toBe('garnet')
+  await page.getByTestId('settings-close').click()
+  await page.reload()
+  await expect(page.locator('.sidebar-palette')).toContainText('Bordô')
+})
+
+test('mobile reception header and quick theme atlas stay within viewport', async ({ page }) => {
+  await mockApi(page, { authenticated: true })
+  await page.setViewportSize({ width: 320, height: 700 })
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Escolher paleta' }).click()
+  const picker = page.getByRole('dialog', { name: 'Escolher paleta' })
+  await expect(picker).toBeVisible()
+  const limits = await page.evaluate(() => {
+    const picker = document.querySelector('.theme-picker-popover')!.getBoundingClientRect()
+    return { left: picker.left, right: picker.right, width: innerWidth, scrollWidth: document.documentElement.scrollWidth }
+  })
+  expect(limits.left).toBeGreaterThanOrEqual(0)
+  expect(limits.right).toBeLessThanOrEqual(limits.width)
+  expect(limits.scrollWidth).toBeLessThanOrEqual(limits.width + 1)
+  await picker.getByRole('button', { name: 'Oceano' }).click()
+  await expect(picker.getByRole('button', { name: 'Oceano' })).toHaveAttribute('aria-pressed', 'true')
+  await page.getByRole('button', { name: 'Abrir configurações' }).click()
+  await expect(picker).toHaveCount(0)
+})
+
 test('settings, header theme, and palette stay synchronized after reload', async ({ page }) => {
   await mockApi(page, { authenticated: true })
   await page.goto('/')
   await page.getByRole('button', { name: 'Abrir configurações' }).click()
   const settings = page.getByRole('dialog', { name: 'Configurações do Sistema' })
   await expect(settings).toBeVisible()
-  await settings.getByRole('button', { name: 'Emerald Slate' }).click()
+  await settings.getByRole('button', { name: 'Esmeralda' }).click()
   await settings.getByRole('button', { name: 'Modo Escuro' }).click()
   await expect(page.locator('html')).toHaveClass(/dark/)
-  await expect(page.locator('.sidebar-palette')).toContainText('Emerald Slate')
+  await expect(page.locator('.sidebar-palette')).toContainText('Esmeralda')
   await page.keyboard.press('Escape')
   await expect(settings).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Abrir configurações' })).toBeFocused()
@@ -433,9 +493,9 @@ test('settings, header theme, and palette stay synchronized after reload', async
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Nova homologação médica' })).toBeVisible()
   await expect(page.locator('html')).not.toHaveClass(/dark/)
-  await expect(page.locator('.sidebar-palette')).toContainText('Emerald Slate')
+  await expect(page.locator('.sidebar-palette')).toContainText('Esmeralda')
   await page.getByRole('button', { name: 'Abrir configurações' }).click()
-  await expect(page.getByRole('button', { name: 'Emerald Slate' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('button', { name: 'Esmeralda' })).toHaveAttribute('aria-pressed', 'true')
   await page.getByTestId('settings-close').click()
 })
 
@@ -446,9 +506,9 @@ test('all eleven Leve palettes recolor the actual workspace and retain readable 
   await page.getByRole('button', { name: 'Abrir configurações' }).click()
   const dialog = page.getByRole('dialog', { name: 'Configurações do Sistema' })
   const selections = [
-    ['Verde suave', 'green'], ['Roxo suave', 'purple'], ['Azul suave', 'blue'],
-    ['Vermelho suave', 'red'], ['Terracota', 'orange'], ['Rosa', 'pink'],
-    ['Verde petróleo', 'teal'], ['Índigo', 'indigo'], ['Âmbar', 'amber'],
+    ['Sálvia', 'green'], ['Lavanda', 'purple'], ['Brisa', 'blue'],
+    ['Rubi', 'red'], ['Terracota', 'orange'], ['Rosé', 'pink'],
+    ['Oceano', 'teal'], ['Índigo', 'indigo'], ['Mel', 'amber'],
     ['Cacau', 'brown'], ['Grafite', 'monochrome'],
   ] as const
   const accents = new Set<string>()
@@ -484,10 +544,10 @@ test('all eleven Leve palettes recolor the actual workspace and retain readable 
   expect(tokens.onBrand).not.toBe('255 255 255')
   expect(tokens.buttonForeground).toBe(`rgb(${tokens.onBrand.split(' ').join(', ')})`)
   await dialog.getByRole('button', { name: 'Modo Claro' }).click()
-  await dialog.getByRole('button', { name: 'Leve · Verde suave' }).click()
+  await dialog.getByRole('button', { name: 'Sálvia' }).click()
   await page.getByTestId('settings-close').click()
   await page.reload()
-  await expect(page.locator('.sidebar-palette')).toContainText('Leve · Verde suave')
+  await expect(page.locator('.sidebar-palette')).toContainText('Sálvia')
   expect(await page.evaluate(() => localStorage.getItem('app_palette'))).toBe('leve-green')
 })
 
@@ -497,7 +557,7 @@ test('automatic appearance follows system preference and persists across reload'
   await page.goto('/')
   await page.getByRole('button', { name: 'Abrir configurações' }).click()
   const settings = page.getByRole('dialog', { name: 'Configurações do Sistema' })
-  await settings.getByRole('button', { name: 'Leve · Roxo suave' }).click()
+  await settings.getByRole('button', { name: 'Lavanda' }).click()
   await settings.getByTestId('theme-system').click()
   await expect(page.locator('html')).not.toHaveClass(/dark/)
   expect(await page.evaluate(() => localStorage.getItem('theme'))).toBe('system')
