@@ -1216,6 +1216,7 @@ test('layout regression: collapsed sidebar, hero data and printing actions fit 1
       actionVisible: rect('.clinic-footer .btn-primary').right <= innerWidth + 1,
       horizontalOverflow: document.documentElement.scrollWidth > innerWidth + 1,
       titleWeight: Number(getComputedStyle(document.querySelector('.workspace-title')!).fontWeight),
+      titleFamily: getComputedStyle(document.querySelector('.workspace-title')!).fontFamily,
     }
   })
   expect(measured.sidebarWidth).toBeGreaterThanOrEqual(72)
@@ -1225,7 +1226,9 @@ test('layout regression: collapsed sidebar, hero data and printing actions fit 1
   expect(measured.footerContained).toBe(true)
   expect(measured.actionVisible).toBe(true)
   expect(measured.horizontalOverflow).toBe(false)
-  expect(measured.titleWeight).toBeLessThanOrEqual(750)
+  // Intentional Leve redesign: expressive Nunito headings at the Leve brand weight.
+  expect(measured.titleWeight).toBe(800)
+  expect(measured.titleFamily).toMatch(/Nunito/i)
 })
 
 test('layout regression: readable mobile workspace and restored original sidebar wordmark', async ({ page }) => {
