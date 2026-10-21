@@ -533,16 +533,17 @@ test('all eleven extended palettes recolor the workspace and retain dark action 
   await dialog.getByRole('button', { name: 'Modo Escuro' }).click()
   const tokens = await page.evaluate(() => {
     const styles = getComputedStyle(document.documentElement)
-    const button = document.querySelector<HTMLButtonElement>('.clinic-footer .btn-primary')!
     return {
       panel: styles.getPropertyValue('--color-panel').trim(),
       onBrand: styles.getPropertyValue('--color-on-brand').trim(),
-      buttonForeground: getComputedStyle(button).color,
     }
   })
   expect(tokens.panel).not.toBe('255 253 248')
   expect(tokens.onBrand).not.toBe('255 255 255')
-  expect(tokens.buttonForeground).toBe(`rgb(${tokens.onBrand.split(' ').join(', ')})`)
+  // Color transitions are intentional: assert the settled contrast, not the first animation frame.
+  await expect.poll(
+    () => page.locator('.clinic-footer .btn-primary').evaluate((element) => getComputedStyle(element).color),
+  ).toBe(`rgb(${tokens.onBrand.split(' ').join(', ')})`)
   await dialog.getByRole('button', { name: 'Modo Claro' }).click()
   await dialog.getByRole('button', { name: 'Sálvia' }).click()
   await page.getByTestId('settings-close').click()
