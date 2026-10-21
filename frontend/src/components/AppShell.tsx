@@ -8,6 +8,13 @@ import Header from './Header'
 import SettingsModal from './SettingsModal'
 import './AppShell.css'
 import './ClinicLayoutFixes.css'
+import './LeveWorkspace.css'
+import '@fontsource/dm-sans/400.css'
+import '@fontsource/dm-sans/500.css'
+import '@fontsource/dm-sans/600.css'
+import '@fontsource/dm-sans/700.css'
+import '@fontsource/nunito/700.css'
+import '@fontsource/nunito/800.css'
 
 interface AppShellProps {
   children: ReactNode
@@ -72,7 +79,7 @@ export default function AppShell({ children, layoutMode, onToggleLayout, onLogou
   )
 
   return (
-    <div className={`clinic-shell ${collapsed ? 'clinic-shell--collapsed' : ''}`}>
+    <div className={`clinic-shell ${view === 'homologation' ? 'clinic-shell--homologation' : ''} ${collapsed ? 'clinic-shell--collapsed' : ''}`}>
       <a href="#clinic-workspace" className="skip-link">{t.skipContent}</a>
       {sidebar(false)}
       <Dialog isOpen={menuOpen} onClose={() => setMenuOpen(false)} label={t.navTitle} className="navigation-dialog">{sidebar(true)}</Dialog>
