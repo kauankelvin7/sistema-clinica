@@ -812,6 +812,7 @@ test('preview capture: synthetic UI evidence', async ({ page }, testInfo) => {
     await page.getByLabel('Não Informado').check()
     await page.getByPlaceholder('Dr. Nome do Médico').fill('Profissional Sintético Payload')
     await page.getByPlaceholder('123456').fill('98765')
+    await page.getByLabel('Confirmo que a homologação fora do prazo foi autorizada.').check()
     await page.getByRole('button', { name: 'Gerar e imprimir' }).click()
     await expect(page.getByText('Pré-visualização do Documento')).toBeVisible()
     await capture(`preview-${width}`)
