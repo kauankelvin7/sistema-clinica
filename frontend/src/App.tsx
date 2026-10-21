@@ -83,6 +83,11 @@ function App() {
   const clearDirectory = directory.clear
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.pt
+  const heroText = {
+    pt: { eyebrow: 'Área de recepção', ongoing: 'Atendimento em preenchimento', ready: 'Pronto para começar', overview: 'Resumo do atendimento', progress: 'Campos preenchidos', of: 'de', fields: 'campos' },
+    en: { eyebrow: 'Reception workspace', ongoing: 'In progress', ready: 'Ready to begin', overview: 'Visit overview', progress: 'Fields completed', of: 'of', fields: 'fields' },
+    es: { eyebrow: 'Área de recepción', ongoing: 'En preparación', ready: 'Listo para comenzar', overview: 'Resumen de atención', progress: 'Campos completos', of: 'de', fields: 'campos' },
+  }[lang]
   const dirty = Object.keys(initialForm.current).some((key) => formData[key as keyof AppFormData] !== initialForm.current[key as keyof AppFormData])
   const c = {
     pt: { clearTitle: 'Limpar formulário?', clearText: 'Os dados deste atendimento serão descartados.', cancel: 'Cancelar', confirm: 'Limpar atendimento', update: 'Atualização disponível', updateHelp: 'Conclua ou limpe o trabalho em edição antes de atualizar.', apply: 'Atualizar agora', leave: 'Descartar alterações do modelo?', ready: 'Declaração pronta para revisão.', error: 'Não foi possível gerar a declaração. Verifique os dados e tente novamente.', checking: 'Verificando sessão...', close: 'Fechar mensagem' },
@@ -384,42 +389,43 @@ function App() {
       <main id="clinic-workspace" tabIndex={-1} className="app-container clinic-main">
         <div hidden={view !== 'homologation'}>
         <section className="clinic-hero" aria-label={t.workspaceTitle}>
-
-            <div className="clinic-hero-copy">
-              <h2 className="workspace-title">{t.workspaceTitle}</h2>
-              <p className="workspace-description">{t.workspaceDescription}</p>
+          <div className="clinic-hero-copy">
+            <p className="clinic-hero-eyebrow"><span className="clinic-hero-dot" aria-hidden="true" />{heroText.eyebrow}</p>
+            <h2 className="workspace-title">{t.workspaceTitle}</h2>
+            <p className="workspace-description">{t.workspaceDescription}</p>
+            <div className="clinic-hero-utilities">
+              <span className="clinic-hero-state"><CheckCircle className="h-3.5 w-3.5" aria-hidden="true" />{completion.completed > 0 ? heroText.ongoing : heroText.ready}</span>
+              <details className="model-shortcuts"><summary>{t.modelsShortcuts}</summary><section aria-label={t.modelsShortcuts}>
+                <div className="model-shortcuts-header"><h2>{t.modelsShortcuts}</h2><button type="button" className="btn-secondary" onClick={() => openModels()}>{t.modelsAll}</button></div>
+                {models.error && <p role="status" className="text-sm text-muted">{t.modelsLoadError}</p>}
+                <div className="model-shortcuts-list">{models.models.slice(0, 6).map((model) => <button key={model.id} type="button" className="btn-secondary" onClick={() => openModels(model)}>{model.name}</button>)}
+                  {!models.loading && !models.error && models.models.length === 0 && <button type="button" className="btn-secondary" onClick={() => openModels()}>{t.modelsCreate}</button>}
+                </div>
+              </section></details>
             </div>
-
-            <div className="clinic-status-panel">
-              <DirectoryStatus
-                status={directory.status}
-                cachedAt={directory.cachedAt}
-                patientCount={directory.patients.length}
-                doctorCount={directory.doctors.length}
-                pendingCount={directory.pendingCount}
-                onRefresh={() => void directory.refresh()}
-              />
-              <div>
+          </div>
+          <div className="clinic-status-panel" aria-label={heroText.overview}>
+            <p className="clinic-status-heading">{heroText.overview}</p>
+            <DirectoryStatus
+              status={directory.status}
+              cachedAt={directory.cachedAt}
+              patientCount={directory.patients.length}
+              doctorCount={directory.doctors.length}
+              pendingCount={directory.pendingCount}
+              onRefresh={() => void directory.refresh()}
+            />
+            <div className="clinic-progress">
               <div className="clinic-progress-label">
-                <span className="font-semibold">{t.progressLabel}</span>
-                <span className="tabular-nums font-bold">{completion.percentage}%</span>
+                <span>{heroText.progress}</span>
+                <strong className="tabular-nums">{completion.percentage}%</strong>
               </div>
               <div className="progress-track" role="progressbar" aria-label={t.progressLabel} aria-valuemin={0} aria-valuemax={100} aria-valuenow={completion.percentage}>
                 <div className="progress-fill" style={{ width: completion.percentage + '%' }} />
               </div>
-              <p className="clinic-progress-count">
-                {completion.completed}/{completion.total}
-              </p>
-              </div>
+              <p className="clinic-progress-count">{completion.completed} {heroText.of} {completion.total} {heroText.fields}</p>
             </div>
+          </div>
         </section>
-
-        <details className="model-shortcuts"><summary>{t.modelsShortcuts}</summary><section aria-label={t.modelsShortcuts}>
-          <div className="model-shortcuts-header"><h2>{t.modelsShortcuts}</h2><button type="button" className="btn-secondary" onClick={() => openModels()}>{t.modelsAll}</button></div>
-          {models.error && <p role="status" className="text-sm text-muted">{t.modelsLoadError}</p>}
-          <div className="model-shortcuts-list">{models.models.slice(0, 6).map((model) => <button key={model.id} type="button" className="btn-secondary" onClick={() => openModels(model)}>{model.name}</button>)}
-          {!models.loading && !models.error && models.models.length === 0 && <button type="button" className="btn-secondary" onClick={() => openModels()}>{t.modelsCreate}</button>}</div>
-        </section></details>
 
         <ValidationContext.Provider value={new Set(validationAttempted ? [['nomePaciente','patient-name'],['numeroDocumento','patient-document'],['cargo','patient-position'],['empresa','patient-company'],['dataAtestado','certificate-date'],['diasAfastamento','certificate-days'],['cid','certificate-cid'],['nomeMedico','doctor-name'],['numeroRegistro','doctor-register-number'],['ufRegistro','doctor-register-state']].filter(([key]) => key === 'cid' ? !formData.cidNaoInformado && !formData.cid.trim() : key === 'diasAfastamento' ? !(Number(formData.diasAfastamento) > 0) : !String(formData[key as keyof AppFormData]).trim()).map(([, id]) => id) : [])}>
         <div
