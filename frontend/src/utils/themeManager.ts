@@ -31,7 +31,7 @@ export interface ColorPalette {
 const LEGACY_PALETTES: Record<LegacyPaletteName, ColorPalette> = {
   garnet: {
     name: 'garnet',
-    label: 'Garnet Burgundy',
+    label: 'Bordô',
     colors: {
       50: '250 235 236',
       100: '245 215 217',
@@ -51,7 +51,7 @@ const LEGACY_PALETTES: Record<LegacyPaletteName, ColorPalette> = {
   },
   emerald: {
     name: 'emerald',
-    label: 'Emerald Slate',
+    label: 'Esmeralda',
     colors: {
       50: '236 253 245',
       100: '209 250 229',
@@ -71,7 +71,7 @@ const LEGACY_PALETTES: Record<LegacyPaletteName, ColorPalette> = {
   },
   sapphire: {
     name: 'sapphire',
-    label: 'Midnight Blue',
+    label: 'Safira',
     colors: {
       50: '239 246 255',
       100: '219 234 254',
@@ -91,7 +91,7 @@ const LEGACY_PALETTES: Record<LegacyPaletteName, ColorPalette> = {
   },
   amber: {
     name: 'amber',
-    label: 'Amber Gold',
+    label: 'Dourado',
     colors: {
       50: '254 243 199',
       100: '253 230 138',
@@ -111,7 +111,7 @@ const LEGACY_PALETTES: Record<LegacyPaletteName, ColorPalette> = {
   },
   graphite: {
     name: 'graphite',
-    label: 'Graphite Sand',
+    label: 'Areia',
     colors: {
       50:  '250 250 250',
       100: '244 244 245',
@@ -164,6 +164,13 @@ function shades(accent: string): Pick<ColorPalette['colors'], Shade> {
 
 // Leve uses independently defined light/dark surfaces, not just a recolored accent.
 // Prefix the 11 IDs to preserve all five existing clinical theme preferences.
+const THEME_NAMES: Record<ColorTheme, string> = {
+  green: 'Sálvia', purple: 'Lavanda', blue: 'Brisa',
+  red: 'Rubi', orange: 'Terracota', pink: 'Rosé',
+  teal: 'Oceano', indigo: 'Índigo', amber: 'Mel',
+  brown: 'Cacau', monochrome: 'Grafite',
+}
+
 const LEVE_PALETTES = Object.fromEntries(colorThemeIds.map((id) => {
   const source = colorThemes[id]
   const name = `leve-${id}` as LevePaletteName
@@ -173,7 +180,7 @@ const LEVE_PALETTES = Object.fromEntries(colorThemeIds.map((id) => {
     bgCard: rgb(source.dark.solid),
     bgInput: rgb(source.dark.field),
   }
-  return [name, { name, label: `Leve · ${source.label}`, leve: id, colors }]
+  return [name, { name, label: THEME_NAMES[id], leve: id, colors }]
 })) as Record<LevePaletteName, ColorPalette>
 
 export const THEME_PALETTES: Record<PaletteName, ColorPalette> = {
