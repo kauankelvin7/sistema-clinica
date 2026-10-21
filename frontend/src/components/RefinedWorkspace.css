@@ -276,7 +276,8 @@
   .clinic-shell--homologation .clinic-hero-copy .workspace-description { display: block; }
   .settings-preferences { grid-template-columns: 1fr; }
   .settings-segmented button { flex-direction: column; gap: 4px; font-size: 10px; }
-  .theme-picker-popover { right: -80px; }
+  .clinic-shell--homologation .clinic-topbar { border-radius: 0; }
+  .theme-picker-popover { position: fixed; top: 72px; right: 12px; width: min(356px, calc(100vw - 24px)); }
 }
 @media (prefers-reduced-motion: no-preference) {
   .clinic-shell .clinic-topbar,
