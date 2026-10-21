@@ -8,6 +8,7 @@ export interface AppFormData {
   
   // Atestado
   dataAtestado: string
+  autorizacaoForaPrazo: boolean
   diasAfastamento: string
   cid: string
   cidNaoInformado: boolean
