@@ -439,6 +439,82 @@ test('settings, header theme, and palette stay synchronized after reload', async
   await page.getByTestId('settings-close').click()
 })
 
+test('all eleven Leve palettes recolor the actual workspace and retain readable dark actions', async ({ page }) => {
+  test.setTimeout(90_000)
+  await mockApi(page, { authenticated: true })
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Abrir configurações' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Configurações do Sistema' })
+  const selections = [
+    ['Verde suave', 'green'], ['Roxo suave', 'purple'], ['Azul suave', 'blue'],
+    ['Vermelho suave', 'red'], ['Terracota', 'orange'], ['Rosa', 'pink'],
+    ['Verde petróleo', 'teal'], ['Índigo', 'indigo'], ['Âmbar', 'amber'],
+    ['Cacau', 'brown'], ['Grafite', 'monochrome'],
+  ] as const
+  const accents = new Set<string>()
+  for (const [label, id] of selections) {
+    await dialog.getByRole('button', { name: `Leve · ${label}`, exact: true }).click()
+    const colors = await page.evaluate(() => {
+      const vars = getComputedStyle(document.documentElement)
+      return {
+        primary: vars.getPropertyValue('--color-primary-500').trim(),
+        panel: vars.getPropertyValue('--color-panel').trim(),
+        canvas: vars.getPropertyValue('--color-bg-page').trim(),
+        palette: document.documentElement.dataset.palette,
+      }
+    })
+    expect(colors.palette).toBe(`leve-${id}`)
+    expect(colors.panel).toBe('255 253 248')
+    expect(colors.canvas).not.toBe('')
+    accents.add(colors.primary)
+  }
+  expect(accents.size).toBe(selections.length)
+
+  await dialog.getByRole('button', { name: 'Modo Escuro' }).click()
+  const tokens = await page.evaluate(() => {
+    const styles = getComputedStyle(document.documentElement)
+    const button = document.querySelector<HTMLButtonElement>('.clinic-footer .btn-primary')!
+    return {
+      panel: styles.getPropertyValue('--color-panel').trim(),
+      onBrand: styles.getPropertyValue('--color-on-brand').trim(),
+      buttonForeground: getComputedStyle(button).color,
+    }
+  })
+  expect(tokens.panel).not.toBe('255 253 248')
+  expect(tokens.onBrand).not.toBe('255 255 255')
+  expect(tokens.buttonForeground).toBe(`rgb(${tokens.onBrand.split(' ').join(', ')})`)
+  await dialog.getByRole('button', { name: 'Modo Claro' }).click()
+  await dialog.getByRole('button', { name: 'Leve · Verde suave' }).click()
+  await page.getByTestId('settings-close').click()
+  await page.reload()
+  await expect(page.locator('.sidebar-palette')).toContainText('Leve · Verde suave')
+  expect(await page.evaluate(() => localStorage.getItem('app_palette'))).toBe('leve-green')
+})
+
+test('automatic appearance follows system preference and persists across reload', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' })
+  await mockApi(page, { authenticated: true })
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Abrir configurações' }).click()
+  const settings = page.getByRole('dialog', { name: 'Configurações do Sistema' })
+  await settings.getByRole('button', { name: 'Leve · Roxo suave' }).click()
+  await settings.getByTestId('theme-system').click()
+  await expect(page.locator('html')).not.toHaveClass(/dark/)
+  expect(await page.evaluate(() => localStorage.getItem('theme'))).toBe('system')
+  await page.emulateMedia({ colorScheme: 'dark' })
+  await expect(page.locator('html')).toHaveClass(/dark/)
+  await page.reload()
+  await expect(page.locator('html')).toHaveClass(/dark/)
+  expect(await page.evaluate(() => document.documentElement.dataset.palette)).toBe('leve-purple')
+  await page.emulateMedia({ colorScheme: 'light' })
+  await expect(page.locator('html')).not.toHaveClass(/dark/)
+  await page.getByRole('button', { name: 'Abrir configurações' }).click()
+  await settings.getByTestId('theme-dark').click()
+  await expect(page.locator('html')).toHaveClass(/dark/)
+  await page.emulateMedia({ colorScheme: 'light' })
+  await expect(page.locator('html')).toHaveClass(/dark/)
+})
+
 test('responsive overflow matrix: nine widths, five palettes, two themes', async ({ page }) => {
   await mockApi(page, { authenticated: true })
   await page.goto('/')
@@ -1140,6 +1216,7 @@ test('layout regression: collapsed sidebar, hero data and printing actions fit 1
       actionVisible: rect('.clinic-footer .btn-primary').right <= innerWidth + 1,
       horizontalOverflow: document.documentElement.scrollWidth > innerWidth + 1,
       titleWeight: Number(getComputedStyle(document.querySelector('.workspace-title')!).fontWeight),
+      titleFamily: getComputedStyle(document.querySelector('.workspace-title')!).fontFamily,
     }
   })
   expect(measured.sidebarWidth).toBeGreaterThanOrEqual(72)
@@ -1149,7 +1226,9 @@ test('layout regression: collapsed sidebar, hero data and printing actions fit 1
   expect(measured.footerContained).toBe(true)
   expect(measured.actionVisible).toBe(true)
   expect(measured.horizontalOverflow).toBe(false)
-  expect(measured.titleWeight).toBeLessThanOrEqual(750)
+  // Intentional Leve redesign: expressive Nunito headings at the Leve brand weight.
+  expect(measured.titleWeight).toBe(800)
+  expect(measured.titleFamily).toMatch(/Nunito/i)
 })
 
 test('layout regression: readable mobile workspace and restored original sidebar wordmark', async ({ page }) => {
