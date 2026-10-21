@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { CertificateFormProps } from '../types'
 import AutocompleteInput from './AutocompleteInput'
 import Field from './Field'
 import { searchCID } from '../data/cids'
 import { Calendar, AlertCircle, Clock, ShieldCheck } from 'lucide-react'
 import { useTranslation } from '../utils/i18n'
+import { requiresLateAuthorization } from '../utils/homologationDeadline'
 
 interface CidOption {
   label: string
@@ -16,6 +17,12 @@ interface CidOption {
 export default function CertificateForm({ formData, updateFormData }: CertificateFormProps) {
   const { t, lang } = useTranslation()
   const [cidOptions, setCidOptions] = useState<CidOption[]>([])
+  const [clock, setClock] = useState(() => new Date())
+  useEffect(() => {
+    const timer = window.setInterval(() => setClock(new Date()), 10000)
+    return () => window.clearInterval(timer)
+  }, [])
+  const overdue = requiresLateAuthorization(formData.dataAtestado, clock)
 
   // Atualiza opções de CID conforme o usuário digita (busca dinâmica)
   const handleCidSearch = (value: string) => {
@@ -95,6 +102,26 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
             />
           </Field>
         </div>
+
+        {overdue && (
+          <div role="group" aria-label={t.lateAuthorizationDescription} className="rounded-xl border border-amber-400/60 bg-amber-500/10 p-3.5 text-amber-950 dark:text-amber-100">
+            <p className="mb-2 flex items-start gap-2 text-sm font-semibold">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              {t.lateAuthorizationDescription}
+            </p>
+            <label className="flex cursor-pointer items-start gap-2 text-sm font-medium">
+              <input
+                id="late-authorization-checkbox"
+                type="checkbox"
+                className="mt-1 h-4 w-4 shrink-0 accent-amber-700"
+                checked={formData.autorizacaoForaPrazo}
+                onChange={(event) => updateFormData('autorizacaoForaPrazo', event.target.checked)}
+              />
+              <span>{t.lateAuthorizationLabel}</span>
+            </label>
+            {!formData.autorizacaoForaPrazo && <p className="mt-2 text-xs">{t.lateAuthorizationHint}</p>}
+          </div>
+        )}
 
         {/* Código CID */}
         <Field id="certificate-cid" label={t.cidLabel}>
