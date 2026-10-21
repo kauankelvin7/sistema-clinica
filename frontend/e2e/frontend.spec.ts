@@ -507,6 +507,7 @@ test('automatic appearance follows system preference and persists across reload'
   expect(await page.evaluate(() => document.documentElement.dataset.palette)).toBe('leve-purple')
   await page.emulateMedia({ colorScheme: 'light' })
   await expect(page.locator('html')).not.toHaveClass(/dark/)
+  await page.getByRole('button', { name: 'Abrir configurações' }).click()
   await settings.getByTestId('theme-dark').click()
   await expect(page.locator('html')).toHaveClass(/dark/)
   await page.emulateMedia({ colorScheme: 'light' })
