@@ -13,6 +13,8 @@
     "capture:preview": "CAPTURE_PREVIEW=1 playwright test --project=chromium --grep 'preview capture'"
   },
   "dependencies": {
+    "@fontsource/dm-sans": "5.3.0",
+    "@fontsource/nunito": "5.2.7",
     "axios": "^1.13.1",
     "lucide-react": "^0.400.0",
     "react": "^18.3.1",
