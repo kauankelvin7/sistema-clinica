@@ -71,6 +71,9 @@ export interface TranslationSchema {
   cltExceededWarning: string
   cltNormalNotice: string
   fillDateNotice: string
+  lateAuthorizationDescription: string
+  lateAuthorizationLabel: string
+  lateAuthorizationHint: string
 
   // Doctor Form
   doctorNameLabel: string
@@ -196,6 +199,9 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     cltExceededWarning: 'Afastamento excede o limite CLT de 15 dias. Requer encaminhamento para perícia médica do INSS a partir do 16º dia.',
     cltNormalNotice: 'Afastamento dentro do limite legal de 15 dias. Homologação direta e custeada pela empresa.',
     fillDateNotice: 'Preencha a data e os dias de afastamento para calcular a previsão de retorno ao trabalho.',
+    lateAuthorizationDescription: 'O atestado ultrapassou 48 horas de prazo, desconsiderando sábados e domingos.',
+    lateAuthorizationLabel: 'Confirmo que a homologação fora do prazo foi autorizada.',
+    lateAuthorizationHint: 'É necessário marcar a autorização para emitir a declaração.',
 
     // Doctor Form
     doctorNameLabel: 'Nome Completo do Médico',
@@ -319,6 +325,9 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     cltExceededWarning: 'Medical leave exceeds 15 days limit. Requires official INSS social security medical review after day 15.',
     cltNormalNotice: 'Leave within 15 days legal limit. Direct employer approval and coverage.',
     fillDateNotice: 'Enter date and leave days to calculate expected return to work.',
+    lateAuthorizationDescription: 'The certificate is over the 48-hour deadline, excluding Saturdays and Sundays.',
+    lateAuthorizationLabel: 'I confirm late homologation was authorized.',
+    lateAuthorizationHint: 'Explicit authorization is required before generating the document.',
 
     // Doctor Form
     doctorNameLabel: 'Doctor Full Name',
@@ -442,6 +451,9 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
     cltExceededWarning: 'La licencia supera el límite de 15 días. Requiere evaluación médica del seguro social (INSS) a partir del 16° día.',
     cltNormalNotice: 'Licencia dentro del límite legal de 15 días. Homologación directa cubierta por la empresa.',
     fillDateNotice: 'Complete la fecha y los días de reposo para calcular la fecha de retorno al trabajo.',
+    lateAuthorizationDescription: 'El certificado superó las 48 horas, excluyendo sábados y domingos.',
+    lateAuthorizationLabel: 'Confirmo que se autorizó la homologación fuera de plazo.',
+    lateAuthorizationHint: 'La autorización expresa es obligatoria para emitir el documento.',
 
     // Doctor Form
     doctorNameLabel: 'Nombre Completo del Médico',
