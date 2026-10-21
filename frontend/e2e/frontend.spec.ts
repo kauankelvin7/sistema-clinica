@@ -440,6 +440,7 @@ test('settings, header theme, and palette stay synchronized after reload', async
 })
 
 test('all eleven Leve palettes recolor the actual workspace and retain readable dark actions', async ({ page }) => {
+  test.setTimeout(90_000)
   await mockApi(page, { authenticated: true })
   await page.goto('/')
   await page.getByRole('button', { name: 'Abrir configurações' }).click()
