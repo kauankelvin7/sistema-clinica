@@ -28,6 +28,9 @@ from core.crypto import encrypt, decrypt, generate_hash
 from core.auth import require_auth, create_access_token
 from core.rate_limit import rate_limit, rate_limit_login
 from core.audit import audit_middleware
+from core.homologation_deadline import (
+    BUSINESS_TIMEZONE, needs_late_authorization, parse_certificate_date,
+)
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -135,6 +138,11 @@ class PacienteData(BaseModel):
 
 class AtestadoData(BaseModel):
     data_atestado: str = Field(min_length=10, max_length=10)
+    autorizacao_fora_prazo: bool = False
+
+    @validator("data_atestado")
+    def validate_certificate_date(cls, value):
+        return parse_certificate_date(value).isoformat()
     dias_afastamento: Optional[int] = Field(default=0, ge=0, le=3650)
     cid: Optional[str] = Field(default="", max_length=32)
     cid_nao_informado: bool = False
@@ -418,6 +426,23 @@ async def generate_html_endpoint(
     __=Depends(require_auth),
 ):
     try:
+        now = datetime.now(BUSINESS_TIMEZONE)
+        if parse_certificate_date(data.atestado.data_atestado) > now.date():
+            raise HTTPException(
+                status_code=422,
+                detail="A data do atestado não pode ser futura.",
+            )
+        late = needs_late_authorization(data.atestado.data_atestado, now)
+        if late and not data.atestado.autorizacao_fora_prazo:
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    "Prazo de 48 horas excedido (sábado e domingo não contam). "
+                    "Marque a autorização explícita para homologar fora do prazo."
+                ),
+            )
+        if late:
+            logger.info("Homologação excepcional com autorização explícita confirmada.")
         documento_data = {
             "nome_paciente": data.paciente.nome,
             "tipo_doc_paciente": data.paciente.tipo_documento,
@@ -438,6 +463,8 @@ async def generate_html_endpoint(
 
         html_content = generate_html(documento_data)
         return HTMLResponse(content=html_content, status_code=200)
+    except HTTPException:
+        raise
     except Exception:
         logger.exception("Erro geral ao gerar HTML")
         raise HTTPException(status_code=500, detail="Não foi possível gerar o documento. Tente novamente.")

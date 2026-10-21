@@ -228,8 +228,15 @@ test('validation, exact generation payload, preview, single auto-print, and down
   await page.getByLabel('Não Informado').check()
   await page.getByPlaceholder('Dr. Nome do Médico').fill('Profissional Sintético Payload')
   await page.getByPlaceholder('123456').fill('98765')
+  const lateApproval = page.getByLabel('Confirmo que a homologação fora do prazo foi autorizada.')
+  await expect(lateApproval).toBeVisible()
+  await expect(lateApproval).not.toBeChecked()
   await page.getByRole('button', { name: 'Gerar e imprimir' }).click()
-  await expect.poll(() => api.generateRequests.length, { message: 'The valid form must reach /api/generate-html' }).toBe(1)
+  await expect(page.getByRole('alert')).toContainText('É necessário marcar a autorização')
+  expect(api.generateRequests).toHaveLength(0)
+  await lateApproval.check()
+  await page.getByRole('button', { name: 'Gerar e imprimir' }).click()
+  await expect.poll(() => api.generateRequests.length, { message: 'The explicitly authorized form must reach /api/generate-html' }).toBe(1)
 
   await expect(page.getByText('Pré-visualização do Documento')).toBeVisible()
   await expect(page.frameLocator('iframe[title="Pré-visualização do documento"]').getByRole('heading', { name: 'Prévia sintética' })).toBeVisible()
@@ -248,6 +255,7 @@ test('validation, exact generation payload, preview, single auto-print, and down
     },
     atestado: {
       data_atestado: '2026-01-02',
+      autorizacao_fora_prazo: true,
       dias_afastamento: 3,
       cid: '',
       cid_nao_informado: true,
@@ -804,6 +812,7 @@ test('preview capture: synthetic UI evidence', async ({ page }, testInfo) => {
     await page.getByLabel('Não Informado').check()
     await page.getByPlaceholder('Dr. Nome do Médico').fill('Profissional Sintético Payload')
     await page.getByPlaceholder('123456').fill('98765')
+    await page.getByLabel('Confirmo que a homologação fora do prazo foi autorizada.').check()
     await page.getByRole('button', { name: 'Gerar e imprimir' }).click()
     await expect(page.getByText('Pré-visualização do Documento')).toBeVisible()
     await capture(`preview-${width}`)
