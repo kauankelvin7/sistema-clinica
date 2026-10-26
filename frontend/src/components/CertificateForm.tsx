@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { CertificateFormProps } from '../types'
 import AutocompleteInput from './AutocompleteInput'
 import Field from './Field'
@@ -17,6 +17,9 @@ interface CidOption {
 export default function CertificateForm({ formData, updateFormData }: CertificateFormProps) {
   const { t, lang } = useTranslation()
   const [cidOptions, setCidOptions] = useState<CidOption[]>([])
+  const [cidSearching, setCidSearching] = useState(false)
+  const [cidSearchError, setCidSearchError] = useState(false)
+  const cidSearchSequence = useRef(0)
   const [clock, setClock] = useState(() => new Date())
   useEffect(() => {
     const timer = window.setInterval(() => setClock(new Date()), 10000)
@@ -24,16 +27,30 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
   }, [])
   const overdue = requiresLateAuthorization(formData.dataAtestado, clock)
 
-  // Atualiza opções de CID conforme o usuário digita (busca dinâmica)
-  const handleCidSearch = (value: string) => {
-    const results = searchCID(value)
-    const options = results.map(cid => ({
-      label: `${cid.codigo} - ${cid.descricao}`,
-      value: cid.codigo,
-      codigo: cid.codigo,
-      descricao: cid.descricao
-    }))
-    setCidOptions(options)
+  // Pesquisa assíncrona, protegida contra resultados de buscas antigas.
+  const handleCidSearch = async (value: string) => {
+    const request = ++cidSearchSequence.current
+    setCidOptions([])
+    setCidSearchError(false)
+    if (!value.trim()) {
+      setCidSearching(false)
+      return
+    }
+    setCidSearching(true)
+    try {
+      const results = await searchCID(value)
+      if (request !== cidSearchSequence.current) return
+      setCidOptions(results.map(cid => ({
+        label: `${cid.codigo} - ${cid.descricao}`,
+        value: cid.codigo,
+        codigo: cid.codigo,
+        descricao: cid.descricao,
+      })))
+    } catch {
+      if (request === cidSearchSequence.current) setCidSearchError(true)
+    } finally {
+      if (request === cidSearchSequence.current) setCidSearching(false)
+    }
   }
 
   // Função auxiliar para calcular data prevista de retorno ao trabalho
@@ -130,21 +147,28 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
               <AutocompleteInput
                 id="certificate-cid"
                 value={formData.cidNaoInformado ? '' : formData.cid}
-                onChange={(value) => {
-                  updateFormData('cid', value)
-                  handleCidSearch(value)
-                }}
+                onChange={(value) => updateFormData('cid', value)}
+                onSearch={handleCidSearch}
                 onSelect={(option) => {
-                  const selectedCid = cidOptions.find(cid => cid.value === option.value)
-                  if (selectedCid) {
-                    updateFormData('cid', selectedCid.codigo)
-                  }
+                  cidSearchSequence.current += 1
+                  setCidOptions([])
+                  setCidSearching(false)
+                  setCidSearchError(false)
+                  updateFormData('cid', String(option.value))
                 }}
                 options={cidOptions}
                 placeholder={t.cidPlaceholder}
                 minChars={1}
+                isLoading={cidSearching}
                 disabled={formData.cidNaoInformado}
               />
+              {cidSearchError && (
+                <p role="alert" className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+                  {lang === 'en' ? 'ICD-10 catalog unavailable; manual entry remains possible.'
+                    : lang === 'es' ? 'Catálogo CIE-10 no disponible; puede ingresar el código manualmente.'
+                    : 'Catálogo CID-10 indisponível. Você ainda pode digitar o código manualmente.'}
+                </p>
+              )}
             </div>
 
             <label className="flex min-h-11 items-center gap-2 cursor-pointer whitespace-nowrap px-1 py-1 group">
@@ -152,7 +176,13 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
                 type="checkbox"
                 className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-garnet-500 bg-white dark:bg-surface-input focus:ring-2 focus:ring-garnet-500/20 transition-all cursor-pointer"
                 checked={formData.cidNaoInformado}
-                onChange={(e) => updateFormData('cidNaoInformado', e.target.checked)}
+                onChange={(e) => {
+                  cidSearchSequence.current += 1
+                  setCidOptions([])
+                  setCidSearching(false)
+                  setCidSearchError(false)
+                  updateFormData('cidNaoInformado', e.target.checked)
+                }}
               />
               <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-200 transition-colors">
                 {t.cidNotProvided}
