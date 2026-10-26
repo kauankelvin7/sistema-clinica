@@ -1404,3 +1404,21 @@ test('duplicate names with different records require explicit selection', async 
   await expect(doctor).toHaveValue('Profissional Sintetico U')
   await expect(page.locator('#doctor-register-number')).toHaveValue('')
 })
+
+
+test('CID-10: catálogo completo, busca sem ponto e sem acento, seleção correta', async ({ page }) => {
+  await mockApi(page, { authenticated: true })
+  await page.goto('/')
+  const cid = page.locator('#certificate-cid')
+  await expect(cid).toBeVisible()
+
+  await cid.fill('U071')
+  await expect(page.getByRole('option', { name: /U07\.1 - COVID-19/ })).toBeVisible()
+  await page.getByRole('option', { name: /U07\.1 - COVID-19/ }).click()
+  await expect(cid).toHaveValue('U07.1')
+
+  await cid.fill('colera')
+  await expect(page.getByRole('option', { name: /^A00 - Cólera$/ })).toBeVisible()
+  await cid.fill('F321')
+  await expect(page.getByRole('option', { name: /F32\.1/ })).toBeVisible()
+})

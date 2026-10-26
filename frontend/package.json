@@ -10,7 +10,8 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "typecheck:e2e": "tsc --noEmit --strict --target ES2022 --module ESNext --moduleResolution bundler --esModuleInterop --skipLibCheck e2e/frontend.spec.ts playwright.config.ts",
     "test:e2e": "playwright test",
-    "capture:preview": "CAPTURE_PREVIEW=1 playwright test --project=chromium --grep 'preview capture'"
+    "capture:preview": "CAPTURE_PREVIEW=1 playwright test --project=chromium --grep 'preview capture'",
+    "test:cids": "node --test scripts/check-cid10.test.mjs"
   },
   "dependencies": {
     "@fontsource/dm-sans": "5.3.0",
