@@ -255,13 +255,18 @@ async def login(credentials: LoginRequest, response: Response, request: Request,
     # e garante comparação byte a byte sem otimizações do Python.
     account = OPERATOR_ACCOUNTS.get(credentials.username) if OPERATOR_ACCOUNTS else None
     if OPERATOR_ACCOUNTS:
-        authenticated = bool(account and account.active and verify_password(credentials.password, account.password_hash))
+        # PBKDF2 também para usuário inexistente, evitando revelar contas por tempo de resposta.
+        dummy_hash = "pbkdf2_sha256$600000$" + ("00" * 16) + "$" + ("00" * 32)
+        password_match = verify_password(
+            credentials.password, account.password_hash if account else dummy_hash
+        )
+        authenticated = bool(account and account.active and password_match)
         role = account.role if account else None
     else:
-        authenticated = (
-            hmac.compare_digest(credentials.username.encode("utf-8"), _admin_user.encode("utf-8"))
-            and hmac.compare_digest(credentials.password.encode("utf-8"), _admin_pass.encode("utf-8"))
-        )
+        # Execute ambas as verificações mesmo com nome incorreto.
+        username_match = hmac.compare_digest(credentials.username.encode("utf-8"), _admin_user.encode("utf-8"))
+        password_match = hmac.compare_digest(credentials.password.encode("utf-8"), _admin_pass.encode("utf-8"))
+        authenticated = username_match and password_match
         role = "legacy-admin"
 
     if authenticated:
