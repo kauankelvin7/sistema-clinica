@@ -3,7 +3,7 @@ Sistema de Homologação de Atestados Médicos - Backend API (Vercel Serverless)
 ══════════════════════════════════════════════════════════════════════════════
 """
 
-from fastapi import FastAPI, HTTPException, Query, Depends, APIRouter, Response
+from fastapi import FastAPI, HTTPException, Query, Depends, APIRouter, Response, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.gzip import GZipMiddleware
@@ -25,7 +25,8 @@ from core.db_manager import get_db_connection, create_tables
 from core.database import sanitizar_entrada
 from core.html_generator import generate_html
 from core.crypto import encrypt, decrypt, generate_hash
-from core.auth import require_auth, create_access_token
+from core.auth import require_auth, create_access_token, OPERATOR_ACCOUNTS
+from core.operator_accounts import verify_password
 from core.rate_limit import rate_limit, rate_limit_login
 from core.audit import audit_middleware
 from core.homologation_deadline import (
@@ -42,7 +43,7 @@ api_router = APIRouter()
 
 # Sessão via cookie HttpOnly. O token continua aceito via Bearer para compatibilidade
 # com clientes externos, mas o frontend não precisa mais expô-lo ao JavaScript.
-_IS_PRODUCTION = bool(os.getenv("VERCEL") or os.getenv("RENDER") or os.getenv("RAILWAY_ENVIRONMENT"))
+_IS_PRODUCTION = bool(os.getenv("VERCEL") or os.getenv("RENDER") or os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("KOYEB_SERVICE_NAME") or os.getenv("KOYEB_APP_NAME"))
 _COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "lax").lower()
 if _COOKIE_SAMESITE not in {"lax", "strict", "none"}:
     _COOKIE_SAMESITE = "lax"
@@ -59,9 +60,8 @@ app.add_middleware(GZipMiddleware, minimum_size=1024, compresslevel=5)
 # CORS — somente origens e cabeçalhos necessários ao frontend.
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173').rstrip('/')
 ALLOWED_ORIGINS = list(dict.fromkeys([
-    FRONTEND_URL,
-    "http://localhost:5173",
-    "http://localhost:3000",
+    *([FRONTEND_URL] if not (_IS_PRODUCTION and FRONTEND_URL.startswith("http://localhost")) else []),
+    *([] if _IS_PRODUCTION else ["http://localhost:5173", "http://localhost:3000"]),
     "https://sistema-clinica-seven.vercel.app",
 ]))
 app.add_middleware(
@@ -88,6 +88,19 @@ async def prevent_document_model_caching(request, call_next):
     if any(path == prefix or path.startswith(prefix + "/") for prefix in ("/api/document-models", "/document-models")):
         response.headers["Cache-Control"] = "private, no-store, max-age=0"
     return response
+
+@app.middleware("http")
+async def sensitive_response_headers(request: Request, call_next):
+    """Evita cache de dados de pacientes, documentos e credenciais, inclusive em erros."""
+    response = await call_next(request)
+    response.headers["Cache-Control"] = "private, no-store, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["X-Robots-Tag"] = "noindex, nofollow, noarchive"
+    return response
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -210,7 +223,7 @@ class LoginRequest(BaseModel):
 # O servidor NÃO SOBE sem as credenciais configuradas (Fail-Fast).
 _admin_user = os.getenv("ADMIN_USER")
 _admin_pass = os.getenv("ADMIN_PASSWORD")
-if not _admin_user or not _admin_pass:
+if not OPERATOR_ACCOUNTS and (not _admin_user or not _admin_pass):
     raise RuntimeError(
         "[SEGURANÇA CRÍTICA] As variáveis de ambiente ADMIN_USER e ADMIN_PASSWORD "
         "não estão definidas. Configure-as antes de iniciar o servidor. "
@@ -219,7 +232,7 @@ if not _admin_user or not _admin_pass:
 
 
 @api_router.post("/auth/token")
-async def login(credentials: LoginRequest, response: Response, _=Depends(rate_limit_login)):
+async def login(credentials: LoginRequest, response: Response, request: Request, _=Depends(rate_limit_login)):
     """
     Rota para o frontend obter o JWT.
 
@@ -240,19 +253,26 @@ async def login(credentials: LoginRequest, response: Response, _=Depends(rate_li
     #
     # NOTA: Encode para bytes é necessário pois compare_digest exige str ou bytes,
     # e garante comparação byte a byte sem otimizações do Python.
-    username_match = hmac.compare_digest(
-        credentials.username.encode("utf-8"),
-        _admin_user.encode("utf-8")
-    )
-    password_match = hmac.compare_digest(
-        credentials.password.encode("utf-8"),
-        _admin_pass.encode("utf-8")
-    )
+    account = OPERATOR_ACCOUNTS.get(credentials.username) if OPERATOR_ACCOUNTS else None
+    if OPERATOR_ACCOUNTS:
+        authenticated = bool(account and account.active and verify_password(credentials.password, account.password_hash))
+        role = account.role if account else None
+    else:
+        authenticated = (
+            hmac.compare_digest(credentials.username.encode("utf-8"), _admin_user.encode("utf-8"))
+            and hmac.compare_digest(credentials.password.encode("utf-8"), _admin_pass.encode("utf-8"))
+        )
+        role = "legacy-admin"
 
-    if username_match and password_match:
+    if authenticated:
         from datetime import timedelta
         expires = timedelta(days=30) if credentials.remember_me else timedelta(hours=24)
-        token = create_access_token(data={"sub": credentials.username}, expires_delta=expires)
+        claims = {"sub": credentials.username, "role": role}
+        if account:
+            claims["credential_version"] = account.credential_version(credentials.username)
+        token = create_access_token(data=claims, expires_delta=expires)
+        request.state.actor = credentials.username
+        request.state.actor_role = role
         response.set_cookie(
             key=_SESSION_COOKIE,
             value=token,
