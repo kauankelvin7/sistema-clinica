@@ -48,11 +48,13 @@
 ## 4. Entrega técnica incremental nesta branch
 
 - [x] Documentar escopo, fontes, lacunas e critérios de aceite.
-- [ ] Endurecer cabeçalhos HTTP e política anti-cache de respostas da API.
-- [ ] Adicionar opção de contas individuais com hashes fortes, sem guardar senhas em claro no repositório e mantendo compatibilidade com deploy legado **até migração deliberada**.
-- [ ] Registrar evento HTTP estruturado com ator pseudonimizado e sem IP literal nem valores médicos.
-- [ ] Criar testes para controles novos e executar CI em PR.
-- [ ] Revisar a fundo CID, documentos médicos, autorizações excepcionais e migração do cache **sem fazer alteração destrutiva**.
+- [x] Endurecer cabeçalhos HTTP e política anti-cache de respostas da API.
+- [x] Adicionar opção de contas individuais com hashes fortes, sem guardar senhas em claro no repositório e mantendo compatibilidade com deploy legado **até migração deliberada**.
+- [x] Registrar evento HTTP estruturado com ator pseudonimizado e sem IP literal nem valores médicos.
+- [x] Criar testes automatizados (execução e aprovação integral no CI dependem do estado do PR).
+- [x] Exibir orientação sobre confidencialidade de CID na interface, **sem fingir que a orientação substitui fundamento legal ou autorização**.
+- [x] Separar snapshot IndexedDB por identidade de operador autenticado (reduz mistura acidental; **não constitui isolamento criptográfico**).
+- [ ] Revisar CID, assinatura, autorizações excepcionais e migração do cache **sem fazer alteração destrutiva**.
 
 ## 5. Critérios de aceite / operação
 
@@ -67,3 +69,25 @@
 Confirmar jurisdição/UF e município, razão social/controlador, equipe que acessa registros, bases legais por finalidade, se o documento é rascunho ou homologação por médico, natureza do CID recebido, política de dispositivos pessoais/compartilhados, tempo de guarda, responsável técnico, encarregado, provedores de infraestrutura e rito de incidentes. A partir daí implementar RBAC e aprovações, assinatura verificável, GED, exclusão/retenção e solicitações do titular com acompanhamento.
 
 **Nota:** a regra de "48 horas com fins de semana excluídos" é regra do fluxo atual, **não foi tratada como prazo legal geral**. A marcação de checkbox não prova, por si, autorização por profissional competente.
+
+## 7. Provisionamento, ativação e rollback (somente após revisão)
+
+1. Na máquina do administrador, execute `python scripts/create_operator_account.py operador.01 admin` e informe uma senha individual forte, sem eco no terminal. Copie apenas o JSON gerado para um gerenciador de segredos; **não salve o conteúdo em Git, logs ou tickets**. Mescle contas adicionais num único objeto de `OPERATOR_ACCOUNTS_JSON`, mantendo um administrador ativo.
+2. Antes do deploy, teste em ambiente de homologação; configure a variável de ambiente `OPERATOR_ACCOUNTS_JSON` com o objeto JSON completo. Com a variável presente, o login legado **não funciona**. O valor malformado impede o processo de iniciar (fail closed).
+3. Teste login, logout, troca de perfil, revogação, emissão com dados sintéticos, formulários, retorno 401, observabilidade e persistência de cache. Reinicie as instâncias ao alterar a configuração; a revogação só se aplica a instâncias que já receberam a nova variável. Os papéis `admin` e `operator` **ainda não são autorização por endpoint (RBAC)**; não habilite contas reais de operadores clínicos sem definir as permissões.
+4. Rotacione JWT_SECRET e demais chaves por procedimento próprio com backup controlado e teste de recuperação. Trocar ENCRYPTION_KEY indevidamente pode tornar dados indisponíveis; `core/crypto.py` ainda possui fallback arriscado ao descriptografar.
+5. **Rollback**: não desligue a autenticação individual simplesmente removendo `OPERATOR_ACCOUNTS_JSON` em produção, porque isso reativa a credencial administrativa legada. Valide solução de acesso emergencial com a equipe de segurança e formalize o plano de rollback.
+6. Verifique `COOKIE_SECURE=true` no domínio de produção, domínio/origem autorizada, HTTPS, `COOKIE_SAMESITE` para frontend em domínio diferente, política de sessão (incluindo lembrar-me 30 dias, atualmente longa) e uma proteção CSRF adequada a cookies e rotas autenticadas.
+
+### Cache local e continuidade de dados
+
+A nova chave local `active-directory-v2:<operador>` separa sessões por identificador, mas **qualquer pessoa com acesso ao mesmo perfil de navegador poderá inspecionar o IndexedDB**: isso não é uma barreira de confidencialidade. O snapshot é salvo em texto claro e contém dados de pacientes. A chave anterior `active-directory-v1` não é lida pela nova versão e será apagada por limpeza geral de cache/logout. Antes de migrar em produção, avaliar se há `pending` não sincronizados em dispositivos já utilizados, criar procedimento de reconciliação auditável e aprovar com a clínica. Não descartar filas pendentes sem reconciliação. Preferir dispositivos geridos e, em etapa seguinte, migrar a persistência para modelo realmente protegido ou desativar dados sensíveis offline.
+
+### Pendente de implementação para conformidade material
+
+- Identidade vinculada a profissional/autoridade competente, RBAC por perfil e por paciente, MFA, encerramento centralizado e trilha persistente à prova de alterações.
+- Fluxo de atestado com assinatura digital verificável, critérios de disponibilização a terceiros, consulta de registro profissional e distinção entre rascunho/ato médico.
+- Fundamentação por finalidade de dados sensíveis, documentação sobre CID, processos de direitos do titular, contratos com operadores e RIPD quando necessário.
+- Gestão de incidentes, avaliação de risco, controle de backups, retenção do prontuário e revisão de normas federais/estaduais/municipais específicas da unidade.
+
+**Não declarar conformidade LGPD/CFM integral ou colocar alterações em produção somente com este PR.**
