@@ -78,7 +78,7 @@ export async function readDirectoryCache(subject: string): Promise<DirectorySnap
 
     if (!snapshot || snapshot.version !== 1) return null
     if (Date.now() - snapshot.cachedAt > DIRECTORY_CACHE_TTL_MS) {
-      await clearDirectoryCache()
+      await clearDirectoryCache(subject)
       return null
     }
 
@@ -101,11 +101,11 @@ export async function writeDirectoryCache(snapshot: DirectorySnapshot, subject: 
   }
 }
 
-export async function clearDirectoryCache(): Promise<void> {
+export async function clearDirectoryCache(subject?: string): Promise<void> {
   if (typeof indexedDB === 'undefined') return
 
   try {
-    await withStore<undefined>('readwrite', (store) => store.clear())
+    await withStore<undefined>('readwrite', (store) => subject ? store.delete(`${CACHE_KEY}:${subject}`) : store.clear())
   } catch {
     // Logout continua mesmo se o storage local estiver indisponível.
   }
