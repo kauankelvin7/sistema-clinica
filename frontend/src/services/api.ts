@@ -81,14 +81,18 @@ export const loginUser = async (
   return response.data
 }
 
-export const checkSession = async (): Promise<boolean> => {
+export const getSessionSubject = async (): Promise<string | null> => {
   try {
     const response = await api.get('/api/auth/session')
-    return response.data?.authenticated === true
+    const subject = response.data?.subject
+    return response.data?.authenticated === true && typeof subject === 'string' && subject.length > 0
+      ? subject : null
   } catch {
-    return false
+    return null
   }
 }
+
+export const checkSession = async (): Promise<boolean> => Boolean(await getSessionSubject())
 
 export const logoutUser = async (): Promise<void> => {
   try {

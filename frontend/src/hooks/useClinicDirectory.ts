@@ -116,7 +116,7 @@ function sameMutationTarget(a: DirectoryMutation, b: DirectoryMutation) {
   )
 }
 
-export function useClinicDirectory(enabled: boolean) {
+export function useClinicDirectory(enabled: boolean, subject: string | null) {
   const [state, setState] = useState<DirectoryState>(EMPTY_STATE)
   const stateRef = useRef(state)
   const session = useRef(new AbortController())
@@ -130,7 +130,7 @@ export function useClinicDirectory(enabled: boolean) {
   }, [state])
 
   const persist = useCallback(async (next: DirectoryState) => {
-    if (!next.cachedAt) return
+    if (!next.cachedAt || !subject) return
     const snapshot: DirectorySnapshot = {
       version: 1,
       cachedAt: next.cachedAt,
@@ -140,10 +140,10 @@ export function useClinicDirectory(enabled: boolean) {
     }
     const operationEpoch = epoch.current
     persistence.current = persistence.current.catch(() => undefined).then(async () => {
-      if (operationEpoch === epoch.current && !session.current.signal.aborted) await writeDirectoryCache(snapshot)
+      if (operationEpoch === epoch.current && !session.current.signal.aborted) await writeDirectoryCache(snapshot, subject)
     })
     await persistence.current
-  }, [])
+  }, [subject])
 
   const flushPending = useCallback(async () => {
     if (!enabled) return
@@ -244,7 +244,7 @@ export function useClinicDirectory(enabled: boolean) {
 
     const bootstrap = async () => {
       setState((current) => ({ ...current, status: 'loading' }))
-      const cached = await readDirectoryCache()
+      const cached = subject ? await readDirectoryCache(subject) : null
       if (!active) return
 
       if (cached) {
@@ -271,7 +271,7 @@ export function useClinicDirectory(enabled: boolean) {
       refreshPromise.current = null
       flushPromise.current = null
     }
-  }, [enabled, flushPending, refresh])
+  }, [enabled, flushPending, refresh, subject])
 
   useEffect(() => {
     if (!enabled) return
@@ -293,7 +293,7 @@ export function useClinicDirectory(enabled: boolean) {
       window.clearInterval(interval)
       window.removeEventListener('online', handleOnline)
     }
-  }, [enabled, flushPending, refresh])
+  }, [enabled, flushPending, refresh, subject])
 
   const rememberForm = useCallback((formData: AppFormData) => {
     if (!enabled || session.current.signal.aborted) return

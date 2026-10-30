@@ -191,6 +191,14 @@ export default function CertificateForm({ formData, updateFormData }: Certificat
           </div>
         </Field>
 
+        <p id="cid-privacy-guidance" className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+          {lang === 'en'
+            ? 'The diagnosis/ICD code is confidential. Only include it with an appropriate documented basis (patient request, legal duty or justified cause). When not applicable, select “Not provided”.'
+            : lang === 'es'
+              ? 'El diagnóstico/CIE es confidencial. Inclúyalo solo con fundamento documentado (solicitud del paciente, deber legal o causa justificada). Si no corresponde, marque “No informado”.'
+              : 'O diagnóstico/CID é sigiloso. Inclua-o apenas quando houver fundamento documentado (solicitação do paciente, dever legal ou justa causa). Caso contrário, marque “Não informado”.'}
+        </p>
+
         {/* Painel Informativo Inteligente de Retorno e Regra do INSS (CLT) */}
         {returnInfo ? (
           <div className={`p-3.5 rounded-2xl border transition-all duration-200 ${

@@ -87,7 +87,7 @@ async function mockApi(page: Page, overrides: Partial<MockState> = {}) {
 
     if (url.pathname === '/api/document-models' && method === 'GET') return route.fulfill({ json: [] })
     if (url.pathname === '/api/auth/session' && method === 'GET') {
-      return route.fulfill({ json: { authenticated: state.authenticated } })
+      return route.fulfill({ json: { authenticated: state.authenticated, subject: state.authenticated ? 'usuario-sintetico' : null } })
     }
     if (url.pathname === '/api/auth/token' && method === 'POST') {
       const body = request.postDataJSON() as Record<string, unknown>
@@ -124,7 +124,7 @@ async function cachedPatientName(page: Page) {
     const request = indexedDB.open('sistema-clinica-directory', 1)
     request.onsuccess = () => {
       const db = request.result
-      const read = db.transaction('snapshots', 'readonly').objectStore('snapshots').get('active-directory-v1')
+      const read = db.transaction('snapshots', 'readonly').objectStore('snapshots').get('active-directory-v2:usuario-sintetico')
       read.onsuccess = () => {
         db.close()
         resolve(read.result?.patients?.[0]?.nome_completo ?? null)

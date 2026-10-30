@@ -2,7 +2,7 @@ import type { Medico, Paciente } from '../types'
 
 const DB_NAME = 'sistema-clinica-directory'
 const STORE_NAME = 'snapshots'
-const CACHE_KEY = 'active-directory-v1'
+const CACHE_KEY = 'active-directory-v2'
 const DB_VERSION = 1
 
 export const DIRECTORY_CACHE_TTL_MS = 8 * 60 * 60 * 1000
@@ -67,18 +67,18 @@ async function withStore<T>(
   }
 }
 
-export async function readDirectoryCache(): Promise<DirectorySnapshot | null> {
+export async function readDirectoryCache(subject: string): Promise<DirectorySnapshot | null> {
   if (typeof indexedDB === 'undefined') return null
 
   try {
     const snapshot = await withStore<DirectorySnapshot | undefined>(
       'readonly',
-      (store) => store.get(CACHE_KEY)
+      (store) => store.get(`${CACHE_KEY}:${subject}`)
     )
 
     if (!snapshot || snapshot.version !== 1) return null
     if (Date.now() - snapshot.cachedAt > DIRECTORY_CACHE_TTL_MS) {
-      await clearDirectoryCache()
+      await clearDirectoryCache(subject)
       return null
     }
 
@@ -91,21 +91,21 @@ export async function readDirectoryCache(): Promise<DirectorySnapshot | null> {
   }
 }
 
-export async function writeDirectoryCache(snapshot: DirectorySnapshot): Promise<void> {
+export async function writeDirectoryCache(snapshot: DirectorySnapshot, subject: string): Promise<void> {
   if (typeof indexedDB === 'undefined') return
 
   try {
-    await withStore<IDBValidKey>('readwrite', (store) => store.put(snapshot, CACHE_KEY))
+    await withStore<IDBValidKey>('readwrite', (store) => store.put(snapshot, `${CACHE_KEY}:${subject}`))
   } catch {
     // Cache é resiliência; falhas não bloqueiam o sistema.
   }
 }
 
-export async function clearDirectoryCache(): Promise<void> {
+export async function clearDirectoryCache(subject?: string): Promise<void> {
   if (typeof indexedDB === 'undefined') return
 
   try {
-    await withStore<undefined>('readwrite', (store) => store.delete(CACHE_KEY))
+    await withStore<undefined>('readwrite', (store) => subject ? store.delete(`${CACHE_KEY}:${subject}`) : store.clear())
   } catch {
     // Logout continua mesmo se o storage local estiver indisponível.
   }

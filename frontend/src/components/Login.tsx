@@ -1,14 +1,14 @@
 import BrandMark from './BrandMark'
 import { useState } from 'react'
 import { ArrowRight, Eye, EyeOff, Loader2, Lock, Settings, User as UserIcon } from 'lucide-react'
-import { loginUser } from '../services/api'
+import { getSessionSubject, loginUser } from '../services/api'
 import { useTranslation } from '../utils/i18n'
 import ClinicalArtwork from './ClinicalArtwork'
 import SettingsModal from './SettingsModal'
 import './AppShell.css'
 
 interface LoginProps {
-  onLoginSuccess: () => void
+  onLoginSuccess: (subject: string) => void
 }
 
 export default function Login({ onLoginSuccess }: LoginProps) {
@@ -27,7 +27,9 @@ export default function Login({ onLoginSuccess }: LoginProps) {
     setError(null)
     try {
       await loginUser(username, password, rememberMe)
-      onLoginSuccess()
+      const subject = await getSessionSubject()
+      if (!subject) throw new Error('Sessão indisponível')
+      onLoginSuccess(subject)
     } catch {
       setError(t.loginError)
     } finally {
