@@ -77,8 +77,8 @@ def load_operator_accounts(raw: str | None) -> Mapping[str, OperatorAccount]:
             raise RuntimeError("Nome de operador inválido em OPERATOR_ACCOUNTS_JSON.")
         if not isinstance(entry, dict) or set(entry) != {"password_hash", "role", "active"}:
             raise RuntimeError("Conta de operador deve declarar password_hash, role e active.")
-        if (entry["role"] not in {"admin", "operator"}
-                or not isinstance(entry["role"], str)
+        if (not isinstance(entry["role"], str)
+                or entry["role"] not in {"admin", "operator"}
                 or not isinstance(entry["active"], bool)
                 or not validate_password_hash(entry["password_hash"])):
             raise RuntimeError("Configuração de conta de operador inválida.")
