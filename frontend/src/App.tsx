@@ -21,7 +21,7 @@ import PatientForm from './components/PatientForm'
 import SectionCard from './components/SectionCard'
 import { ValidationModal } from './components/ValidationModal'
 import { useClinicDirectory } from './hooks/useClinicDirectory'
-import api, { checkSession, logoutUser } from './services/api'
+import api, { getSessionSubject, logoutUser } from './services/api'
 import { clearDirectoryCache } from './services/directoryCache'
 import type { AppFormData, Medico, Paciente } from './types'
 import { getSavedLanguage, Language, TRANSLATIONS } from './utils/i18n'
@@ -51,6 +51,7 @@ function getDefaultFormData(): AppFormData {
 function App() {
   const [lang, setLang] = useState<Language>(getSavedLanguage)
   const [authState, setAuthState] = useState<AuthState>('checking')
+  const [authSubject, setAuthSubject] = useState<string | null>(null)
   const [layoutMode, setLayoutMode] = useState<'vertical' | 'horizontal'>(() => {
     try {
       return localStorage.getItem('layout_mode') === 'vertical' ? 'vertical' : 'horizontal'
@@ -79,7 +80,7 @@ function App() {
   const [selectedModel, setSelectedModel] = useState<{ model: DocumentModel | null } | null>(null)
   const [modelPreviewTitle, setModelPreviewTitle] = useState<string | null>(null)
   const models = useDocumentModels(authState === 'authenticated')
-  const directory = useClinicDirectory(authState === 'authenticated')
+  const directory = useClinicDirectory(authState === 'authenticated' && Boolean(authSubject), authSubject)
   const clearDirectory = directory.clear
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.pt
@@ -120,10 +121,11 @@ function App() {
 
   useEffect(() => {
     let active = true
-    checkSession().then((authenticated) => {
+    getSessionSubject().then((subject) => {
       if (!active) return
-      setAuthState(authenticated ? 'authenticated' : 'anonymous')
-      if (!authenticated) void clearDirectoryCache()
+      setAuthSubject(subject)
+      setAuthState(subject ? 'authenticated' : 'anonymous')
+      if (!subject) void clearDirectoryCache()
     })
     return () => {
       active = false
@@ -149,6 +151,7 @@ function App() {
       setSelectedModel(null)
       setModelPreviewTitle(null)
       setPreviewHtml(null)
+      setAuthSubject(null)
       setAuthState('anonymous')
     }
     window.addEventListener('auth_logout', handleAuthLogout)
@@ -326,6 +329,7 @@ function App() {
     setModelPreviewTitle(null)
     setPreviewHtml(null)
     setAuthState('checking')
+    setAuthSubject(null)
     await Promise.all([logoutUser(), directory.clear()])
     if (operationEpoch === authEpoch.current) setAuthState('anonymous')
   }
@@ -342,7 +346,7 @@ function App() {
   }
 
   if (authState === 'anonymous') {
-    return <Login onLoginSuccess={() => setAuthState('authenticated')} />
+    return <Login onLoginSuccess={(subject) => { setAuthSubject(subject); setAuthState('authenticated') }} />
   }
 
   const documentName =
